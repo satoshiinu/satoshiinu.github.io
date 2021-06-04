@@ -6,13 +6,19 @@
 <script>
   var canvas = document.getElementById('sample');
   var context = canvas.getContext('2d');
+  key="";
+  
+  
+  
+  
   function main() {  
-  context.fillRect(Math.random()*400,Math.random()*400,Math.random()*30,Math.random()*30);
+  context.fillText(key,Math.random()*400,Math.random()*400);
   
   window.addEventListener('DOMContentLoaded', function(){
   window.addEventListener("keydown", function(e){
-    e.preventDefault();
-    console.log(e.key);
+  e.preventDefault();
+  console.log(e.key);
+  key=e.key;
   });
 });
   
