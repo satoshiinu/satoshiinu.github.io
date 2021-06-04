@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<html>
 <body>
 hello world
 </body>
