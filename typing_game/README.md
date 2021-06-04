@@ -4,10 +4,9 @@
 図形を表示するには、canvasタグをサポートしたブラウザが必要です。
 </canvas>
 <script>
-  function main() {
   var canvas = document.getElementById('sample');
   var context = canvas.getContext('2d');
-  
+  function main() {  
   context.fillrect(Math.random()*1000,Math.random()*1000);
   
   
