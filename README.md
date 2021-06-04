@@ -26,9 +26,9 @@
   }
 		</style>
 		<div class="game" >
-		<img src="sample.jpg" alt="サンプル画像">
+			<img src="sample.jpg" alt="ゲーム">
 			<p>
-ゲーム
+				ゲーム
 			</p>
 		</div>
 		<a href="/typing_game" >タイピングのゲーム</a>
