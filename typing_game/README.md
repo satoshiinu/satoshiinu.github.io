@@ -6,7 +6,8 @@
 <script>
   var canvas = document.getElementById('sample');
   var context = canvas.getContext('2d');
-  main() ;
+  
+  context.fillrect(math.random()*1000,math.random()*1000);
   
   
   
