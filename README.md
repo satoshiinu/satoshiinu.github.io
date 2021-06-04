@@ -20,6 +20,7 @@
   padding:0;
   /*文字の装飾は省略*/
   }
+			body { background-image: url(***.gif);}
 
 		</style>
 		<div class="game" >
