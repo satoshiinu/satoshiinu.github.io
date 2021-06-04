@@ -5,11 +5,11 @@
 <html>
 	<body>
 		<style>
-.example {
+.game {
   position: relative;
   }
 
-.example p {
+.game p {
   position: absolute;
   top: 50%;
   left: 0%;
@@ -21,12 +21,12 @@
   /*文字の装飾は省略*/
   }
 
-.example img {
+.game img {
   width: 100%;
   }
 		</style>
 		<div class="game" >
-			<img src="sample.jpg" alt="ゲーム">
+			<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="ゲーム">
 			<p>
 				ゲーム
 			</p>
