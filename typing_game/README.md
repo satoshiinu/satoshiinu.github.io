@@ -7,7 +7,7 @@
   var canvas = document.getElementById('sample');
   var context = canvas.getContext('2d');
   function main() {  
-  context.fillRect(Math.random()*1000,Math.random()*1000,100,100);
+  context.fillRect(Math.random()*400,Math.random()*400,100,100);
   
   
   
