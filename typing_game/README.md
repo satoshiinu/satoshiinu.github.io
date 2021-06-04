@@ -1,5 +1,9 @@
 <html>
-<body>
+  <head>
+    <!-- ©satoshiinu3104 -->
+    <title>タイピングゲームby.さとしいぬ</title>
+  </head>
+  <body>
 <canvas id="sample" width="512" height="512">
 図形を表示するには、canvasタグをサポートしたブラウザが必要です。
 </canvas>
