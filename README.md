@@ -20,7 +20,7 @@
   padding:0;
   /*文字の装飾は省略*/
   }
-			.body { "background-image: url(B92EA61B-786F-4166-9212-10BBE723DCBD.gif");}
+			.body { background-image: url("B92EA61B-786F-4166-9212-10BBE723DCBD.gif");}
 
 		</style>
 		<div class="game" >
