@@ -1,1 +1,1 @@
-# satoshinu3014.github.if
+# satoshinu3014.github.io
