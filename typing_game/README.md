@@ -9,7 +9,12 @@
   function main() {  
   context.fillRect(Math.random()*400,Math.random()*400,Math.random()*30,Math.random()*30);
   
-  
+  window.addEventListener('DOMContentLoaded', function(){
+  window.addEventListener("keydown", function(e){
+    e.preventDefault();
+    console.log(e.key);
+  });
+});
   
   
   
