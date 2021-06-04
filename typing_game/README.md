@@ -4,7 +4,7 @@
 図形を表示するには、canvasタグをサポートしたブラウザが必要です。
 </canvas>
 <script>
-  main() {
+  function main() {
   var canvas = document.getElementById('sample');
   var context = canvas.getContext('2d');
   
