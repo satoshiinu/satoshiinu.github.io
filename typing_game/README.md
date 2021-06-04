@@ -8,6 +8,7 @@
   var canvas = document.getElementById('sample');
   var context = canvas.getContext('2d');
   key="";
+  font="50px arial unicode ms";
   
   
   
@@ -37,7 +38,7 @@
   
   //次のフレームへ（ループ）
   requestAnimationFrame(main);
-  }
+  };
   main();
 </script>
 </body>
