@@ -23,7 +23,7 @@
 
 		</style>
 		<div class="game" >
-			<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="ゲーム">
+			<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="">
 			<p>
 				ゲーム
 			</p>
