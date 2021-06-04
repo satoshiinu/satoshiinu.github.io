@@ -1,1 +1,5 @@
-# satoshinu3014.github.io
+# satoshinu3104のページ
+
+<a href="/typing_game" >タイピングのゲーム</a>
+
+
