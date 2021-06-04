@@ -28,7 +28,7 @@
 				ゲーム
 			</p>
 		</div>
-		<a href="/typing_game" >タイピングのゲーム</a>
+		<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="/typing_game" >タイピングのゲーム</a>
 	</body>
 </html>
 
