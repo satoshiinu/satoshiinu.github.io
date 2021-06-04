@@ -8,7 +8,7 @@
   var canvas = document.getElementById('sample');
   var context = canvas.getContext('2d');
   key="";
-  font="50px arial unicode ms";
+  font="50px MS Mincho";
   
   
   
