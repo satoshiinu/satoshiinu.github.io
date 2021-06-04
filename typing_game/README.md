@@ -1,6 +1,6 @@
 <html>
 <body>
-<canvas id="sample" width="400" height="300">
+<canvas id="sample" width="512" height="512">
 図形を表示するには、canvasタグをサポートしたブラウザが必要です。
 </canvas>
 <script>
@@ -27,7 +27,7 @@
   
   
   //描画
-  context.fillText(key,Math.random()*400,Math.random()*400);
+  context.fillText(key,Math.random()*512,Math.random()*512);
   
   
   });
