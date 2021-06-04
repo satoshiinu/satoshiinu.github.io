@@ -12,7 +12,7 @@
 .game p {
   position: absolute;
   top: 50%;
-  left: 20%;
+  left: 5%;
   -ms-transform: translate(-50%,-50%);
   -webkit-transform: translate(-50%,-50%);
   transform: translate(-50%,-50%);
