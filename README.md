@@ -28,10 +28,13 @@
 		<label class="tab_item" for="all">総合</label>
 		
 		<div class="tab_content" id="all_content">
-			<div class="game" ><img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt=""><p><font color="white">
-					ゲーム
-				</font>
-			</p>
+			<div class="game" >
+				<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="">
+				<p>
+					<font color="white">
+						ゲーム
+					</font>
+				</p>
 			</div>
 		</div>
 		<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="/typing_game" >タイピングのゲーム</a>
