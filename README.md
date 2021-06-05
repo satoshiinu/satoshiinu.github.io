@@ -18,6 +18,34 @@
 			margin:0;
 			paddin:0;
 			/*文字の装飾は省略*/
+			}			
+			.profile {
+			position: relative;
+			}
+			.profile p {
+			position: absolute;
+			top: 50%;
+			left: 5%;
+			-ms-transform: translate(-50%,-50%);
+			-webkit-transform: translate(-50%,-50%);
+			transform: translate(-50%,-50%);
+			margin:0;
+			paddin:0;
+			/*文字の装飾は省略*/
+			}			
+			.blog {
+			position: relative;
+			}
+			.blog p {
+			position: absolute;
+			top: 50%;
+			left: 5%;
+			-ms-transform: translate(-50%,-50%);
+			-webkit-transform: translate(-50%,-50%);
+			transform: translate(-50%,-50%);
+			margin:0;
+			paddin:0;
+			/*文字の装飾は省略*/
 			}
 			body {
 			background-image: url(../../B92EA61B-786F-4166-9212-10BBE723DCBD.gif);
@@ -65,9 +93,9 @@
 			}
 			
 			/*選択されているタブのコンテンツのみを表示*/
-			#all:checked ~ #all_content,
-			#programming:checked ~ #programming_content,
-			#design:checked ~ #design_content {
+			#game:checked ~ #game_content,
+			#profile:checked ~ #profile_content,
+			#blog:checked ~ #blog_content {
 			display: block;
 			}
 			
@@ -79,8 +107,12 @@
 			
 			
 		</style>
-		<input id="all" type="radio" name="tab_item" checked>
-		<label class="tab_item" for="all">総合</label>
+		<input id="game" type="radio" name="tab_item" checked>
+		<label class="tab_item" for="game">ゲーム</label>
+		<input id="profile" type="radio" name="tab_item" checked>
+		<label class="tab_item" for="profile">ゲーム</label>
+		<input id="blog" type="radio" name="tab_item" checked>
+		<label class="tab_item" for="blog">ゲーム</label>
 		
 		<div class="tab_content" id="all_content">
 			<div class="game" >
