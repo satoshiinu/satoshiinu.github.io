@@ -5,10 +5,10 @@
 <html>
 	<body>
 		<style>
-			.game {
+			.game_img {
 			position: relative;
 			}
-			.game p {
+			.game_img p {
 			position: absolute;
 			top: 50%;
 			left: 5%;
@@ -19,10 +19,10 @@
 			paddin:0;
 			/*文字の装飾は省略*/
 			}			
-			.profile {
+			.profile_img {
 			position: relative;
 			}
-			.profile p {
+			.profile_img p {
 			position: absolute;
 			top: 50%;
 			left: 5%;
@@ -33,10 +33,10 @@
 			paddin:0;
 			/*文字の装飾は省略*/
 			}			
-			.blog {
+			.blog_img {
 			position: relative;
 			}
-			.blog p {
+			.blog_img p {
 			position: absolute;
 			top: 50%;
 			left: 5%;
@@ -115,7 +115,7 @@
 		<label class="tab_item" for="blog">ゲーム</label>
 		
 		<div class="tab_content" id="all_content">
-			<div class="game" >
+			<div class="game_img" >
 				<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="">
 				<p>
 					<font color="white">
