@@ -110,9 +110,9 @@
 		<input id="game" type="radio" name="tab_item" checked>
 		<label class="tab_item" for="game">ゲーム</label>
 		<input id="profile" type="radio" name="tab_item" checked>
-		<label class="tab_item" for="profile">ゲーム</label>
+		<label class="tab_item" for="profile">プロフィール</label>
 		<input id="blog" type="radio" name="tab_item" checked>
-		<label class="tab_item" for="blog">ゲーム</label>
+		<label class="tab_item" for="blog">ブログ</label>
 		
 		<div class="tab_content" id="all_content">
 			<div class="game_img" >
