@@ -11,10 +11,10 @@
 			.game_img p {
 			position: absolute;
 			top: 50%;
-			left: 5%;
-			-ms-transform: translate(-50%,-50%);
-			-webkit-transform: translate(-50%,-50%);
-			transform: translate(-50%,-50%);
+			left: 2%;
+			-ms-transform: translate(0%,-50%);
+			-webkit-transform: translate(0%,-50%);
+			transform: translate(0%,-50%);
 			margin:0;
 			paddin:0;
 			/*文字の装飾は省略*/
@@ -25,10 +25,10 @@
 			.profile_img p {
 			position: absolute;
 			top: 50%;
-			left: 5%;
-			-ms-transform: translate(-50%,-50%);
-			-webkit-transform: translate(-50%,-50%);
-			transform: translate(-50%,-50%);
+			left: 2%;
+			-ms-transform: translate(0%,-50%);
+			-webkit-transform: translate(0%,-50%);
+			transform: translate(0%,-50%);
 			margin:0;
 			paddin:0;
 			/*文字の装飾は省略*/
@@ -39,10 +39,10 @@
 			.blog_img p {
 			position: absolute;
 			top: 50%;
-			left: 5%;
-			-ms-transform: translate(-50%,-50%);
-			-webkit-transform: translate(-50%,-50%);
-			transform: translate(-50%,-50%);
+			left: 2%;
+			-ms-transform: translate(0%,-50%);
+			-webkit-transform: translate(0%,-50%);
+			transform: translate(0%,-50%);
 			margin:0;
 			paddin:0;
 			/*文字の装飾は省略*/
