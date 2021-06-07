@@ -86,7 +86,7 @@
 			
 			/*タブ切り替えの中身のスタイル*/
 			.tab_content {
-			display: none;
+			/*display: none;*/
 			padding: 40px 40px 0;
 			clear: both;
 			overflow: hidden;
