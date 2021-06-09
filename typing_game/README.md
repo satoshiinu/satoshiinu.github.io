@@ -15,6 +15,9 @@
   context.font="50px MS Mincho";
   title=true;
   doplayinggame=false;
+  var bg = new Object();
+  bg.img = new Image();
+  bg.img.src = 'bg_1';
   
   
   
@@ -25,10 +28,10 @@
   
   if (title) {
   
+  context.drawImage("bg",0,0,512,512)
   
   
-  
-  
+  }
   
   if (doplayinggame) {
   window.addEventListener('DOMContentLoaded', function(){
