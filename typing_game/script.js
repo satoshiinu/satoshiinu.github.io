@@ -29,7 +29,7 @@ function main() {
 				//描画
 				context.fillText(key,Math.random()*512,Math.random()*512);
 				
-			\});
+			});
 		});
 	}
 	
