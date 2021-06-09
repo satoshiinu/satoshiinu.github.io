@@ -17,7 +17,7 @@
   doplayinggame=false;
   var bg = new Object();
   bg.img = new Image();
-  bg.img.src = 'bg_1';
+  bg.img.src = 'bg_1.png';
   
   
   
