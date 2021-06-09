@@ -55,7 +55,7 @@
   //次のフレームへ（ループ）
   requestAnimationFrame(main);
   };
-  main();
+  addEventListener("load", eventMonsterLoaded, false);
 </script>
 </body>
 </html>
