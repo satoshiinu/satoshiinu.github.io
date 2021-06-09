@@ -14,7 +14,10 @@ function main() {
 	key="";
 	if (title) {
 		
-		context.drawImage (bg,0,0,512,194,0,0,512,194)
+				
+		context.fillStyle="#c0c0c0"
+		context.drawImage (bg,0,0,500,194,0,0,512,194);
+		context.fillRect (0,195,512,512-195);
 		
 	}
 	
