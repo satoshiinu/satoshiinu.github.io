@@ -13,6 +13,8 @@
   var context = canvas.getContext('2d');
   key="";
   context.font="50px MS Mincho";
+  title=true;
+  doplayinggame=false;
   
   
   
@@ -21,8 +23,14 @@
   //毎回の初期化
   key="";
   
+  if (title) {
   
   
+  
+  
+  
+  
+  if (doplayinggame) {
   window.addEventListener('DOMContentLoaded', function(){
   window.addEventListener("keydown", function(e){
   e.preventDefault();
@@ -33,6 +41,7 @@
   //描画
   context.fillText(key,Math.random()*512,Math.random()*512);
   
+  }
   
   });
 });
