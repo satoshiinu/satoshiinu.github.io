@@ -14,7 +14,7 @@ function main() {
 	key="";
 	if (title) {
 		
-		context.drawImage (bg,0,0,512,512,0,0,500,194)
+		context.drawImage (bg,0,0,512,512,0,0,500,194);
 		
 	}
 	
