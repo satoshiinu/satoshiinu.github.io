@@ -5,7 +5,7 @@
   context.font="50px MS Mincho";
   title=true;
   doplayinggame=false;
-  bg = new Image();
+  var bg = new Image();
   bg.src = 'bg_1.png';
   
   
