@@ -17,6 +17,7 @@
   doplayinggame=false;
   var bg = new Object();
   bg.img = new Image();
+  bg.img.addEventListener("load", main, false);
   bg.img.src = 'bg_1.png';
   
   
@@ -55,7 +56,7 @@
   //次のフレームへ（ループ）
   requestAnimationFrame(main);
   };
-  addEventListener("load", main, false);
+  
 </script>
 </body>
 </html>
