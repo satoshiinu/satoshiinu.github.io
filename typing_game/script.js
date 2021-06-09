@@ -5,9 +5,8 @@
   context.font="50px MS Mincho";
   title=true;
   doplayinggame=false;
-  var bg = new Object();
-  bg.img = new Image();
-  bg.img.src = 'bg_1.png';
+  bg = new Image();
+  bg.src = 'bg_1.png';
   
   
 function main() {  
