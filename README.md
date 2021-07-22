@@ -49,7 +49,9 @@
 			}
 			
 		</style>
-
+		
+		
+<img src="D6084B8B-FE85-4A0D-80C3-D492A5948B38.png" alt="さとしいぬ" ><br />
 	
 			<div class="game_img" >
 				<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="">
