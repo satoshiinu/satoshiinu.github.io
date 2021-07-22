@@ -1,8 +1,6 @@
 <html>
 <head>
-<title>
-利用規約
-</title>
+#利用規約
 </head>
 <body>
 利用規約
