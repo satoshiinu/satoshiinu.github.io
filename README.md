@@ -64,7 +64,7 @@
 				<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="">
 				<p>
 					<font color="white">
-						purofairu
+						プロファイル
 					</font>
 				</p>
 			</div>
@@ -75,7 +75,7 @@
 				<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="">
 				<p>
 					<font color="white">
-						blog
+						ブログ
 					</font>
 				</p>
 			</div>
