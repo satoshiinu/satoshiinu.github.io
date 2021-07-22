@@ -1,0 +1,10 @@
+<!DOC TYPEhtml>
+<head>
+<title>
+利用規約
+</title>
+</head>
+<body>
+利用規約
+</body>
+</html>
