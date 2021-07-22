@@ -1,4 +1,4 @@
-<!DOC TYPEhtml>
+<html>
 <head>
 <title>
 利用規約
