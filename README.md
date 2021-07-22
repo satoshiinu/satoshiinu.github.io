@@ -68,7 +68,7 @@
 					</font>
 				</p>
 			</div>
-			<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="/typing_game" >ライン公式</a>
+			<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="/typing_game" >ライン公式</a><br />
 		<a href="https://lin.ee/84nQXxL"><img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="36" border="0"></a>
 		
 			<div class="blog_img" >
