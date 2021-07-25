@@ -23,8 +23,17 @@
     <h2>5分後</h2>
     <h4>めっちゃついてきたし</h4>
     <img src="11.jpg" alt="" width="640" height="360" />
-    
-    
+    <h4>スケさんもきたーーー</h4>
+    <img src="12.jpg" alt="" width="640" height="360" />
+    <h4>二分後</h4>
+    <h4>鉄見つけたー！</h4>
+    <img src="13.jpg" alt="" width="640" height="360" />
+    <h4>新アイテム銅もゲット</h4>
+    <img src="14.jpg" alt="" width="640" height="360" />
+    <h2>五分後</h2>
+    <h4>本日の成果</h4>
+    <img src="15.jpg" alt="" width="640" height="360" />
+    <h4>
     
     
   </body>
