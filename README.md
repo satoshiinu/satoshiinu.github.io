@@ -80,10 +80,10 @@
 						ブログ
 					</font>
 				</p>
-				<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><br />
-				<a href="/minecraft/">マイクラ</a>
 			</div>
-			
+		
+		<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt="">
+		<a href="/minecraft/">マイクラ</a>
 	</body>
 </html>
 
