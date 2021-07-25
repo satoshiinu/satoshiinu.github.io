@@ -1,7 +1,6 @@
 <html>
   <body>
-    <img src="/../../../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt="">
-		<a href="/../"><h3>戻る</h3></a><br />
+    <img src="/../../../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="/../"><h3>戻る</h3></a><br />
     
     <h1>今回からマインクラフトサバイバルモードをやっていこうとおもいます！！！！！！！</h1><br />
     <img src="1.jpg" alt="" width="640" height="360" /><br />
@@ -38,7 +37,6 @@
     <img src="15.jpg" alt="" width="640" height="360" /><br />
     <h4>ということでまた次回！<br />次回は建築回です！(多分)<br />ということでじゃーねー</h4><br />
     
-    <img src="/../../../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt="">
-		<a href="/../"><h3>戻る</h3></a><br />
+    <img src="/../../../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="/../"><h3>戻る</h3></a><br />
   </body>
 </html>
