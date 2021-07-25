@@ -10,6 +10,19 @@
     <img src="4.jpg" alt="" width="640" height="360" />
     <h4>そしたら石のツルハシを作る！<br>ということで洞窟探検準備OK!</h4>
     <img src="5.jpg" alt="" width="640" height="360" />
+    <h4>ということで洞窟レッツゴー</h4>
+    <img src="6.jpg" alt="" width="640" height="360" />
+    <h4>石炭ほりほり</h4>
+    <img src="7.jpg" alt="" width="640" height="360" />
+    <h4>クリーパー！にげ…</h4>
+    <img src="8.jpg" alt="" width="640" height="360" />
+    <h4>こっちもかよ！</h4>
+    <img src="9.jpg" alt="" width="640" height="360" />
+    <h2>5分後</h2>
+    <h4>めっちゃついてきたし</h4>
+    <img src="10.jpg" alt="" width="640" height="360" />
+    
+    
     
     
   </body>
