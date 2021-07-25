@@ -21,7 +21,7 @@
     <h4>こっちもかよ！</h4><br />
     <img src="10.jpg" alt="" width="640" height="360" /><br />
     <h2>5分後</h2><br />
-    <h4>めっちゃついてきたし</h4><br />
+    <h4>めっちゃゾンビついてきたし</h4><br />
     <img src="11.jpg" alt="" width="640" height="360" /><br />
     <h4>スケさんもきたーーー</h4><br />
     <img src="12.jpg" alt="" width="640" height="360" /><br />
