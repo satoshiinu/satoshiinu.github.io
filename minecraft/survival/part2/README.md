@@ -15,7 +15,7 @@
 		<img src="6.JPG" alt="" width="640" height="360" /><br />
 		<h4>クリーパー</h4><br />
 		<img src="7.JPG" alt="" width="640" height="360" /><br />
-		<h4>ちなみにベッドもう作れます</h4><br />
+		<h4>ちなみにベッドもう作れます<br />え？3つ羊毛揃ってないって？</h4><br />
 		<img src="8.JPG" alt="" width="640" height="360" /><br />
 		<h4>糸を4つクラフトすると羊毛ができる<br />ん？同じ色の羊毛3つが揃ってない？</h4><br />
 		<img src="9.JPG" alt="" width="640" height="360" /><br />
