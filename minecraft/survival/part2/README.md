@@ -17,6 +17,17 @@
 		<img src="7.JPG" alt="" width="640" height="360" /><br />
 		<h4>ちなみにベッドもう作れます</h4><br />
 		<img src="8.JPG" alt="" width="640" height="360" /><br />
+		<h4>糸を4つクラフトすると羊毛ができる<br />ん？同じ色の羊毛3つが揃ってない？</h4><br />
+		<img src="9.JPG" alt="" width="640" height="360" /><br />
+		<h4>えーっと　染料作って</h4><br />
+		<img src="10.JPG" alt="" width="640" height="360" /><br />
+		<h4></h4><br />
+		<img src="11.JPG" alt="" width="640" height="360" /><br />
+		<h4></h4><br />
+		<img src=".JPG" alt="" width="640" height="360" /><br />
+		<h4></h4><br />
+		<img src=".JPG" alt="" width="640" height="360" /><br />
+		
 		<h4></h4><br />
 		<img src=".JPG" alt="" width="640" height="360" /><br />
 		
