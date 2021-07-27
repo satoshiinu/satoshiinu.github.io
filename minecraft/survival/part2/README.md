@@ -29,12 +29,32 @@
 		<img src="13.JPG" alt="" width="640" height="360" /><br />
 		<h4>寝る！</h4><br />
 		<img src="14.JPG" alt="" width="640" height="360" /><br />
-		
-		
-		
-		
+		<h4>起きたら木を切ります</h4><br />
+		<img src="15.JPG" alt="" width="640" height="360" /><br />
+		<h2>十分後</h2>
+		<h4>整地しました</h4><br />
+		<img src="16.JPG" alt="" width="640" height="360" /><br />
+		<h2>一時間後</h2>
 		<h4></h4><br />
 		<img src=".JPG" alt="" width="640" height="360" /><br />
+		<h4></h4><br />
+		<img src=".JPG" alt="" width="640" height="360" /><br />
+		<h4></h4><br />
+		<img src=".JPG" alt="" width="640" height="360" /><br />
+		<h4></h4><br />
+		<img src=".JPG" alt="" width="640" height="360" /><br />
+		<h4></h4><br />
+		<img src=".JPG" alt="" width="640" height="360" /><br />
+		<h4></h4><br />
+		<img src=".JPG" alt="" width="640" height="360" /><br />
+		
+		
+		
+		
+		
+		<!--
+		<h4></h4><br />
+		<img src=".JPG" alt="" width="640" height="360" /><br />-->
 		
 	</body>
 </html>
