@@ -1,6 +1,6 @@
 <html>
 	<body>
-		#今回建築回です！
+		# 今回建築回です！
 		<h4>今回建築回なので<br />木を切って木材を集めていこうとおもいます</h4><br />
 		<img src="1.JPG" alt="" width="640" height="360" /><br />
 		<h4>さらに木を切ります</h4><br />
@@ -41,7 +41,7 @@
 		<img src="18.JPG" alt="" width="640" height="360" /><br />
 		<h4>え？この穴何って?</h4><br />
 		<img src="19.JPG" alt="" width="640" height="360" /><br />
-		<h4>スケルトンスポナーを見つけた(レア)</h4><br />
+		<h4>スケルトンスポナーを見つけた(レア)やったー！</h4><br />
 		<img src="20.jpg" alt="" width="640" height="360" /><br />
 		<h4>後ろ</h4><br />
 		<img src="21.JPG" alt="" width="640" height="360" /><br />
