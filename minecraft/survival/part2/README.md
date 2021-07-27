@@ -19,14 +19,19 @@
 		<img src="8.JPG" alt="" width="640" height="360" /><br />
 		<h4>糸を4つクラフトすると羊毛ができる<br />ん？同じ色の羊毛3つが揃ってない？</h4><br />
 		<img src="9.JPG" alt="" width="640" height="360" /><br />
-		<h4>えーっと　染料作って</h4><br />
+		<h4>えーっと　染料作って</h4><br />寝る！
 		<img src="10.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>羊毛を染める</h4><br />
 		<img src="11.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
-		<img src=".JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
-		<img src=".JPG" alt="" width="640" height="360" /><br />
+		<h4>ということで3つ揃いました</h4><br />
+		<img src="12.JPG" alt="" width="640" height="360" /><br />
+		<h4>ベット作って</h4><br />
+		<img src="13.JPG" alt="" width="640" height="360" /><br />
+		<h4>寝る！</h4><br />
+		<img src="14.JPG" alt="" width="640" height="360" /><br />
+		
+		
+		
 		
 		<h4></h4><br />
 		<img src=".JPG" alt="" width="640" height="360" /><br />
