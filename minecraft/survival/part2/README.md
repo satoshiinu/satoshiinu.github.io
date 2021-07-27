@@ -35,28 +35,28 @@
 		<h4>整地しました</h4><br />
 		<img src="16.JPG" alt="" width="640" height="360" /><br />
 		<h2>一時間後</h2>
-		<h4></h4><br />
+		<h4>家完成！<br />周りから見ていくよ</h4><br />
 		<img src="17.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>横</h4><br />
 		<img src="18.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>え？この穴何って?</h4><br />
 		<img src="19.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
-		<img src="20.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>スケルトンスポナーを見つけた(レア)</h4><br />
+		<img src="20.jpg" alt="" width="640" height="360" /><br />
+		<h4>後ろ</h4><br />
 		<img src="21.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>横再び</h4><br />
 		<img src="22.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>次は、内装を見ていくよ</h4><br />
 		<img src="23.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>左はチェストとかまど、作業台があるよ<br />今後増やす予定</h4><br />
 		<img src="24.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>右は道具とベット</h4><br />
 		<img src="25.JPG" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>今回はここまで！<br />次回はネザー回を予定しています。<br />では、じゃーねー</h4><br />
 		<img src="26.JPG" alt="" width="640" height="360" /><br />
 		
-		<!--
+		<!--メモ
 		<h4></h4><br />
 		<img src=".JPG" alt="" width="640" height="360" /><br />-->
 		
