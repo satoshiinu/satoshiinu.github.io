@@ -1,6 +1,10 @@
 <html>
 	<body>
 		# 今回建築回です！
+		
+		
+		<img src="/../../../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="../">戻る</a><br />
+		
 		<h4>今回建築回なので<br />木を切って木材を集めていこうとおもいます</h4><br />
 		<img src="1.JPG" alt="" width="640" height="360" /><br />
 		<h4>さらに木を切ります</h4><br />
@@ -54,7 +58,9 @@
 		<h4>右は道具とベット</h4><br />
 		<img src="25.JPG" alt="" width="640" height="360" /><br />
 		<h4>今回はここまで！<br />次回はネザー回を予定しています。<br />では、じゃーねー</h4><br />
-		<img src="26.JPG" alt="" width="640" height="360" /><br />
+		<img src="26.JPG" alt="" width="640" height="360" /><br /><br />
+		
+		<img src="/../../../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="../">戻る</a><br />
 		
 		<!--メモ
 		<h4></h4><br />
