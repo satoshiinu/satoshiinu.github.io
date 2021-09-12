@@ -14,9 +14,9 @@
 		<img src="5.jpg" alt="" width="640" height="360" /><br />
 		<h4>順調にできています</h4><br />
 		<img src="6.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>おっとここで問題発生　水が流れてしたのが固まってしまった</h4><br />
 		<img src="7.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>まだマグマ残っていたので続きを作るぞー</h4><br />
 		<img src="8.jpg" alt="" width="640" height="360" /><br />
 		<h4></h4><br />
 		<img src="9.jpg" alt="" width="640" height="360" /><br />
