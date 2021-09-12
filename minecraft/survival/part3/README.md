@@ -18,7 +18,8 @@
 		<img src="7.jpg" alt="" width="640" height="360" /><br />
 		<h4>まだマグマ残っていたので続きを作るぞー</h4><br />
 		<img src="8.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h2>数分後</h2>
+		<h4>変なネザーゲートができましたwwwwww</h4><br />
 		<img src="9.jpg" alt="" width="640" height="360" /><br />
 		<h4></h4><br />
 		<img src="10.jpg" alt="" width="640" height="360" /><br />
