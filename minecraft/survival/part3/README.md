@@ -10,11 +10,11 @@
 		<img src="3.jpg" alt="" width="640" height="360" /><br />
 		<h4>バケツが足りないのでもっと作ります</h4><br />
 		<img src="4.jpg" alt="" width="640" height="360" /><br />
-		<h4>バケツを作ってたら夜になって敵が湧いてる！</h4><br />
+		<h4>バケツを作ってたら夜になってて敵が湧いてる！</h4><br />
 		<img src="5.jpg" alt="" width="640" height="360" /><br />
 		<h4>順調にできています</h4><br />
 		<img src="6.jpg" alt="" width="640" height="360" /><br />
-		<h4>おっとここで問題発生　水が流れてしたのが固まってしまった</h4><br />
+		<h4>おっとここで問題発生　水が下まで流れてマグマが固まってしまった</h4><br />
 		<img src="7.jpg" alt="" width="640" height="360" /><br />
 		<h4>まだマグマ残っていたので続きを作るぞー</h4><br />
 		<img src="8.jpg" alt="" width="640" height="360" /><br />
@@ -38,7 +38,7 @@
 		<img src="16.jpg" alt="" width="640" height="360" /><br />
 		<h4>あ</h4><br />
 		<img src="17.jpg" alt="" width="640" height="360" /><br />
-		<h4>今回はここまで！アイテムロストしたけどネザーに行けてよかった<br />次回新しいバイオームを見つける<br />ではまた次回じゃねーー</h4><br />
+		<h4>今回はここまで！アイテムロストしたけどネザーに行けてよかった<br />次回新しいバイオームを見つける<br />ではまた次回じゃーねーー</h4><br />
 		<img src="18.jpg" alt="" width="640" height="360" /><br />
 		<img src="/../../../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="../">戻る</a><br />
 	</body>
