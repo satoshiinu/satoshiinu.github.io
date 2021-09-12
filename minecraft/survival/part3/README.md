@@ -12,7 +12,7 @@
 		<img src="4.jpg" alt="" width="640" height="360" /><br />
 		<h4>バケツを作ってたら夜になって敵が湧いてる！</h4><br />
 		<img src="5.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>順調にできています</h4><br />
 		<img src="6.jpg" alt="" width="640" height="360" /><br />
 		<h4></h4><br />
 		<img src="7.jpg" alt="" width="640" height="360" /><br />
