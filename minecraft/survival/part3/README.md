@@ -21,24 +21,25 @@
 		<h2>数分後</h2>
 		<h4>変なネザーゲートができましたwwwwww</h4><br />
 		<img src="9.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>綺麗にして</h4><br />
 		<img src="10.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>装備も整えてしゅっぱーーーーーーーーーーーつ！！！！！！！！！！！！！</h4><br />
 		<img src="11.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>玄武岩デルタかーマグマキューブが出るから嫌だなー</h4><br />
 		<img src="12.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>結構広いし敵もいないな<br />要塞ないかなー</h4><br />
 		<img src="13.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>っていきなりガスト現れたーーーああーあーあーあーあ</h4><br />
 		<img src="14.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>あ、おちた</h4><br />
 		<img src="15.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h2>1分後</h2>
+		<h4>アイテム取れたけどマグマキューブが襲ってきた</h4><br />
 		<img src="16.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>あ</h4><br />
 		<img src="17.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>今回はここまで！アイテムロストしたけどネザーに行けてよかった<br />次回新しいバイオームを見つける<br />ではまた次回じゃねーー</h4><br />
 		<img src="18.jpg" alt="" width="640" height="360" /><br />
-		
+		<img src="/../../../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="../">戻る</a><br />
 	</body>
 </html>
