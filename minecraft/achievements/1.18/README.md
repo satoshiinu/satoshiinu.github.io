@@ -6,7 +6,7 @@
 		<img src="1.jpg" alt="" width="640" height="360" /><br />
 		<h4></h4><br />
 		<h4>バイオームファインダー
-			<a>https://www.chunkbase.com/apps/biome-finder</a>
+			<a href="https://www.chunkbase.com/apps/biome-finder">https://www.chunkbase.com/apps/biome-finder</a>
 		</h4>
 		<h4></h4><br />
 		<img src="2.jpg" alt="" width="640" height="360" /><br />
