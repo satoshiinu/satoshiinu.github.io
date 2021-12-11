@@ -9,11 +9,9 @@
 			<a href="https://www.chunkbase.com/apps/biome-finder">https://www.chunkbase.com/apps/biome-finder</a>
 		</h4>
 		<h4>二つ目の実績は洞窟と崖という実績です<br />1.18アップデートで増えたy320からy-64まで飛び降りて生き残る実績です<br />そのために穴掘ってみました</h4><br />
-		<img src="3.jpg" alt="" width="640" height="360" /><br />
+		<img src="4.jpg" alt="" width="640" height="360" /><br />
 		<h4>途中でダイヤ見つけました</h4><br />
 		<img src="2.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
-		<img src="4.jpg" alt="" width="640" height="360" /><br />
 		<h4></h4><br />
 		<img src="5.jpg" alt="" width="640" height="360" /><br />
 		<h4></h4><br />
