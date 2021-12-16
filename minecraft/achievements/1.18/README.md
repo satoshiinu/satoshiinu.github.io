@@ -12,7 +12,7 @@
 		<img src="4.jpg" alt="" width="640" height="360" /><br />
 		<h4>途中でダイヤ見つけました</h4><br />
 		<img src="2.jpg" alt="" width="640" height="360" /><br />
-		<h4></h4><br />
+		<h4>水を一番下に置きます</h4><br />
 		<img src="5.jpg" alt="" width="640" height="360" /><br />
 		<h4></h4><br />
 		<img src="6.jpg" alt="" width="640" height="360" /><br />
