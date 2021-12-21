@@ -7,7 +7,7 @@
 		<img src="/../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt="">
 		<a href="survival/">サバイバル</a><br/>
 		<img src="/../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt="">
-<!-- 		<a href="achievements/">実績獲得シリーズ</a><br/> -->
+<!-- 		<a href="achievements/">実績獲得シリーズ</a>
 	</body>
 </html>
 		
