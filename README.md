@@ -4,7 +4,7 @@
 
 <html>
 	<head>
-		<link rel="shortcut icon" type="image/png" href="favicon.png">
+		<link rel="shortcut icon" href="favicon.ico">
 	</head>
 	<body>
 		<style>
