@@ -4,7 +4,7 @@
 
 <html>
 	<head>
-		<link rel="shortcut icon" type="image/x-icon" href="satoshinu3014.github.io/favicon.ico">
+		<link rel="shortcut icon" href="satoshinu3014.github.io/favicon.ico">
 	</head>
 	<body>
 		<style>
