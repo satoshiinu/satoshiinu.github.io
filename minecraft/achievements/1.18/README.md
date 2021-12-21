@@ -15,7 +15,7 @@
 		<h4>水を一番下に置きます</h4><br />
 		<img src="5.jpg" alt="" width="640" height="360" /><br />
 		<h4>一番上までブロックを積み上げて登ります</h4><br />
-		<img src="6.jpg" alt="" width="640" height="360" /><br />
+		<img src="6.jpg" alt="" width="640" height="360" /><br /><br />
 		<video src="m.mp4" poster="m.jpg" preload="metadata" controls width="640" height="360" >
 				<p>動画を再生するにはvideoタグをサポートしたブラウザが必要です。</p>
 		</video><br />
