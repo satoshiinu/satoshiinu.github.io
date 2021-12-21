@@ -4,7 +4,7 @@
 
 <html>
 	<head>
-		<link rel="icon" type="image/png" href="satoshiinu.png">
+		<link rel="icon" type="image/png" href="favicon.png">
 	</head>
 	<body>
 		<style>
