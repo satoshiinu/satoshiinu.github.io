@@ -3,7 +3,9 @@
 
 
 <html>
-	
+	<head>
+		<link rel="shortcut icon" type="image/x-icon" href="https://satoshinu3014.github.io/favicon.ico">
+	</head>
 	<body>
 		<style>
 			.game_img {
