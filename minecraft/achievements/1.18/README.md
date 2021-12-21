@@ -16,6 +16,7 @@
 		<img src="5.jpg" alt="" width="640" height="360" /><br />
 		<h4>一番上までブロックを積み上げて登ります</h4><br />
 		<img src="6.jpg" alt="" width="640" height="360" /><br />
+		<video src="" poster="firstframe.jpg"></video>
 		<img src="/../../A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""><a href="../">戻る</a><br />
 	</body>
 </html>
