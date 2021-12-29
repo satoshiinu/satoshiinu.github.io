@@ -84,7 +84,7 @@
 					<a href="https://lin.ee/84nQXxL"><img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="36" border="0"></a>
 
 						<div class="blog_img" >
-							<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="">
+							<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="" width-"15" height="15" >
 							<p>
 								<font color="white">
 									ブログ
