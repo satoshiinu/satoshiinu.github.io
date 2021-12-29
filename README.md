@@ -91,7 +91,7 @@
 				</div>
 				<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""  width="15" height="15" >
 				<a href="/minecraft/">マイクラ</a>
-				</div>
+			</div>
 		</div>
 	</body>
 </html>
