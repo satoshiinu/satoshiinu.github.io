@@ -1,4 +1,4 @@
-# satoshinu3104のページ
+# satoshiinu3104のページ
 
 
 
