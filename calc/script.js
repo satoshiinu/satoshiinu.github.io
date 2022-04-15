@@ -23,6 +23,6 @@ function math(math) {
 }
 
 function minus(minus) {
-  onminus=!(minus);
+  onminus= !(minus);
   alert(onminus);
 }
