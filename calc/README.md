@@ -1,11 +1,7 @@
+#電卓
 <html>
-  <head>
-    <title>
-      電卓
-    </title>
-    <script src="script.js"></script>
-  </head>
   <body>
+    <script src="script.js"></script>
     <h2>電卓</h2>
     <input type="number" id="input_field"><br>
     <input type="button" value="7" onclick="input(7)"><input type="button" onclick="input(8)" id="button8"><input type="button" value="9" id="onclick="input(9)"><br>
