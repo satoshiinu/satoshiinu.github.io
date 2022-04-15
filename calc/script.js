@@ -1,3 +1,4 @@
 function input(input) {
-  var elem = document.getElementById('input_field');
+  var input_field = document.getElementById('input_field');
+  input_field.value =""+input_field.value+input
 }
