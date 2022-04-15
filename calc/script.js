@@ -1,5 +1,5 @@
 //初期化
-onminis=false
+onminus=false
 
 function input(input) {
   var input_field = document.getElementById('input_field');
@@ -22,6 +22,6 @@ function math(math) {
 }
 
 function minus(minus) {
-  onminis=!minis
-  //alert(onminis)
+  onminis=!minus
+  //alert(onminus)
 }
