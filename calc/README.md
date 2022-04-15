@@ -6,7 +6,7 @@
     <input type="number" id="input_field"><br>
     <input type="button" value="🗙" onclick="char_delete(0)">
     <input type="button" value="c" onclick="char_delete(1)">
-    <input type="button" value="ac" onclick="char_detele(2)">
+    <input type="button" value="ac" onclick="char_delete(2)">
     <input type="button" value="÷" onclick="math('÷')">
     <br>
     <input type="button" value="7" onclick="input(7)">
