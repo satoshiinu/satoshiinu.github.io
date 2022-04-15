@@ -22,6 +22,6 @@ function math(math) {
 }
 
 function minus(minus) {
-  onminis=!minus
+  onminus=!minus
   alert(onminus)
 }
