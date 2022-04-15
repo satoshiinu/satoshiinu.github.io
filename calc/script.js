@@ -11,5 +11,5 @@ function char_delete(type) {
 function math(math) {
   var input_field = document.getElementById('input_field');
   var input_field2 = document.getElementById('input_field2');
-  input_field.value2 =input_field.value
+  input_field2.value =input_field.value
 }
