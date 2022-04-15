@@ -27,6 +27,6 @@
     <input type="button" value="-" onclick="input(-)">
     <input type="button" value="0" onclick="input(0)">
     <input type="button" value="." onclick="minus(onminus)">
-    <input type="button" value="=" onclick="math("=")">
+    <input type="button" value="=" onclick="math('=')">
   </body>
 <html>
