@@ -1,3 +1,6 @@
+//初期化
+onminis=false
+
 function input(input) {
   var input_field = document.getElementById('input_field');
   if (input_field.value[input_field.value.length] ==".") {
@@ -16,4 +19,8 @@ function math(math) {
   var input_field = document.getElementById('input_field');
   var input_field2 = document.getElementById('input_field2');
   input_field2.value =input_field.value
+}
+
+function minus(minus) {
+  onminis=!minis
 }
