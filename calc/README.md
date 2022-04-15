@@ -1,4 +1,4 @@
-#電卓
+# 電卓
 <html>
   <body>
     <script src="script.js"></script>
