@@ -3,7 +3,7 @@
     <title>
       電卓
     </title>
-    <script src="script.js" />
+    <script src="script.js"></script>
   </head>
   <body>
     <h2>電卓</h2>
