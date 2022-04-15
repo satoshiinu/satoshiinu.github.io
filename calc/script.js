@@ -1,6 +1,10 @@
 function input(input) {
   var input_field = document.getElementById('input_field');
-  input_field.value =""+input_field.value+input
+  if (input_field.value[input_field.value.length] ==".") {
+    input_field.value =""+input_field.value+"."+input
+  } else {
+    input_field.value =""+input_field.value+input
+  }
 }
 
 function char_delete(type) {
