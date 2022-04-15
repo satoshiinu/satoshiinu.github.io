@@ -3,7 +3,7 @@ onminus=false
 
 function input(input) {
   var input_field = document.getElementById('input_field');
-  if (onminus) {
+  if (onminus !(input_field.value.test)) {
     input_field.value =""+input_field.value+"."+input;
   } else {
     input_field.value =""+input_field.value+input;
