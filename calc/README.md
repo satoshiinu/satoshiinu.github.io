@@ -2,7 +2,6 @@
 <html>
   <body>
     <script src="script.js"></script>
-    <h2>電卓</h2>
     <input type="number" id="input_field2" disabled><br>
     <input type="number" id="input_field"><br>
     <input type="button" value="🗙" onclick="char_delete()">
@@ -21,6 +20,6 @@
     <br>
     <input type="button" value="-" onclick="input(-)">
     <input type="button" value="0" onclick="input(0)">
-    <input type="checkbox" value="." onclick="input(.)">
+    <input type="button" value="." onclick="minus(onminus)">
   </body>
 <html>
