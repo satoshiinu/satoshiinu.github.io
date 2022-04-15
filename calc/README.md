@@ -3,6 +3,7 @@
   <body>
     <script src="script.js"></script>
     <h2>電卓</h2>
+    <input type="number" id="input_field2" disabled><br>
     <input type="number" id="input_field"><br>
     <input type="button" value="🗙" onclick="char_delete()"><br>
     <input type="button" value="7" onclick="input(7)"><input type="button" value="8" onclick="input(8)"><input type="button" value="9" onclick="input(9)"><br>
