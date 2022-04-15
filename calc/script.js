@@ -18,7 +18,7 @@ function char_delete(type) {
 function math(math) {
   var input_field = document.getElementById('input_field');
   var input_field2 = document.getElementById('input_field2');
-  input_field.value=eval("input_field2"+math+"input_field");
+  input_field.value =eval("input_field2"+math+"input_field");
   input_field2.value =input_field.value;
 }
 
