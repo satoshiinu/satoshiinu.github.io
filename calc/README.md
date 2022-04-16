@@ -19,7 +19,7 @@
     <button type="button" onclick="input(5)" class="button" >5</button>
     <button type="button" onclick="input(6)" class="button" >6</button>
     <button type="button" onclick="math('-')" class="button_math" >-</button>
-    <button type="button" onclick="PI()" class="button_math" >3.141592653589793</button>
+    <button type="button" onclick="PI()" class="button_math" >3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679</button>
   <br>
     <button type="button" onclick="input(1)" class="button" >1</button>
     <button type="button" onclick="input(2)" class="button" >2</button>
