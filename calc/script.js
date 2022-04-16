@@ -14,12 +14,15 @@ function input(input) {
 }
 
 function char_delete(type) {
-  ondot= false;
-  var input_field = document.getElementById('input_field');
-  if ( input_field.value[input_field.value.length-2] == "." ) {
-    input_field.value = input_field.value.slice(0,input_field.value.length-2);
+  if (ondot) {
+    ondot= false;
   } else {
-    input_field.value = input_field.value.slice(0,input_field.value.length-1);
+    var input_field = document.getElementById('input_field');
+    if ( input_field.value[input_field.value.length-2] == "." ) {
+      input_field.value = input_field.value.slice(0,input_field.value.length-2);
+    } else {
+      input_field.value = input_field.value.slice(0,input_field.value.length-1);
+    }
   }
   
   var dod = document.getElementById('dod');
