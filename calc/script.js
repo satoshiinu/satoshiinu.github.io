@@ -14,7 +14,7 @@ function input(input) {
   ondot= false;
   
   var dod = document.getElementById('dod');
-  dod.value = ondot
+  dod.value = ondot;
 }
 
 function char_delete(type) {
@@ -41,7 +41,7 @@ function char_delete(type) {
      input_field2 = 0 ;
   }
   var dod = document.getElementById('dod');
-  dod.value = ondot
+  dod.value = ondot;
 }
 
 function math(smath) {
@@ -56,16 +56,20 @@ function math(smath) {
   input_field2.value = input_field.value;
   
   var pld = document.getElementById('pld');
-  pld.value = placeholder
+  pld.value = placeholder;
   var sld = document.getElementById('sld');
-  sld.value = selectmath
+  sld.value = selectmath;
 }
 
 function math2(smath) {
   if (smath !== "") {
     var input_field = document.getElementById('input_field');
     var input_field2 = document.getElementById('input_field2');
+    if ( smath !== "**" ) {
     input_field.value = eval(input_field2.value + smath + input_field.value);
+    } else {
+      Math.pow( input_field2.value , input_field.value );
+    }
   }
 }
 
@@ -74,7 +78,7 @@ function inputdot(dot) {
   //alert(onminus);
   
   var dod = document.getElementById('dod');
-  dod.value = ondot
+  dod.value = ondot;
 }
 
 function placeholderdisabled() {
@@ -84,7 +88,7 @@ function placeholderdisabled() {
     input_field.value = "";
     
     var pld = document.getElementById('pld');
-    pld.value = placeholder
+    pld.value = placeholder;
   }
 }
 
