@@ -35,10 +35,10 @@ function char_delete(type) {
 
 function math(math) {
   if ( math == "=" ) {
-    math2(selectmath);
+    if (placeholder == false ) math2(selectmath);
     selectmath = "";
   } else {
-    /*if (placeholder == false )*/ math2(selectmath);
+    math2(selectmath);
     selectmath = math; 
   }
   placeholder = true
