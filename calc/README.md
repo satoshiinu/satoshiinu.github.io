@@ -37,11 +37,11 @@
     <br>
     selectmath<input type="text" id="sld" disabled>
     <br>
-    placeholder<input type="text" id="pld" disabled value="false" >
+    placeholder<input type="text" id="pld" disabled>
     <br>
-    ondot<input type="text" id="dod" disabled value="false" >
+    ondot<input type="text" id="dod" disabled>
     <br<>
-    initial<input type="text" id="ind" disabled value="false" >
+    initial<input type="text" id="ind" disabled>
     
     <script src="script.js"></script>
     <link rel="stylesheet" href="style.css">
