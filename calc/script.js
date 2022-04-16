@@ -50,7 +50,7 @@ function math(smath) {
 }
 
 function math2(smath) {
-  if (math !== "") {
+  if (smath !== "") {
     var input_field = document.getElementById('input_field');
     var input_field2 = document.getElementById('input_field2');
     input_field.value = eval(input_field2.value + smath + input_field.value);
