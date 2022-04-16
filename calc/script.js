@@ -14,6 +14,7 @@ function input(input) {
 }
 
 function char_delete(type) {
+  ondot= false;
   var input_field = document.getElementById('input_field');
   if ( input_field.value[input_field.value.length-2] == "." ) {
     input_field.value = input_field.value.slice(0,input_field.value.length-2);
@@ -48,7 +49,7 @@ function math2(math) {
 }
 
 function inputdot(dot) {
-  ondot= !(dot);
+  ondot= true;
   //alert(onminus);
   
   var dod = document.getElementById('dod');
