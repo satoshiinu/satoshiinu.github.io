@@ -23,14 +23,14 @@ function char_delete(type) {
 }
 
 function math(math) {
-  placeholder = true
   if ( math == "=" ) {
     math2(selectmath);
     selectmath = "";
   } else {
     if (!placeholder) math2(selectmath);
-    selectmath = math;
+    selectmath = math; 
   }
+  placeholder = true
 }
 
 function math2(math) {
