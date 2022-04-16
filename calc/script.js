@@ -103,5 +103,5 @@ function minus() {
 
 function PI() {
   var input_field = document.getElementById('input_field');
-  input_field = 3.141592653589793;
+  input_field.value = 3.141592653589793;
 }
