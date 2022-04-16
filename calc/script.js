@@ -26,10 +26,10 @@ function math(math) {
   placeholder = true
   if ( math == "=" ) {
     math2(selectmath);
-    selectmath = "";
+    if (!placeholder) selectmath = "";
   } else {
     math2(selectmath);
-    selectmath = math;
+    if (!placeholder) selectmath = math;
   }
 }
 
