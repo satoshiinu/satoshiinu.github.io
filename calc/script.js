@@ -7,8 +7,8 @@ function input(input) {
   placeholderdisabled();
   var input_field = document.getElementById('input_field');
   if ( ondot && input_field.value.indexOf(".") == -1 ) {
-    input_field.value = "" + input_field.value + "." + input;
     input_field.value = input_field.value.slice(0,input_field.value.length-1);
+    input_field.value = "" + input_field.value + "." + input;
   } else {
     input_field.value = "" + input_field.value + input;
   }
