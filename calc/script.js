@@ -75,7 +75,6 @@ function math2(smath) {
 
 function inputdot(dot) {
   ondot= true;
-  //alert(onminus);
   
   var dod = document.getElementById('dod');
   dod.value = ondot;
@@ -100,4 +99,9 @@ function minus() {
   } else {
     input_field.value = "-" + input_field.value;
   }
+}
+
+function PI() {
+  var input_field = document.getElementById('input_field');
+  input_field = 3.141592653589793;
 }
