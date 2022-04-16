@@ -18,17 +18,27 @@ function input(input) {
 }
 
 function char_delete(type) {
-  if (ondot) {
-    ondot= false;
-  } else {
-    var input_field = document.getElementById('input_field');
-    if ( input_field.value[input_field.value.length-2] == "." ) {
-      input_field.value = input_field.value.slice(0,input_field.value.length-2);
+  if ( type == 1) {
+    if (ondot) {
+      ondot= false;
     } else {
-      input_field.value = input_field.value.slice(0,input_field.value.length-1);
+      var input_field = document.getElementById('input_field');
+      if ( input_field.value[input_field.value.length-2] == "." ) {
+        input_field.value = input_field.value.slice(0,input_field.value.length-2);
+      } else {
+        input_field.value = input_field.value.slice(0,input_field.value.length-1);
+      }
     }
+  if ( type == 2) {
+     var input_field = document.getElementById('input_field');
+     input_field = 0 ;
   }
-  
+  if ( type == 3) {
+     var input_field = document.getElementById('input_field');
+     input_field = 0 ;
+     var input_field2 = document.getElementById('input_field2');
+     input_field2 = 0 ;
+  }
   var dod = document.getElementById('dod');
   dod.value = ondot
 }
