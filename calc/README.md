@@ -1,7 +1,7 @@
 # 電卓
 <html>
   <body>
-    <input type="number" id="button_field"><br>
+    <input type="number" id="input_field"><br>
       <button type="button" onclick="char_delete(0)">⌫</button>
       <button type="button" onclick="char_delete(1)">CE</button>
       <button type="button" onclick="char_delete(2)">C</button>
