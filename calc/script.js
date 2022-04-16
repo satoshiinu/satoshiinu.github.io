@@ -1,6 +1,7 @@
 //初期化
 onminus = false;
 placeholder = false;
+selectmath = "";
 
 function input(input) {
   var input_field = document.getElementById('input_field');
@@ -21,6 +22,11 @@ function char_delete(type) {
 }
 
 function math(math) {
+  math2(selectmath);
+  selectmath = math;
+}
+
+function math2(math) {
   var input_field = document.getElementById('input_field');
   var input_field2 = document.getElementById('input_field2');
   input_field.value = eval(input_field2.value+math+input_field.value);
