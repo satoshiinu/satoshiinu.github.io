@@ -68,7 +68,7 @@ function math2(smath) {
     if ( smath !== "**" ) {
     input_field.value = eval(input_field2.value + smath + input_field.value);
     } else {
-      Math.pow( input_field2.value , input_field.value );
+    input_field.value = Math.pow( input_field2.value , input_field.value );
     }
   }
 }
