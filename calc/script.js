@@ -48,7 +48,7 @@ function math2(math) {
 }
 
 function inputdot(dot) {
-  ondit= !(dot);
+  ondot= !(dot);
   //alert(onminus);
   
   var dod = document.getElementById('dod');
