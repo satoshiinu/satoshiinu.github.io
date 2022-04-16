@@ -2,7 +2,6 @@
 <html>
   <body>
     <script src="script.js"></script>
-    <input type="number" id="input_field2" disabled><br>
     <input type="number" id="input_field"><br>
     <input type="button" value="⌫" onclick="char_delete(0)">
     <input type="button" value="CE" onclick="char_delete(1)">
@@ -33,6 +32,8 @@
     <br>
     <!--デバック-->
     <h3>デバック</h3>
+    input_field2<input type="number" id="input_field2" disabled>
+    <br>
     selectmath<input type="text" id="sld">
     <br>
     placeholder<input type="text" id="pld">
