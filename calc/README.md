@@ -6,8 +6,8 @@
     <button type="button" onclick="char_delete(0)" class="button_math" >⌫</button>
     <button type="button" onclick="char_delete(1)" class="button_math" >CE</button>
     <button type="button" onclick="char_delete(2)" class="button_math" >C</button>
-    <button type="button" onclick="math('/')" class="button" >÷</button>
-    <button type="button" onclick="math('%')" class="button" >%</button>
+    <button type="button" onclick="math('/')" class="button_math" >÷</button>
+    <button type="button" onclick="math('%')" class="button_math" >%</button>
   <br>
     <button type="button" onclick="input(7)" class="button" >7</button>
     <button type="button" onclick="input(8)" class="button" >8</button>
