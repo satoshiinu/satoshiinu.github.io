@@ -15,7 +15,7 @@
     <input type="button" value="×" onclick="math('*')">
     <br>
     <input type="button" value="4" onclick="input(4)">
-    <input type="button" value="3" onclick="input(5)">
+    <input type="button" value="5" onclick="input(5)">
     <input type="button" value="6" onclick="input(6)">
     <input type="button" value="-" onclick="math('-')">
     <br>
