@@ -25,7 +25,7 @@ function char_delete(type) {
 function math(math) {
   placeholder = true
   if ( math == "=" ) {
-    if (!placeholder) math2(selectmath);
+    math2(selectmath);
     selectmath = "";
   } else {
     if (!placeholder) math2(selectmath);
