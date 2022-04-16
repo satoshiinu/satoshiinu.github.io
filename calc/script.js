@@ -2,6 +2,8 @@
 ondot = false;
 placeholder = false;
 selectmath = "";
+initial = true;
+update_debug();
 
 function input(input) {
   placeholderdisabled();
@@ -12,9 +14,7 @@ function input(input) {
     input_field.value = "" + input_field.value + input;
   }
   ondot= false;
-  
-  var dod = document.getElementById('dod');
-  dod.value = ondot;
+  update_debug();
 }
 
 function char_delete(type) {
@@ -31,17 +31,17 @@ function char_delete(type) {
     }
   }
   if ( type == 1) {
-     var input_field = document.getElementById('input_field');
-     input_field.value = 0 ;
+    var input_field = document.getElementById('input_field');
+    input_field.value = 0 ;
   }
   if ( type == 2) {
-     var input_field = document.getElementById('input_field');
-     input_field.value = 0 ;
-     var input_field2 = document.getElementById('input_field2');
-     input_field2.value = 0 ;
+    var input_field = document.getElementById('input_field');
+    input_field.value = 0 ;
+    var input_field2 = document.getElementById('input_field2');
+    input_field2.value = 0 ;
+    initial = true;
   }
-  var dod = document.getElementById('dod');
-  dod.value = ondot;
+  update_debug();
 }
 
 function math(smath) {
@@ -52,13 +52,10 @@ function math(smath) {
     math2(selectmath);
     selectmath = smath; 
   }
-  placeholder = true
+  placeholder = true;
+  initial = false;
   input_field2.value = input_field.value;
-  
-  var pld = document.getElementById('pld');
-  pld.value = placeholder;
-  var sld = document.getElementById('sld');
-  sld.value = selectmath;
+  update_debug()
 }
 
 function math2(smath) {
@@ -74,9 +71,7 @@ function math2(smath) {
 
 function inputdot(dot) {
   ondot= true;
-  
-  var dod = document.getElementById('dod');
-  dod.value = ondot;
+  update_debug();
 }
 
 function placeholderdisabled() {
@@ -84,9 +79,7 @@ function placeholderdisabled() {
     placeholder = false;
     var input_field = document.getElementById('input_field');
     input_field.value = "";
-    
-    var pld = document.getElementById('pld');
-    pld.value = placeholder;
+    update_debug();
   }
 }
 
@@ -104,6 +97,16 @@ function PI() {
   var input_field = document.getElementById('input_field');
   input_field.value = Math.PI;
 }
+
+function update_debug() {
+var sld = document.getElementById('sld');
+sld.value = selectmath;
+var pld = document.getElementById('pld');
+pld.value = placeholder;
+var dod = document.getElementById('dod');
+dod.value = ondot;
+var ind = document.getElementById('ind');
+ind.value = ondot;
 
 /**
 * タッチ操作での拡大縮小禁止
