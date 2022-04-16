@@ -2,43 +2,43 @@
 <html>
   <body>
     <script src="script.js"></script>
-    <input type="number" id="input_field"><br>
-    <input type="button" value="⌫" onclick="char_delete(0)">
-    <input type="button" value="CE" onclick="char_delete(1)">
-    <input type="button" value="C" onclick="char_delete(2)">
-    <input type="button" value="÷" onclick="math('/')">
-    <input type="button" value="%" onclick="math('%')">
+    <button type="number" id="button_field"><br>
+      <button type="button" onclick="char_delete(0)">⌫</button>
+      <button type="button" onclick="char_delete(1)">CE</button>
+      <button type="button" onclick="char_delete(2)">C</button>
+      <button type="button" onclick="math('/')">÷</button>
+      <button type="button" onclick="math('%')">%</button>
     <br>
-    <input type="button" value="7" onclick="input(7)">
-    <input type="button" value="8" onclick="input(8)">
-    <input type="button" value="9" onclick="input(9)">
-    <input type="button" value="×" onclick="math('*')">
-    <input type="button" value="𝑥²" onclick="math('**')">
+        <button type="button" onclick="button(7)">7</button>
+        <button type="button" onclick="button(8)">8</button>
+        <button type="button" onclick="button(9)">9</button>
+        <button type="button" onclick="math('*')">×</button>
+        <button type="button" onclick="math('**')">𝑥²</button>
     <br>
-    <input type="button" value="4" onclick="input(4)">
-    <input type="button" value="5" onclick="input(5)">
-    <input type="button" value="6" onclick="input(6)">
-    <input type="button" value="-" onclick="math('-')">
+      <button type="button" onclick="button(4)">4</button>
+      <button type="button" onclick="button(5)">5</button>
+      <button type="button" onclick="button(6)">6</button>
+      <button type="button" onclick="math('-')">-</button>
     <br>
-    <input type="button" value="1" onclick="input(1)">
-    <input type="button" value="2" onclick="input(2)">
-    <input type="button" value="3" onclick="input(3)">
-    <input type="button" value="+" onclick="math('+')">
+      <button type="button" onclick="button(1)">1</button>
+      <button type="button" onclick="button(2)">2</button>
+      <button type="button" onclick="button(3)">3</button>
+      <button type="button" onclick="math('+')">+</button>
     <br>
-    <input type="button" value="-" onclick="minus()">
-    <input type="button" value="0" onclick="input(0)">
-    <input type="button" value="." onclick="inputdot(ondot)">
-    <input type="button" value="=" onclick="math('=')">
+      <button type="button" onclick="minus()">-</button>
+      <button type="button" onclick="button(0)"></button>
+      <button type="button" onclick="buttondot(ondot)">.</button>
+      <button type="button" onclick="math('=')">=</button>
     <br>
     <!--デバック-->
     <h3>デバック</h3>
-    input_field2<input type="number" id="input_field2" disabled>
+    button_field2<button type="number" id="button_field2" disabled>
     <br>
-    selectmath<input type="text" id="sld">
+    selectmath<button type="text" id="sld">
     <br>
-    placeholder<input type="text" id="pld">
+    placeholder<button type="text" id="pld">
     <br>
-    ondot<input type="text" id="dod">
+    ondot<button type="text" id="dod">
     
   </body>
 <html>
