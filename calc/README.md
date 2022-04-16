@@ -32,13 +32,13 @@
     <br>
     <!--デバック-->
     <h3>デバック</h3>
-    button_field2<button type="number" id="button_field2" disabled>
+    button_field2<input type="number" id="button_field2" disabled>
     <br>
-    selectmath<button type="text" id="sld">
+    selectmath<input type="text" id="sld">
     <br>
-    placeholder<button type="text" id="pld">
+    placeholder<input type="text" id="pld">
     <br>
-    ondot<button type="text" id="dod">
+    ondot<input type="text" id="dod">
     
   </body>
 <html>
