@@ -45,6 +45,7 @@ function char_delete(type) {
 }
 
 function math(smath) {
+  if ( initial ) input_field2.value = input_field.value;
   if ( smath == "=" ) {
     if (placeholder == false ) math2(selectmath);
     if (placeholder == false ) selectmath = "";
