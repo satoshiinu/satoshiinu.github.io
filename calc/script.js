@@ -25,11 +25,11 @@ function char_delete(type) {
 function math(math) {
   placeholder = true
   if ( math == "=" ) {
-    math2(selectmath);
-    if (!placeholder) selectmath = "";
+    if (!placeholder) math2(selectmath);
+    selectmath = "";
   } else {
-    math2(selectmath);
-    if (!placeholder) selectmath = math;
+    if (!placeholder) math2(selectmath);
+    selectmath = math;
   }
 }
 
