@@ -26,6 +26,7 @@ function math(math) {
   placeholder = true
   if ( math == "=" ) {
     math2(selectmath);
+    selectmath = "";
   } else {
     math2(selectmath);
     selectmath = math;
