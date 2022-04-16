@@ -1,5 +1,6 @@
 //初期化
 onminus=false
+placeholder=false
 
 function input(input) {
   var input_field = document.getElementById('input_field');
@@ -26,3 +27,5 @@ function minus(minus) {
   onminus= !(minus);
   alert(onminus);
 }
+
+function placeholderdisabled() {
