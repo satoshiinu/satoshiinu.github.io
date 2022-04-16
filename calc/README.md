@@ -7,12 +7,12 @@
     <input type="button" value="🗙" onclick="char_delete(0)">
     <input type="button" value="c" onclick="char_delete(1)">
     <input type="button" value="ac" onclick="char_delete(2)">
-    <input type="button" value="÷" onclick="math('÷')">
+    <input type="button" value="÷" onclick="math('/')">
     <br>
     <input type="button" value="7" onclick="input(7)">
     <input type="button" value="8" onclick="input(8)">
     <input type="button" value="9" onclick="input(9)">
-    <input type="button" value="×" onclick="math('×')">
+    <input type="button" value="×" onclick="math('*')">
     <br>
     <input type="button" value="4" onclick="input(4)">
     <input type="button" value="3" onclick="input(5)">
