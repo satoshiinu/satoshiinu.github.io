@@ -13,7 +13,11 @@ function input(input) {
 
 function char_delete(type) {
   var input_field = document.getElementById('input_field');
-  input_field.value = input_field.value.slice(0,input_field.value.length-1);
+  if ( input_field[input_field.value.length-2] == . ) {
+    input_field.value = input_field.value.slice(0,input_field.value.length-1);
+  } else {
+    input_field.value = input_field.value.slice(0,input_field.value.length-2);
+  }
 }
 
 function math(math) {
