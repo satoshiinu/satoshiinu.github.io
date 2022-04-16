@@ -2,7 +2,7 @@
 <html>
   <body>
     <script src="script.js"></script>
-    <button type="number" id="button_field"><br>
+    <input type="number" id="button_field"><br>
       <button type="button" onclick="char_delete(0)">⌫</button>
       <button type="button" onclick="char_delete(1)">CE</button>
       <button type="button" onclick="char_delete(2)">C</button>
@@ -26,7 +26,7 @@
       <button type="button" onclick="math('+')">+</button>
     <br>
       <button type="button" onclick="minus()">-</button>
-      <button type="button" onclick="button(0)"></button>
+      <button type="button" onclick="button(0)">0</button>
       <button type="button" onclick="buttondot(ondot)">.</button>
       <button type="button" onclick="math('=')">=</button>
     <br>
