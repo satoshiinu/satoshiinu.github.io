@@ -18,7 +18,7 @@ function input(input) {
 }
 
 function char_delete(type) {
-  if ( type == 1) {
+  if ( type == 0) {
     if (ondot) {
       ondot= false;
     } else {
@@ -30,11 +30,11 @@ function char_delete(type) {
       }
     }
   }
-  if ( type == 2) {
+  if ( type == 1) {
      var input_field = document.getElementById('input_field');
      input_field = 0 ;
   }
-  if ( type == 3) {
+  if ( type == 2) {
      var input_field = document.getElementById('input_field');
      input_field = 0 ;
      var input_field2 = document.getElementById('input_field2');
