@@ -40,7 +40,7 @@
     placeholder<input type="text" id="pld" disabled>
     <br>
     ondot<input type="text" id="dod" disabled>
-    <br<>
+    <br>
     initial<input type="text" id="ind" disabled>
     
     <script src="script.js"></script>
