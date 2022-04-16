@@ -50,10 +50,10 @@ function math(math) {
 }
 
 function math2(math) {
-  if (!(math == "")) {
+  if (math !== "") {
     var input_field = document.getElementById('input_field');
     var input_field2 = document.getElementById('input_field2');
-    input_field.value = eval(input_field2.value + selectmath + input_field.value);
+    input_field.value = eval(input_field2.value + math + input_field.value);
     input_field2.value = input_field.value;
   }
 }
