@@ -28,6 +28,7 @@ function math(math) {
   } else {
     math2(selectmath);
     selectmath = math;
+    placeholder = true
   }
 }
 
