@@ -31,6 +31,11 @@ function math(math) {
     selectmath = math; 
   }
   placeholder = true
+  
+  var pld = document.getElementById('pld');
+  pld.value = placeholder
+  var sld = document.getElementById('sld');
+  sld.value = selectmath
 }
 
 function math2(math) {
@@ -45,6 +50,9 @@ function math2(math) {
 function inputdot(dot) {
   ondit= !(dot);
   //alert(onminus);
+  
+  var dod = document.getElementById('dod');
+  dod.value = ondot
 }
 
 function placeholderdisabled() {
@@ -52,5 +60,8 @@ function placeholderdisabled() {
     placeholder = false;
     var input_field = document.getElementById('input_field');
     input_field.value = "";
+    
+    var pld = document.getElementById('pld');
+    pld.value = placeholder
   }
 }
