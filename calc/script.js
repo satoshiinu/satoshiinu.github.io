@@ -8,9 +8,13 @@ function input(input) {
   var input_field = document.getElementById('input_field');
   if ( ondot && input_field.value.indexOf(".") == -1 ) {
     input_field.value = "" + input_field.value + "." + input;
+    ondot= false;
   } else {
     input_field.value = "" + input_field.value + input;
   }
+  
+  var dod = document.getElementById('dod');
+  dod.value = ondot
 }
 
 function char_delete(type) {
