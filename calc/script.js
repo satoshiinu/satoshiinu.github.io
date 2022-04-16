@@ -108,6 +108,7 @@ var dod = document.getElementById('dod');
 dod.value = ondot;
 var ind = document.getElementById('ind');
 ind.value = ondot;
+}
 
 /**
 * タッチ操作での拡大縮小禁止
