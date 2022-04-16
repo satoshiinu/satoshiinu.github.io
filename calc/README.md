@@ -31,8 +31,8 @@
     <button type="button" onclick="inputdot(ondot)" class="button" >.</button>
     <button type="button" onclick="math('=')" class="blue" >=</button>
     <br>
-    <!--デバック-->
-    <h3>デバック</h3>
+    <!--デバッグ-->
+    <h3>デバッグ</h3>
     button_field2<input type="number" id="input_field2" disabled>
     <br>
     selectmath<input type="text" id="sld" disabled>
