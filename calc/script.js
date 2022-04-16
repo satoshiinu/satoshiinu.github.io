@@ -21,6 +21,9 @@ function char_delete(type) {
   } else {
     input_field.value = input_field.value.slice(0,input_field.value.length-1);
   }
+  
+  var dod = document.getElementById('dod');
+  dod.value = ondot
 }
 
 function math(math) {
