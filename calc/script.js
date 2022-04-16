@@ -5,7 +5,7 @@ selectmath = "";
 
 function input(input) {
   var input_field = document.getElementById('input_field');
-  if (onminus && !(input_field.value.test)) {
+  if (onminus && !(input_field.value.test(.))) {
     input_field.value = "" + input_field.value + "." + input;
   } else {
     input_field.value = "" + input_field.value + input;
