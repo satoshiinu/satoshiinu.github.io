@@ -6,7 +6,7 @@ selectmath = "";
 function input(input) {
   placeholderdisabled();
   var input_field = document.getElementById('input_field');
-  if (onminus && !(input_field.value.indexOf("."))) {
+  if (onminus && !(input_field.value.indexOf(".") == -1)) {
     input_field.value = "" + input_field.value + "." + input;
   } else {
     input_field.value = "" + input_field.value + input;
