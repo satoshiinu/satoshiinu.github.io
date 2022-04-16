@@ -35,11 +35,11 @@
     <h3>デバック</h3>
     button_field2<input type="number" id="input_field2" disabled>
     <br>
-    selectmath<input type="text" id="sld">
+    selectmath<input type="text" id="sld" disabled>
     <br>
-    placeholder<input type="text" id="pld">
+    placeholder<input type="text" id="pld" disabled>
     <br>
-    ondot<input type="text" id="dod">
+    ondot<input type="text" id="dod" disabled>
     
     <script src="script.js"></script>
     <link rel="stylesheet" href="style.css">
