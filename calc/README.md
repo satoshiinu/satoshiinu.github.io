@@ -24,7 +24,7 @@
     <input type="button" value="3" onclick="input(3)">
     <input type="button" value="+" onclick="math('+')">
     <br>
-    <input type="button" value="-" onclick="input(-)">
+    <input type="button" value="-" onclick="minus()">
     <input type="button" value="0" onclick="input(0)">
     <input type="button" value="." onclick="inputdot(ondot)">
     <input type="button" value="=" onclick="math('=')">
