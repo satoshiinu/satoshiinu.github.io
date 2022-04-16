@@ -27,7 +27,7 @@ function math(math) {
     math2(selectmath);
     selectmath = "";
   } else {
-    if (!(placeholder)) math2(selectmath);
+    if (placeholder == false ) math2(selectmath);
     selectmath = math; 
   }
   placeholder = true
