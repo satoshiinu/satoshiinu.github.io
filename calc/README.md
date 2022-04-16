@@ -40,6 +40,6 @@
     ondot<input type="text" id="dod">
     
     <script src="script.js"></script>
-    <style src="style.css"></style>
+    <link rel="stylesheet" href="style.css">
   </body>
 <html>
