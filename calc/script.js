@@ -33,13 +33,13 @@ function char_delete(type) {
   dod.value = ondot
 }
 
-function math(math) {
-  if ( math == "=" ) {
+function math(smath) {
+  if ( smath == "=" ) {
     if (placeholder == false ) math2(selectmath);
     if (placeholder == false ) selectmath = "";
   } else {
     math2(selectmath);
-    selectmath = math; 
+    selectmath = smath; 
   }
   placeholder = true
   
@@ -49,11 +49,11 @@ function math(math) {
   sld.value = selectmath
 }
 
-function math2(math) {
+function math2(smath) {
   if (math !== "") {
     var input_field = document.getElementById('input_field');
     var input_field2 = document.getElementById('input_field2');
-    input_field.value = eval(input_field2.value + math + input_field.value);
+    input_field.value = eval(input_field2.value + smath + input_field.value);
     input_field2.value = input_field.value;
   }
 }
