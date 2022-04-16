@@ -7,7 +7,6 @@ function input(input) {
   placeholderdisabled();
   var input_field = document.getElementById('input_field');
   if ( ondot && input_field.value.indexOf(".") == -1 ) {
-    input_field.value = input_field.value.slice(0,input_field.value.length-1);
     input_field.value = "" + input_field.value + "." + input;
   } else {
     input_field.value = "" + input_field.value + input;
@@ -23,8 +22,6 @@ function input(input) {
 function char_delete(type) {
   if (ondot) {
     ondot= false;
-    var input_field = document.getElementById('input_field');
-    input_field.value = input_field.value.slice(0,input_field.value.length-1);
   } else {
     var input_field = document.getElementById('input_field');
     if ( input_field.value[input_field.value.length-2] == "." ) {
@@ -65,8 +62,6 @@ function math2(smath) {
 
 function inputdot(dot) {
   ondot= true;
-  var input_field = document.getElementById('input_field');
-  input_field.value = input_field.value + "."
   //alert(onminus);
   
   var dod = document.getElementById('dod');
