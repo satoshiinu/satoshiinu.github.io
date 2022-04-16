@@ -8,10 +8,12 @@ function input(input) {
   var input_field = document.getElementById('input_field');
   if ( ondot && input_field.value.indexOf(".") == -1 ) {
     input_field.value = "" + input_field.value + "." + input;
+    input_field.value = input_field.value.slice(0,input_field.value.length-1);
   } else {
     input_field.value = "" + input_field.value + input;
   }
   ondot= false;
+  input_field.value = "" + input_field.value + "."
   
   var dod = document.getElementById('dod');
   dod.value = ondot
@@ -60,6 +62,7 @@ function math2(smath) {
 
 function inputdot(dot) {
   ondot= true;
+  input_field.value = "" + input_field.value + "."
   //alert(onminus);
   
   var dod = document.getElementById('dod');
