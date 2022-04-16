@@ -1,6 +1,6 @@
 # 電卓
 <html>
-  <body>
+  <body onselectstart="return false;">
     <input type="number" id="input_field" class="field" >
     <br>
     <button type="button" onclick="char_delete(0)" class="button_math" >⌫</button>
