@@ -36,3 +36,4 @@ function placeholderdisabled() {
   placeholder = false;
   var input_field = document.getElementById('input_field');
   input_field.value = "";
+}
