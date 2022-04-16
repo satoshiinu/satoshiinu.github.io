@@ -76,3 +76,13 @@ function placeholderdisabled() {
     pld.value = placeholder
   }
 }
+
+function minus() {
+  placeholderdisabled();
+  var input_field = document.getElementById('input_field');
+  if ( input_field.value.indexOf("-") == -1 ) {
+    input_field.value = input_field.value.slice(1,input_field.value.length);
+  } else {
+    input_field.value = "-" + input_field.value;
+  }
+}
