@@ -104,3 +104,29 @@ function PI() {
   var input_field = document.getElementById('input_field');
   input_field.value = Math.PI;
 }
+
+/**
+* タッチ操作での拡大縮小禁止
+*/
+function no_scaling() {
+    document.addEventListener("touchmove", mobile_no_scroll, { passive: false });
+}
+
+/**
+* タッチ操作での拡大縮小禁止解除
+*/
+function return_scaling() {
+    document.removeEventListener('touchmove', mobile_no_scroll, { passive: false });
+}
+
+//https://javascript.programmer-reference.com/js-onselectstart/
+/**
+* 拡大縮小禁止
+*/
+function mobile_no_scroll(event) {
+    // ２本指での操作の場合
+    if (event.touches.length >= 2) {
+        // デフォルトの動作をさせない
+        event.preventDefault();
+    }
+}
