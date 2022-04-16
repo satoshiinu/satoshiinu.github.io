@@ -64,7 +64,7 @@ function math2(smath) {
     var input_field = document.getElementById('input_field');
     var input_field2 = document.getElementById('input_field2');
     if ( smath !== "**" ) {
-      input_field.value = eval( input_field2.value + smath + input_field.value + 0 );
+      input_field.value = eval( input_field2.value + smath + input_field.value + "+0" );
     } else {
     input_field.value = Math.pow( input_field2.value , input_field.value );
     }
