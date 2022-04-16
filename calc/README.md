@@ -27,7 +27,7 @@
       <button type="button" onclick="minus()" class="button" >-</button>
       <button type="button" onclick="input(0)" class="button" >0</button>
       <button type="button" onclick="inputdot(ondot)" class="button" >.</button>
-      <button type="button" onclick="math('=')" class="button" >=</button>
+      <button type="button" onclick="math('=')" class="button" class="blue" >=</button>
     <br>
     <!--デバック-->
     <h3>デバック</h3>
