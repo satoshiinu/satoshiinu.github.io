@@ -31,11 +31,11 @@
     <br>
     <!--デバック-->
     <h3>デバック</h3>
-    selectmath<input type="text" id="selectmath">
+    selectmath<input type="text" id="sld">
     <br>
-    placeholder<input type="text" id="selectmath">
+    placeholder<input type="text" id="pld">
     <br>
-    placeholder<input type="text" id="selectmath">
+    ondot<input type="text" id="dod">
     
   </body>
 <html>
