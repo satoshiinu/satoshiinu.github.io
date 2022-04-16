@@ -12,8 +12,6 @@ function input(input) {
     input_field.value = "" + input_field.value + input;
   }
   ondot= false;
-  var input_field = document.getElementById('input_field');
-  input_field.value = "" + input_field.value + "."
   
   var dod = document.getElementById('dod');
   dod.value = ondot
