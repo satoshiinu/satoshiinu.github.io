@@ -24,7 +24,7 @@ function char_delete(type) {
 
 function math(math) {
   if ( math == "=" ) {
-    input_field2.value = input_field.value;
+    math2(selectmath);
   } else {
     math2(selectmath);
     selectmath = math;
