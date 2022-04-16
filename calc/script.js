@@ -66,7 +66,7 @@ function math2(smath) {
 function inputdot(dot) {
   ondot= true;
   var input_field = document.getElementById('input_field');
-  input_field.value = "" + input_field.value + "."
+  input_field.value = input_field.value + "."
   //alert(onminus);
   
   var dod = document.getElementById('dod');
