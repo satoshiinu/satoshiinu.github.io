@@ -1,12 +1,12 @@
 //初期化
-onminus = false;
+ondot = false;
 placeholder = false;
 selectmath = "";
 
 function input(input) {
   placeholderdisabled();
   var input_field = document.getElementById('input_field');
-  if ( onminus && input_field.value.indexOf(".") == -1 ) {
+  if ( ondot && input_field.value.indexOf(".") == -1 ) {
     input_field.value = "" + input_field.value + "." + input;
   } else {
     input_field.value = "" + input_field.value + input;
@@ -42,9 +42,9 @@ function math2(math) {
   }
 }
 
-function minus(minus) {
-  onminus= !(minus);
-  alert(onminus);
+function inputdot(dot) {
+  ondit= !(dot);
+  //alert(onminus);
 }
 
 function placeholderdisabled() {
