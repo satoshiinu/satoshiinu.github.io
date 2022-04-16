@@ -107,7 +107,7 @@ pld.value = placeholder;
 var dod = document.getElementById('dod');
 dod.value = ondot;
 var ind = document.getElementById('ind');
-ind.value = ondot;
+ind.value = initial;
 }
 
 /**
