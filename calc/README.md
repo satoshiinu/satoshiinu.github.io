@@ -26,7 +26,16 @@
     <br>
     <input type="button" value="-" onclick="input(-)">
     <input type="button" value="0" onclick="input(0)">
-    <input type="button" value="." onclick="minus(onminus)">
+    <input type="button" value="." onclick="dot(ondot)">
     <input type="button" value="=" onclick="math('=')">
+    <br>
+    <!--デバック-->
+    <h3>デバック</h3>
+    selectmath<input type="text" id="selectmath">
+    <br>
+    placeholder<input type="text" id="selectmath">
+    <br>
+    placeholder<input type="text" id="selectmath">
+    
   </body>
 <html>
