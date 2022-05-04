@@ -69,15 +69,7 @@
 					</p>
 				</div>
 				<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""  width="15" height="15" ><a href="/calc/" >電卓</a>
-				<div class="profile_img" >
-					<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="" >
-					<p>
-						<font color="white">
-							自己紹介など
-						</font>
-					</p>
-				</div><br>
-								<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""  width="15" height="15" ><a href="/calc/" >電卓</a>
+				<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""  width="15" height="15" ><a href="/calc/" >電卓</a>
 				<div class="profile_img" >
 					<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="" >
 					<p>
