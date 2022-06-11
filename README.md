@@ -31,7 +31,7 @@
 			<img src="32451DC3-2ED9-4F84-9E2E-304992FA4F58.png" width="500" height="166.666666666666666666666666666666666666" >
 				<p>
 					<font color="white">
-					ツール
+					
 					</font>
 				</p>
 		</div>
