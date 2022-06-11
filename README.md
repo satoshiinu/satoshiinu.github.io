@@ -57,7 +57,7 @@
 		</style>
 		
 		<div class="top_img" >
-			<img src="32451DC3-2ED9-4F84-9E2E-304992FA4F58.png" >
+			<img src="32451DC3-2ED9-4F84-9E2E-304992FA4F58.png" width="1000" height="333.333333" >
 		</div>
 		
 <img src="satoshiinu.png" alt="さとしいぬ" width="100" height="100" border="0" ><br />
