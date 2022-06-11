@@ -11,38 +11,10 @@
 	</head>
 	<body style="background-image: url(b122.jpg);">
 		<style>
-			.game_img {
+			.tab_text {
 			position: relative;
 			}
-			.game_img p {
-			position: absolute;
-			top: 50%;
-			left: 2%;
-			-ms-transform: translate(0%,-50%);
-			-webkit-transform: translate(0%,-50%);
-			transform: translate(0%,-50%);
-			margin:0;
-			paddin:0;
-			/*文字の装飾は省略*/
-			}			
-			.profile_img {
-			position: relative;
-			}
-			.profile_img p {
-			position: absolute;
-			top: 50%;
-			left: 2%;
-			-ms-transform: translate(0%,-50%);
-			-webkit-transform: translate(0%,-50%);
-			transform: translate(0%,-50%);
-			margin:0;
-			paddin:0;
-			/*文字の装飾は省略*/
-			}			
-			.blog_img {
-			position: relative;
-			}
-			.blog_img p {
+			.tab_text p {
 			position: absolute;
 			top: 50%;
 			left: 2%;
@@ -53,17 +25,21 @@
 			paddin:0;
 			/*文字の装飾は省略*/
 			}
-			
 		</style>
 		
-		<div class="top_img" >
+		<div class="tab_text" >
 			<img src="32451DC3-2ED9-4F84-9E2E-304992FA4F58.png" width="1000" height="333.333333" >
+				<p>
+					<font color="white">
+					ツール
+					</font>
+				</p>
 		</div>
 		
 <img src="satoshiinu.png" alt="さとしいぬ" width="100" height="100" border="0" ><br />
 		<div class="jumbotron">
 			<div class="container">
-				<div class="game_img">
+				<div class="tab_text">
 					<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="" >
 					<p>
 						<font color="white">
@@ -73,7 +49,7 @@
 				</div>
 				<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""  width="15" height="15" ><a href="/calc/" >電卓</a><br>
 				<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""  width="15" height="15" ><a href="/minecraft_texture/" >マイクラテクスチャー配布</a>
-				<div class="profile_img" >
+				<div class="tab_text" >
 					<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="" >
 					<p>
 						<font color="white">
@@ -85,7 +61,7 @@
 				<img src="A301821D-EDD4-4194-96DB-E244DD3B5B57.gif" alt=""  width="15" height="15" >ライン公式<br />
 				<a href="https://lin.ee/84nQXxL"><img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="36" border="0"></a>
 
-				<div class="blog_img" >
+				<div class="tab_text" >
 					<img src="750FB9D6-E39D-4F3E-8BB4-093F5BB3D644.gif" alt="" >
 					<p>
 						<font color="white">
