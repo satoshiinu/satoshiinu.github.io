@@ -28,7 +28,7 @@
 		</style>
 		
 		<div class="tab_text" >
-			<img src="32451DC3-2ED9-4F84-9E2E-304992FA4F58.png" width="1000" height="333.333333" >
+			<img src="32451DC3-2ED9-4F84-9E2E-304992FA4F58.png" width="500" height="166.666666666666666666666666666666666666" >
 				<p>
 					<font color="white">
 					ツール
