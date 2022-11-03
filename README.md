@@ -35,7 +35,7 @@
 				</p>
 		</div>
 		
-<img src="satoshiinu.png" alt="さとしいぬ" width="100" height="100" border="0" ><br />
+<img src="newicon.png" alt="さとしいぬ" width="100" height="100" border="0" ><br />
 		<div class="jumbotron">
 			<div class="container">
 				<div class="tab_text">
