@@ -1,0 +1,24 @@
+.buttonUp {
+    padding-left: 77px;
+    line-height: 77px;
+    background: url(icon/arrowUp.png) no-repeat;
+    background-size : 77px 77px;
+}
+.buttonLeft {
+    padding-left: 77px;
+    line-height: 77px;
+    background: url(icon/arrowLeft.png) no-repeat;
+    background-size : 77px 77px;
+}
+.buttonRight {
+    padding-left: 77px;
+    line-height: 77px;
+    background: url(icon/arrowRight.png) no-repeat;
+    background-size : 77px 77px;
+}
+.buttonDown {
+    padding-left: 77px;
+    line-height: 77px;
+    background: url(icon/arrowDown.png) no-repeat;
+    background-size : 77px 77px;
+}
