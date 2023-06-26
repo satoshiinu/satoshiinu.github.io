@@ -1,3 +1,13 @@
+ ///////////////////////////////////////////////////
+// Copyright 2022 satoshiinu. All rights reserved. //
+ ///////////////////////////////////////////////////
+
+//エラーメッセージ処理
+var DoSayErrorMassege = true;
+window.onerror = (message, file, lineNo, colNo, error) => {
+    if(DoSayErrorMassege) alert("エラーが発生しました\n再読み込みしてください");
+}
+
 //初期化
 ondot = false;
 placeholder = false;
@@ -45,19 +55,21 @@ function char_delete(type) {
 }
 
 function math(smath) {
-  if ( initial ) input_field2.value = input_field.value;
-  if ( smath == "=" ) {
-    if (placeholder == false ) math2(selectmath);
-    if (placeholder == false ) selectmath = "";
-  } else {
-    math2(selectmath);
-    selectmath = smath; 
+  try{
+    if ( initial ) input_field2.value = input_field.value;
+    if ( smath == "=" ) {
+      if (placeholder == false ) math2(selectmath);
+      if (placeholder == false ) selectmath = "";
+    } else {
+      math2(selectmath);
+      selectmath = smath; 
+    }
+    placeholder = true;
+    initial = false;
+    input_field2.value = input_field.value;
+    update_debug()
   }
-  placeholder = true;
-  initial = false;
-  input_field2.value = input_field.value;
-  update_debug()
-}
+}catch{}
 
 function math2(smath) {
   if (smath !== "") {
