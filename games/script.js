@@ -54,6 +54,15 @@ key.z = false;
 key.x = false;
 key.c = false;
 
+var keys = new Array();
+
+for (let i = 0; i < 255; i++) {
+    keys[i] = {
+        "press" : false,
+        "timer":0
+    }
+}
+
 //画像の設定
 var img = new Object();
 
@@ -70,10 +79,23 @@ img.gui = new Object();
 img.gui.message = new Image();
 img.gui.message.src = "img/gui/message.png";
 
+img.gui.prompt = new Image();
+img.gui.prompt.src = "img/gui/prompt.png";
+
 
 img.font = new Object();
-img.font.uni_00 = new Image();
-img.font.uni_00.src = "img/font/uni_00.png";
+
+uni = {
+    "00" : true
+}
+
+for (var i = 0; i < 255; i++) {
+    if (uni[('00' + i.toString(16)).slice(-2)]) {
+        img.font["uni_" + ('00' + i.toString(16)).slice(-2)] = new Image();
+        img.font["uni_" + ('00' + i.toString(16)).slice(-2)].src = "img/font/uni_" + ('00' + i.toString(16)).slice(-2) + ".png";
+    }
+}
+
 
 //タイルの設定
 var tile_image_list = [img.empty, img.tile, img.tile2];
@@ -109,9 +131,10 @@ ctx.msImageSmoothingEnabled = false;
 ctx.imageSmoothingEnabled = false;
 
 
-function main() {
+function main() {keyreset()
     //キャンバスの初期化
     ctx.clearRect(0, 0, 1280 * zoom, 720 * zoom)
+
 
     //キー判定
     addEventListener("keyup", keyupfunc, false);
@@ -151,7 +174,7 @@ function main() {
     if (player.scrolly > 1420) player.scrolly = 1420;
 
     //メッセージ消す
-    if (key.z) message.visible = false;
+    if (keys[90].timer == 1) message.visible = false;
 
     //タイル描画
     var plx = Math.floor(player.scrollx / 16);
@@ -202,15 +225,9 @@ function main() {
 
     //メッセージ描画
     if (message.visible) {
-        ctx.drawImage(img.gui.message, 0, 0, 16 * 16, 4 * 16, 32 * zoom, 96 * zoom, 16 * 16 * zoom, 4 * 16 * zoom);
-
-        for (let i = 0; i < message.text.length; i++) {
-            var codeP = ("0000" + message.text.codePointAt(i).toString(16)).slice(-4);
-
-            ctx.drawImage(img.font.uni_00, parseInt(NumberOfIndex(codeP, 3, 16), 16) * 8, parseInt(NumberOfIndex(codeP, 2, 16), 16) * 8, 8, 8, ((i * 8) + 40) * zoom, 104 * zoom, 8 * zoom, 8 * zoom);
-
-            console.log("x:" + parseInt(NumberOfIndex(codeP, 2, 16), 16) + ", y:" + parseInt(NumberOfIndex(codeP, 3, 16), 16)  );
-        }
+        //ctx.drawImage(img.gui.message, 0, 0, 16 * 16, 4 * 16, 32 * zoom, 96 * zoom, 16 * 16 * zoom, 4 * 16 * zoom);
+        drawPrompt(5 * 8,13 * 8,32 * 8,8 * 8);
+        drawText(message.text);
     }
     
     //console.log("x:" + player.x + ",y:" + player.y + ",xspd:" + player.xspd + ",yspd:" + player.yspd)
@@ -225,35 +242,25 @@ function main() {
 
 requestAnimationFrame(main);
 
+
+function keyreset() {
+    for (let i = 0; i < 255; i++) {
+        keys[i].down = false
+        keys[i].up = false
+    }
+}
+
 function keydownfunc(parameter) {
     var key_code = parameter.keyCode;
-    if (key_code == 37) key.left = true;
-    if (key_code == 38) key.up = true;
-    if (key_code == 39) key.right = true;
-    if (key_code == 40) key.down = true;
-    if (key_code == 65) key.a = true;
-    if (key_code == 87) key.w = true;
-    if (key_code == 68) key.d = true;
-    if (key_code == 83) key.s = true;
-    if (key_code == 90) key.z = true;
-    if (key_code == 88) key.x = true;
-    if (key_code == 67) key.c = true;
+    keys[key_code].press = true;
+    keys[key_code].timer ++;
     parameter.preventDefault();
 }
 
 function keyupfunc(parameter) {
     var key_code = parameter.keyCode
-    if (key_code == 37) key.left = false;
-    if (key_code == 38) key.up = false;
-    if (key_code == 39) key.right = false;
-    if (key_code == 40) key.down = false;
-    if (key_code == 65) key.a = false;
-    if (key_code == 87) key.w = false;
-    if (key_code == 68) key.d = false;
-    if (key_code == 83) key.s = false;
-    if (key_code == 90) key.z = false;
-    if (key_code == 88) key.x = false;
-    if (key_code == 67) key.c = false;
+    keys[key_code].press = false;
+    keys[key_code].timer = 0;
 }
 
 //プレイヤーの動き
@@ -280,10 +287,10 @@ function hitbox(x, y) {
 
 //向きを取得
 function rotate() {
-    player.up = key.up || key.w;
-    player.down = key.down || key.s;
-    player.right = key.right || key.d;
-    player.left = key.left || key.a;
+    player.up = keys[38].press || keys[87].press;
+    player.down = keys[40].press || keys[83].press;
+    player.right = keys[39].press || keys[68].press;
+    player.left = keys[37].press || keys[65].press;
     if ( player.up && !player.down && !player.right && !player.left) player.rotate = 2;
     if (!player.up &&  player.down && !player.right && !player.left) player.rotate = 0;
     if (!player.up && !player.down &&  player.right && !player.left) player.rotate = 3;
@@ -448,4 +455,33 @@ function messageView(text) {
 
 function NumberOfIndex(num,index,shinsu) {
     return (String(num.toString(shinsu))[index]);
+}
+
+function drawText(text) {
+
+    for (let i = 0; i < text.length; i++) {
+        var codeP = ("0000" + text.codePointAt(i).toString(16)).slice(-4);
+
+        ctx.drawImage(img.font["uni_" + NumberOfIndex(codeP, 0, 16) + NumberOfIndex(codeP, 1, 16) ], parseInt(NumberOfIndex(codeP, 3, 16), 16) * 8, parseInt(NumberOfIndex(codeP, 2, 16), 16) * 8, 8, 8, ((i * 8) + 40) * zoom, 104 * zoom, 8 * zoom, 8 * zoom);
+
+        //console.log("x:" + parseInt(NumberOfIndex(codeP, 2, 16), 16) + ", y:" + parseInt(NumberOfIndex(codeP, 3, 16), 16));
+    }
+}
+
+function drawPrompt(dx,dy,dw,dh) {
+    //numlockごみ
+    ctx.drawImage(img.gui.prompt, 0, 0, 8, 8, (dx - 8) * zoom, (dy - 8) * zoom, 8 * zoom, 8 * zoom);
+    ctx.drawImage(img.gui.prompt, 8, 0, 8, 8, dx * zoom, (dy - 8) * zoom, dw * zoom, 8 * zoom);
+    ctx.drawImage(img.gui.prompt, 16, 0, 8, 8, (dx + dw) * zoom, (dy - 8) * zoom, 8 * zoom, 8 * zoom);
+
+
+    ctx.drawImage(img.gui.prompt, 0, 8, 8, 8, (dx - 8) * zoom, dy * zoom, 8 * zoom, dh * zoom);
+    ctx.drawImage(img.gui.prompt, 16, 8, 8, 8, (dx + dw) * zoom, dy * zoom, 8 * zoom, dh * zoom);
+
+
+    ctx.drawImage(img.gui.prompt, 0, 16, 8, 8, (dx - 8) * zoom, (dy + dh) * zoom, 8 * zoom, 8 * zoom);
+    ctx.drawImage(img.gui.prompt, 8, 16, 8, 8, dx * zoom, (dy + dh) * zoom, dw * zoom, 8 * zoom);
+    ctx.drawImage(img.gui.prompt, 16, 16, 8, 8, (dx + dw) * zoom, (dy + dh) * zoom, 8 * zoom, 8 * zoom);
+
+    ctx.drawImage(img.gui.prompt, 8, 8, 8, 8, dx * zoom, dy * zoom, dw * zoom, dh * zoom);
 }
