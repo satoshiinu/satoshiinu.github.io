@@ -42,7 +42,21 @@
         </p>
     </div>
 
-    <img src="newicon.png" alt="さとしいぬ" width="100" height="100" border="0">
+    <img src="newicon.png" alt="さとしいぬ" width="100" height="100" border="0" />
+
+    <div>
+        <font color="black" size="6">
+            <a href="https://www.youtube.com/channel/UCLlHaCZy-SzYr0X4AUH0fwg">YouTube</a>やってます<br />
+        </font>
+    </div>
+
+
+    <div>
+        <font color="black" size="10">
+            一年半更新してねえｗ<br />
+        </font>
+    </div>
+
     <br />
     <div class="jumbotron">
         <div class="container">
