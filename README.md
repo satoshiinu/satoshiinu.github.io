@@ -45,12 +45,6 @@
 
     <img src="newicon.png" alt="さとしいぬ" width="100" height="100" border="0" />
 
-    <div>
-        <h2>
-            <a href="https://www.youtube.com/channel/UCLlHaCZy-SzYr0X4AUH0fwg">YouTube</a>やってます<br />
-        </h2>
-    </div>
-
 
     <div>
         <font color="black" size="6">
@@ -80,8 +74,7 @@
                 </p>
             </div>
             <img src="right.gif" alt="" width="15" height="15"><a href="/profile/">自己紹介</a><br />
-            <img src="right.gif" alt="" width="15" height="15">ライン公式<br />
-            <a href="https://lin.ee/84nQXxL"><img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="36" border="0"></a>
+            <img src="right.gif" alt="" width="15" height="15"><a href="https://www.youtube.com/channel/UCLlHaCZy-SzYr0X4AUH0fwg">YouTube</a>
 
             <div class="tab_text">
                 <img src="tab.gif" alt="">
