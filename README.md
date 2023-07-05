@@ -4,8 +4,9 @@
 <!--Copyright 2021 - 2023 satoshiinu. All rights reserved. -->
 <!----------------------------------------------------------->
 
-<html>
+<html lang="ja">
 <head>
+    <meta charset="utf-8">
     <title>
         さとしいぬのサイト
     </title>
@@ -45,14 +46,14 @@
     <img src="newicon.png" alt="さとしいぬ" width="100" height="100" border="0" />
 
     <div>
-        <font color="black" size="6">
+        <h2>
             <a href="https://www.youtube.com/channel/UCLlHaCZy-SzYr0X4AUH0fwg">YouTube</a>やってます<br />
-        </font>
+        </h2>
     </div>
 
 
     <div>
-        <font color="black" size="10">
+        <font color="black" size="6">
             一年半更新してねえｗ<br />
         </font>
     </div>
