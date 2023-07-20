@@ -22,8 +22,8 @@ var loadcount = 0;
 //デバッグ用の変数の作成
 var debug = new Object();
 debug.hitboxes = new Array();
-debug.hitbox_visual = true;
-debug.text_visual = true;
+debug.hitbox_visible = true;
+debug.text_visible = true;
 //json読み込み
 var loadedjson = new Object();
 loadJson("param/maps/Map.json", "Map");
@@ -290,7 +290,7 @@ function main() {
     game_draw();
 
     //デバッグ
-    if (debug.text_visual)debug_proc();
+    if (debug.text_visible)debug_proc();
 
     //GUI描画
     gui_draw();
@@ -1020,7 +1020,7 @@ function debug_proc() {
 
     ctx.strokeStyle = "black"
 
-    if (debug.hitbox_visual) for (const i in debug.hitboxes) {
+    if (debug.hitbox_visible) for (const i in debug.hitboxes) {
          ctx.strokeRect((debug.hitboxes[i][0] - player.scrollx) * zoom, (debug.hitboxes[i][1] - player.scrolly) * zoom, debug.hitboxes[i][2] * zoom, debug.hitboxes[i][3] * zoom);
     }
     debug.hitboxes.splice(0);
@@ -1053,7 +1053,7 @@ function debug_proc() {
 
 function debug_hitbox_push(a,b,c,d) {
 
-    if(!debug.hitbox_visual) return
+    if(!debug.hitbox_visible) return
 
     //データの作成
     var def = [
@@ -1125,7 +1125,7 @@ function game_draw() {
             let wtimer = players[i].weapon.timer;
             if (players[i].weapon.timer <= 20) wtimer = -20;
 
-             draw_weapon(0, player.drawx + Math.floor(make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * 16), player.drawy + make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * Math.floor(Math.sin(-players[i].weapon.timer / 50) * 16 - 32));
+             draw_weapon(0, player.drawx + Math.floor(make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * 16), player.drawy + make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * Math.floor(Math.sin(-players[i].weapon.timer / 50) * 8 - 32));
         } else { 
             draw_weapon(Math.floor((timer / 2) % 8), players[i].weapon.x - player.scrollx, players[i].weapon.y - player.scrolly);
         }
