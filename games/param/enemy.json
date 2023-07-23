@@ -5,6 +5,13 @@
   {
     "hp": 200,
     "width": 16,
-    "height": 16
+    "height": 16,
+    "name":"blue_slime"
+  },
+  {
+    "hp": 9999,
+    "width": 16,
+    "height": 24,
+    "name":"dummy"
   }
 ]

@@ -1,8 +1,9 @@
+"use strict"
+
  ///////////////////////////////////////////////////
 // Copyright 2023 satoshiinu. All rights reserved. //
  ///////////////////////////////////////////////////
 
-"use strict"
 
 //エラーメッセージ処理
 var gamestarted;
@@ -19,17 +20,50 @@ const zoom = 4;
 var timer = 0;
 var loadcount = 0;
 
+//設定
+var game = new Object();
+
+game.move_limit = 32767;
+game.weapon_canlock = false;
+game.PI = Math.floor(Math.PI * Math.pow(10, 5)) / Math.pow(10, 5);
+
+game.rotate_pos = [
+    [0, 1],//　 ↓
+    [-1, 1],//  ↙
+    [-1, 0],//  ←
+    [-1, -1],// ↖
+    [0, -1],//  ↑
+    [1, -1],//  ↗　
+    [1, 0],//　 →
+    [1, 1],//　 ↘
+]
+
+game.facing_pos = [
+    [0, 1],//　 ↓
+    [-1, 0],//  ←
+    [0, -1],//  ↑
+    [1, 0],//　 →
+]
+
+game.tab_offset = [
+    64,128,128,128
+]
+
 //デバッグ用の変数の作成
 var debug = new Object();
 debug.hitboxes = new Array();
 debug.hitbox_visible = true;
-debug.text_visible = true;
+debug.text_visible = false;
+
 //json読み込み
 var loadedjson = new Object();
 loadJson("param/maps/Map.json", "Map");
 
 loadJson("param/enemy.json", "enemy");
 loadJson("param/particle.json", "particle");
+loadJson("param/item.json", "item");
+
+loadJson("param/lang/en_us.json", "en_us");
 
 //loadjson()の最後に置く
 const lastloadcount = loadcount;
@@ -46,7 +80,23 @@ startTime = new Date().getTime();
 //プレイヤーの変数の作成
 var player = {
     "x": 25 * 16,
-    "y": 25 * 16
+    "y": 25 * 16,
+    "xknb": 0,
+    "yknb": 0,
+    "items": [
+        {
+            "id": 0,
+            "count": 10
+        },
+        {
+            "id": 0,
+            "count": 99
+        },
+        {
+            "id": 1,
+            "count": 99
+        }
+    ]
 }
 
 player.xspd = 0,player.yspd = 0;
@@ -78,7 +128,9 @@ function createPlayer(i){
             "speed": 0,
             "lock":0
         },
-        "hp":500
+        "hp": 500,
+        "hp_max":500,
+        "damage_cooldown": 0
     }
 }
 createPlayer(0);
@@ -100,6 +152,17 @@ var enemy = new Array();
 //パーティクルの変数の作成
 var particle = new Array();
 
+//GUIの変数の作成
+var gui = {
+    "tab": 0,
+    "tab_select": true,
+    "item_select": 0,
+    "role_select": false,
+    "who_use":0
+}
+
+
+
 //キーの変数の作成
 var key = new Object();
 
@@ -111,7 +174,8 @@ for (let i = 0; i < 255; i++) {
         "pressLag": false,
         "down": false,
         "timer": 0,
-        "time": -1
+        "time": -1,
+        "timen":-1
     }
 }
 
@@ -134,8 +198,17 @@ img.enemy.src = "img/enemy.png";
 img.particle = new Image();
 img.particle.src = "img/particle.png";
 
+img.sweep = new Image();
+img.sweep.src = "img/sweep.png";
+
 img.item_model = new Image();
 img.item_model.src = "img/players/item_models.png";
+
+img.gui = new Image();
+img.gui.src = "img/gui/gui.png";
+
+img.gui_tab = new Image();
+img.gui_tab.src = "img/gui/tab.png";
 
 img.gui_message = new Image();
 img.gui_message.src = "img/gui/message.png";
@@ -143,8 +216,8 @@ img.gui_message.src = "img/gui/message.png";
 img.gui_prompt = new Image();
 img.gui_prompt.src = "img/gui/prompt.png";
 
-img.gui_ability = new Image();
-img.gui_ability.src = "img/gui/ability.png";
+img.gui_menu = new Image();
+img.gui_menu.src = "img/gui/ability.png";
 
 
 //フォント
@@ -199,38 +272,13 @@ weapon.offset = [
     [0, 0, true]
 ]
 
-//設定
-var game = new Object();
-
-game.move_limit = 32767;
-game.weapon_canlock = false;
-
-game.rotate_pos = [
-    [0, 1],//　 ↓
-    [-1, 1],//  ↙
-    [-1, 0],//  ←
-    [-1, -1],// ↖
-    [0, -1],//  ↑
-    [1, -1],//  ↗　
-    [1, 0],//　 →
-    [1, 1],//　 ↘
-]
-
-game.facing_pos = [
-    [0, 1],//　 ↓
-    [-1, 0],//  ←
-    [0, -1],//  ↑
-    [1, 0],//　 →
-]
-
-
 //メッセージ変数作成
 var message = new Object;
 message.text = "";
 message.visible = false;
 
-var ability = new Object;
-ability.visible = false;
+var menu = new Object;
+menu.visible = false;
 
 //キャンバスのやつ
 const canvas = document.getElementById('canvas');
@@ -245,16 +293,9 @@ ctx.msImageSmoothingEnabled = false;
 ctx.imageSmoothingEnabled = false;
 
 function main() {
-    //FPS計測　あざす 
-    frameCount++;
-    endTime = new Date().getTime();
-    if (endTime - startTime >= 1000) {
-        fps = frameCount;
-        frameCount = 0;
-        startTime = new Date().getTime();
 
-    }
-
+    //FPS計測
+    fpsCount();
 
     //キャンバスの初期化
     ctx.clearRect(0, 0, 320 * zoom, 180 * zoom);
@@ -268,6 +309,7 @@ function main() {
     //パーティクルの動作
     particle_proc();
 
+    //敵スポーン
     enemy_spawn_event();
 
 
@@ -279,22 +321,20 @@ function main() {
     if (player.scrollx > 1280) player.scrollx = 1280;
     if (player.scrolly > 1420) player.scrolly = 1420;
 
-    //メッセージ消す
-    if (keys[90].time == timer) message.visible = false;
 
+    //GUIの処理
+    gui_proc()
 
-    //
-    if (keys[67].time == timer) ability.visible = !ability.visible;
 
     //描画メイン
     game_draw();
 
-    //デバッグ
-    if (debug.text_visible)debug_proc();
-
     //GUI描画
     gui_draw();
-    
+
+    //デバッグ
+    if (debug.text_visible) debug_proc();
+
 
     //タイマー
     timer++;
@@ -304,14 +344,12 @@ function main() {
     requestAnimationFrame(main);
 }
 
-
-
-
 function keydownfunc(parameter) {
     var key_code = parameter.keyCode;
     if (keys[key_code].press) keys[key_code].pressLag = true;
     keys[key_code].press = true;
     keys[key_code].timer++;
+    keys[key_code].timen = timer;
     if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].time = timer;
     if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].down = true;
     parameter.preventDefault();
@@ -325,6 +363,17 @@ function keyupfunc(parameter) {
     keys[key_code].timer = 0;
 }
 
+function fpsCount() {
+    //FPS計測　あざす 
+    frameCount++;
+    endTime = new Date().getTime();
+    if (endTime - startTime >= 1000) {
+        fps = frameCount;
+        frameCount = 0;
+        startTime = new Date().getTime();
+
+    }
+}
 
 function getTileAtlasXY(id, xy) {
     if (xy == 0) return id % 16 * 16
@@ -420,7 +469,7 @@ function getNearestEnemy(x, y, d) {
         distance.push(getDistance(x, y, enemy[i].x, enemy[i].y));
     }
     if (d) return [distance.indexOf(Math.min.apply(null, distance)), Math.min.apply(null, distance)];
-    if (d = "distanceOnly") return Math.min.apply(null, distance);
+    if (d == "distanceOnly") return Math.min.apply(null, distance);
     return distance.indexOf(Math.min.apply(null, distance));
    
 }
@@ -437,11 +486,42 @@ function getDistance(ax, ay, bx, by) {
     return Math.abs(Math.sqrt(Math.pow(bx - ax, 2) + Math.pow(by - ay, 2)));
 }
 
+function getEnemyCenterx(i) {
+    return enemy[i].x + loadedjson.enemy[enemy[i].id].width / 2;
+}
+
+function getEnemyCentery(i) {
+    return enemy[i].y + loadedjson.enemy[enemy[i].id].height / 2;
+}
+
+function getEnemyCenter(i) {
+    return {
+        "x": getEnemyCenterx(i),
+        "y": getEnemyCentery(i)
+    }
+}
+
 //数字のindex番目取得
 function NumberofIndex(num, index, shinsu) {
     if (typeof shinsu == "undefined") shinsu = 10;
     return (String(num.toString(shinsu))[index]);
 }
+
+//アニメーションいろいろ
+function make_jump_animation(x) {
+    if (x < 1) return Math.sin(x * 6.28 - 2);
+    if (x >= 1) return Math.sin(4.28);
+}
+
+function make_slip_animation(x) {
+    return Math.log10(8 * x * 4);
+}
+
+function make_scatter_animation(x) {
+    if (x < 0.5) return make_slip_animation(x);
+    if (x >= 0.5) return 1;
+}
+
 
 //当たり判定
 function hitbox(x, y) {
@@ -501,8 +581,8 @@ function hitbox_enemy_rect(ax, ay, aw, ah) {
     var hit = new Array();
 
     for (const i in enemy) {
-        var enemy_hitbox_x = loadedjson.enemy[enemy[i].id].width;
-        var enemy_hitbox_y = loadedjson.enemy[enemy[i].id].height;
+        var enemy_hitbox_x = get_enemy_data(i, "width");
+        var enemy_hitbox_y = get_enemy_data(i, "height");
         if (hitbox_rect(enemy[i].x, enemy[i].y, enemy_hitbox_x, enemy_hitbox_y, ax, ay, aw, ah)) hit.push(i * 1);
     }
 
@@ -511,12 +591,19 @@ function hitbox_enemy_rect(ax, ay, aw, ah) {
 
 function player_proc() {
 
-    player_move()
+    if (canPlayerMoveForOpenGui()) player_move_proc();
     player_attack()
 
+    for (const i in players) {
+
+        //ダメージクールダウンの処理
+        players[i].damage_cooldown--;
+
+        player_knockback_move(i);
+    }
 }
 
-function player_move() {
+function player_move_proc() {
 
     if (player.canRotate) rotate();
 
@@ -536,10 +623,6 @@ function player_move() {
         player.moved = true;
     } else {
         player.moved = false;
-    }
-
-    for (let i = 0; i < Math.abs(player.xspd) + Math.abs(player.yspd)-1; i++) {
-
     }
 
     //アニメーションに使用(値を変更すると速度が変わる)
@@ -568,12 +651,12 @@ function player_move() {
     if (player.left) player.xspd -= 0.5;
 
     //プレイヤー移動
-    move_func(player.xspd, player.yspd, true);
+    player_move(player.xspd, player.yspd, true);
 
 }
 
 //プレイヤーの動き
-function move_func(mvx, mvy, checkhitbox) {
+function player_move(mvx, mvy, checkhitbox) {
     for (var i = 0; i < Math.round(Math.abs(mvx)); i++) {
         player.x += Math.sign(mvx);
         player.movelog.unshift([player.x, player.y]);
@@ -598,11 +681,53 @@ function move_func(mvx, mvy, checkhitbox) {
     }
 }
 
+//回復処理
+function player_heal(i, x){
+    players[i].hp += x;
+    if (players[i].hp_max <= players[i].hp) players[i].hp = players[i].hp_max;
+}
+
+//ダメージ処理
+function player_damage(damage, rx, ry) {
+    //クールダウン判定
+    if (players[0].damage_cooldown > 0) return false;
+
+    //ノックバック処理
+    if (typeof rx != "undefined" && typeof ry != "undefined") {
+        player_knockback(rx, ry);
+    }
+
+    //ダメージ処理
+    players[0].hp -= damage;
+    //クールダウン処理
+    players[0].damage_cooldown += 5;
+
+
+    return true;
+}
+
+function player_knockback(x, y) {
+    //if (x == Infinity || y == Infinity) alert("infinity")
+    player.xknb += x;
+    player.yknb += y;
+}
+
+function player_knockback_move(i) {
+    //移動
+    player_move(player.xknb, player.yknb,true);
+
+    player.xknb -= player.xknb * 0.2;
+    player.yknb -= player.yknb * 0.2;
+}
+
 function player_attack() {
 
+    if (canPlayerMoveForOpenGui()) {
+        if (keys[32].time == timer && players[0].weapon.timer > 0) players[0].weapon.speed++;
+        if (keys[32].press && (players[0].weapon.timer <= 0 || players[0].weapon.timer >= 20)) weapon_attack(0);
+    }
 
-    if (keys[32].time == timer && players[0].weapon.timer > 0) players[0].weapon.speed++;
-    if (keys[32].press && (players[0].weapon.timer <= 0 || players[0].weapon.timer >= 20)) weapon_attack(0);
+    //剣の動作
     weapon_proc();
 }
 
@@ -624,9 +749,7 @@ function weapon_attack(i) {
 function weapon_proc() {
     for (const i in players) {
         if (players[i].weapon.timer > 0) {
-
-         
-
+            
             //攻撃
             let hit_enemy = new Array();
             hit_enemy = hitbox_enemy_rect(players[i].weapon.x - 8, players[i].weapon.y - 8, 32, 32);
@@ -639,7 +762,7 @@ function weapon_proc() {
                 let x = players[i].weapon.startx;
                 let y = players[i].weapon.starty;
                 if (getNearestEnemyDistance(x, y) < 100 && typeof getNearestEnemyDistance(x, y) == "number") {
-                    let enemyid = 0
+                    let enemyid = getNearestEnemy(x, y);
                     let width = loadedjson.enemy[enemy[enemyid].id].width;
                     let height = loadedjson.enemy[enemy[enemyid].id].height;
                     players[i].weapon.autoAimx += Math.sign((enemy[enemyid].x + width / 2 - players[i].weapon.x + 16) / 32) * 2;
@@ -651,7 +774,7 @@ function weapon_proc() {
                 players[i].weapon.autoAimy = players[i].weapon.autoAimy * 0.25;
             }
 
-
+            //剣の座標の計算
             players[i].weapon.x = Math.floor(players[i].weapon.rotatex * (Math.sin(Math.PI / 2 * players[i].weapon.timer / 12) * 64) + players[i].weapon.autoAimx + subplayerx(i));
             players[i].weapon.y = Math.floor(players[i].weapon.rotatey * (Math.sin(Math.PI / 2 * players[i].weapon.timer / 12) * 64) + players[i].weapon.autoAimy + subplayery(i));
 
@@ -730,6 +853,55 @@ function subplayerdrawy(i) {
     return subplayery(i) - player.scrolly;
 }
 
+function enemyx(i) {
+    return enemy[i * 16].x;
+}
+
+function enemyy(i) {
+    return enemy[i * 16].y;
+}
+
+function enemydrawx(i) {
+    return enemyx(i) - player.scrollx;
+}
+
+function enemydrawy(i) {
+    return enemyy(i) - player.scrolly;
+}
+
+function get_enemy_data(i, data) {
+    try {
+        return loadedjson.enemy[enemy[i].id][data];
+    } catch {
+        return enemy[i].id
+    }
+}
+
+function get_item_data_index(i, data) {
+    try {
+        return loadedjson.item[i][data];
+    } catch {
+        return index
+    }
+}
+
+function get_item_data(i, data) {
+    try {
+        return loadedjson.item[player.items[i].id][data];
+    } catch {
+        return player.items[i].id
+    }
+}
+
+function get_text(i) {
+    try {
+        if (typeof loadedjson["en_us"][i] == "string") return loadedjson["en_us"][i];
+        if (typeof loadedjson["en_us"][i] != "string") return i;
+    } catch {
+        return i
+    }
+}
+
 function enemy_proc() {
 
     for (const i in enemy) {
@@ -737,7 +909,9 @@ function enemy_proc() {
         enemy_knockback_move(i);
         enemy_damage_proc(i);
         enemy_overlap(i);
-        slime_animation_proc(i)
+        slime_animation_proc(i);
+        enemy_become_proc(i);
+        enemy_slime_attack_proc(i)
     }
     enemy_death_proc();
 }
@@ -757,11 +931,7 @@ function enemy_move_proc(i) {
     }
 
     //動き替える
-    if (enemy[i].attack.hostility) {
-        enemy_move_hostility(i)
-    } else {
-        enemy_move_normal(i)
-    }
+    if (enemy[i].id == 1) enemy_slime_move_proc(i);
 
     //移動
     enemy_move(i, enemy[i].xspd, enemy[i].yspd);
@@ -779,6 +949,15 @@ function enemy_move(i, x, y) {
         enemy[i].y += Math.sign(y);
         if (hitbox(enemy[i].x, enemy[i].y)) enemy[i].y -= Math.sign(y);
         if (j > game.move_limit) break;
+    }
+}
+
+function enemy_slime_move_proc(i) {
+
+    if (enemy[i].attack.hostility) {
+        enemy_move_hostility(i)
+    } else {
+        enemy_move_normal(i)
     }
 }
 
@@ -814,7 +993,7 @@ function enemy_move_normal(i) {
 
 function enemy_move_hostility(i) {
     var dis = getDistance(enemy[i].x, enemy[i].y, subplayerx(0), subplayery(0));
-    if (dis < 24) {
+    if (dis < 16) {
         enemy[i].moving = false;
         return
     }
@@ -835,13 +1014,20 @@ function slime_animation_proc(i) {
         enemy[i].anim.animing = false;
     }
 
-    if (enemy[i].id == 1 && enemy[i].anim.tick == 8) createParticle(enemy[i].x, enemy[i].y, 1, 2) 
+    if (enemy[i].id == 1 && enemy[i].anim.tick == 8) createParticle(getEnemyCenter(i).x, getEnemyCenter(i).y, 1, 2);
+
+
+    if (enemy[i].attack_anim.animing) enemy[i].attack_anim.tick++;
+    if (enemy[i].attack_anim.tick >= 20) {
+        enemy[i].attack_anim.tick = 0;
+        enemy[i].attack_anim.animing = false;
+    }
 }
 
 function enemy_overlap(i) {
     for (const j in enemy) {
         if (i != j) {
-            if (hitbox_rect(enemy[i].x, enemy[i].y, 16, 16, enemy[j].x, enemy[j].y, 16, 16)) {
+            if (hitbox_rect(enemy[i].x, enemy[i].y, loadedjson.enemy[enemy[i].id].width, loadedjson.enemy[enemy[i].id].height, enemy[j].x, enemy[j].y, loadedjson.enemy[enemy[j].id].width, loadedjson.enemy[enemy[j].id].height)) {
 
                 let r = calcAngleDegrees(player.x + game.facing_pos[player.facing][0] - enemy[i].x, player.y + game.facing_pos[player.facing][1] - enemy[i].y);
                 let d = getDistance(enemy[i].x, enemy[i].y, enemy[j].x, enemy[j].y);
@@ -867,18 +1053,50 @@ function enemy_knockback_move(i) {
     enemy[i].yknb -= enemy[i].yknb * 0.2;
 }
 
-function enemy_damage(i, damage, rx,ry) {
+function enemy_become_proc(i) {
+    enemy[i].attack.timer--;
+    if (enemy[i].attack.hostility && enemy[i].attack.timer <= 0) enemy[i].attack.hostility = false;
+}
+
+function enemy_slime_attack_proc(i) {
+    enemy[i].attack.cool_down--;
+    if (!enemy[i].attack.hostility) return;
+
+    if (hitbox_rect(enemy[i].x, enemy[i].y, get_enemy_data(i, "width"), get_enemy_data(i, "height"), player.x, player.y, 16, 16)) {
+        if (enemy[i].attack.cool_down <= 0) {
+            enemy[i].attack.cool_down = 50
+            enemy[i].attack_anim.animing = true;
+            enemy[i].attack_anim.tick = 0;
+        }
+
+        if (enemy[i].attack_anim.tick == 10 ) player_damage(10, -Math.sign(getEnemyCenter(i).x -( player.x + 8) ),-Math.sign(getEnemyCenter(i).y - (player.y + 8) ));
+        //console.log("attacked"); 
+    }
+}
+
+function enemy_damage(i, damage, rx, ry) {
+    //クールダウン判定
     if (enemy[i].damage_cooldown > 0) return false;
 
+    //敵対処理
     enemy[i].attack.hostility = true
+    enemy[i].attack.timer = 1000;
+
+    //ノックバック処理
     if (typeof rx != "undefined" && typeof ry != "undefined") {
         enemy_knockback(i, rx, ry);
     }
+
+    //ダメージ処理
     enemy[i].hp -= damage;
+    //クールダウン処理
     enemy[i].damage_cooldown += 5;
 
+    //エフェクト処理
     enemy[i].damage_effect.damage += damage;
     enemy[i].damage_effect.view_time = 100;
+    enemy[i].damage_effect.last_damage_timer = 250;
+    createParticle(getEnemyCenter(i).x, getEnemyCenter(i).y, 1, 1);
 
     return true;
 }
@@ -889,10 +1107,26 @@ function enemy_damage_proc(i) {
     if (enemy[i].damage_effect.view_time <= 0) enemy[i].damage_effect.damage = 0;
 
     //ダメージクールダウンの処理
-    enemy[i].damage_cooldown -= 1;
+    enemy[i].damage_cooldown--;
+
+    //ダメージタイマーの処理
+    enemy[i].damage_effect.last_damage_timer--;
+}
+
+function enemy_death_proc() {
+    for (const i in enemy) {
+        if (enemy[i].hp <= 0) createParticle(enemy[i].x, enemy[i].y, 0, 5);
+
+        if ((getDistance(player.x, player.y, enemy[i].x, enemy[i].y) > 256 && !enemy[i].attack.hostility)||
+            enemy[i].hp <= 0) {
+            enemy.splice(i, 1);
+        }
+    }
 }
 
 function enemy_spawn_event() {
+    if (enemy.length >= 50) return;
+
     var func = function (x, y) {
         try {
             //敵をスポーンする場所かを調べる
@@ -904,19 +1138,19 @@ function enemy_spawn_event() {
             for (const i in enemy) {
                 if (enemy[i].sp[0] == x && enemy[i].sp[1] == y) test = false;
             }
-            if (test) enemy_spawn(x, y, ID)
+            if (test) enemy_spawn(x, y, ID);
         } catch { }
     }
 
     //敵がスポーンする場所をを調べる
     for (var i = 0; i < 13; i++) {
-        func(Math.floor(player.scrollx / 16), Math.floor(player.scrolly / 16) + i, 1)
-        func(Math.floor(player.scrollx / 16) + 21, Math.floor(player.scrolly / 16) + i, 1)
+        func(Math.floor(player.scrollx / 16), Math.floor(player.scrolly / 16) + i, 1);
+        func(Math.floor(player.scrollx / 16) + 21, Math.floor(player.scrolly / 16) + i, 1);
     }
     for (var i = 0; i < 21; i++) {
 
-        func(Math.floor(player.scrollx / 16) + i, Math.floor(player.scrolly / 16), 1)
-        func(Math.floor(player.scrollx / 16) + i, Math.floor(player.scrolly / 16) + 13, 1)
+        func(Math.floor(player.scrollx / 16) + i, Math.floor(player.scrolly / 16), 1);
+        func(Math.floor(player.scrollx / 16) + i, Math.floor(player.scrolly / 16) + 13, 1);
     }
 
 }
@@ -935,36 +1169,29 @@ function enemy_spawn(spx, spy,id) {
         "yknb": 0,
         "move": [false, false, false, false, 0],
         "attack": {
-            "hostility": false
+            "hostility": false,
+            "timer": 0,
+            "cool_down":0
         },
         "hp": loadedjson.enemy[id].hp,
         "damage_cooldown": 0,
         "damage_effect": {
             "damage": 0,
-            "view_time":0
+            "view_time": 0,
+            "last_damage_timer":0
         },
-        "attack": {
-            "anim":0
+        "attack_anim": {
+            "tick": 0,
+            "animing": false
         },
         "anim": {
             "tick": 0,
             "animing":false
         },
-        "moving": false
+        "moving": false,
     }
     //データの追加
     enemy.push(def);
-}
-
-function enemy_death_proc() {
-    for (const i in enemy) {
-        if (enemy[i].hp <= 0) createParticle(enemy[i].x, enemy[i].y,0, 5);
-        
-        if (getDistance(player.x, player.y, enemy[i].x, enemy[i].y) > 256 ||
-            enemy[i].hp <= 0) {
-            enemy.splice(i, 1);
-        }
-    }
 }
 
 function particle_proc() {
@@ -1026,34 +1253,35 @@ function debug_proc() {
     debug.hitboxes.splice(0);
 
     //文字描画
-    drawText("FPS:" + fps, 0, 0);
-    drawText("t:" + timer, 0, 8);
-    drawText("x:" + player.x, 0, 16);
-    drawText("y:" + player.y, 0, 24);
-    drawText("h:" + players[0].hp, 0, 32);
-    drawText("a:" + players[0].weapon.timer, 0, 40);
-    drawText("e:" + enemy.length, 0, 48);
-    drawText("p:" + particle.length, 0, 56);
+    draw_text("FPS:" + fps, 0, 0);
+    draw_text("t:" + timer, 0, 8);
+    draw_text("x:" + player.x, 0, 16);
+    draw_text("y:" + player.y, 0, 24);
+    draw_text("h:" + players[0].hp, 0, 32);
+    draw_text("a:" + players[0].weapon.timer, 0, 40);
+    draw_text("e:" + enemy.length, 0, 48);
+    draw_text("p:" + particle.length, 0, 56);
 
 
 
     for (var i = 0 , j = 0; i < keys.length; i++) {
-        if (keys[i].press) drawText(String.fromCharCode(i), 78 * 4, j * 8);
+        if (keys[i].press) draw_text(String.fromCharCode(i), 78 * 4, j * 8);
         if (keys[i].press) j++;
     }
 
 
     //敵描画
     for (const i in enemy) {
-        drawText(enemy[i].hp.toString(), enemy[i].x - player.scrollx, enemy[i].y - player.scrolly - 16);
-        drawText(i.toString(), enemy[i].x - player.scrollx, enemy[i].y - player.scrolly - 8);
+        draw_text(enemy[i].hp.toString(), enemy[i].x - player.scrollx, enemy[i].y - player.scrolly - 16);
+        draw_text(i.toString(), enemy[i].x - player.scrollx, enemy[i].y - player.scrolly - 8);
         
     }
 }
 
 function debug_hitbox_push(a,b,c,d) {
 
-    if(!debug.hitbox_visible) return
+    if (!debug.hitbox_visible) return
+    if (!debug.text_visible) return
 
     //データの作成
     var def = [
@@ -1064,7 +1292,7 @@ function debug_hitbox_push(a,b,c,d) {
     debug.hitboxes.push(def);
 }
 
-function drawText(text,x,y,w,h) {
+function draw_text(text,x,y,w,h) {
 
     for (let i = 0, ox = 0 , oy = 0; i < text.length; i++) {
         var codeP = ("0000" + text.codePointAt(i).toString(16)).slice(-4);
@@ -1099,7 +1327,10 @@ function drawmessage(dx,dy,dw,dh,img) {
     ctx.drawImage(img, 8, 8, 8, 8, dx * zoom, dy * zoom, dw * zoom, dh * zoom);
 }
 
-
+function draw_hp(p, x, y) {
+    ctx.drawImage(img.gui, 0, 0, 11, 3, (x - 1) * zoom, (y - 1) * zoom, 11 * zoom, 3 * zoom);
+    ctx.drawImage(img.gui, 0, Math.floor(p * 9 + 3), 9, 1, x * zoom, y * zoom, 9 * zoom, 1 * zoom);
+}
 
 
 function game_draw() {
@@ -1113,23 +1344,11 @@ function game_draw() {
     player.drawx = player.x - player.scrollx;
     player.drawy = player.y - player.scrolly;
 
-
     //プレイヤー描画
-    for (const i in players) {
-        ctx.drawImage(img.players, player.anim * 16, player.facing * 32, 16, 24, subplayerdrawx(i) * zoom, (subplayerdrawy(i) - 8) * zoom, 16 * zoom, 24 * zoom);
-    }
+    draw_player()
 
     //剣描画
-    for (const i in players) {
-        if (players[i].weapon.timer <= 0) {
-            let wtimer = players[i].weapon.timer;
-            if (players[i].weapon.timer <= 20) wtimer = -20;
-
-             draw_weapon(0, player.drawx + Math.floor(make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * 16), player.drawy + make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * Math.floor(Math.sin(-players[i].weapon.timer / 50) * 8 - 32));
-        } else { 
-            draw_weapon(Math.floor((timer / 2) % 8), players[i].weapon.x - player.scrollx, players[i].weapon.y - player.scrolly);
-        }
-    }
+    draw_weapons();
 
     //敵描画
     draw_enemy();
@@ -1141,24 +1360,41 @@ function game_draw() {
     draw_tiles("map2");
 }
 
-function gui_draw() {
+function draw_player() {
 
-    //メッセージ描画
-    if (message.visible) {
-        drawmessage(5 * 8, 13 * 8, 32 * 8, 8 * 8, img.gui_message);
-        drawText(message.text, 40, 104, 31);
+    //プレイヤー描画
+    for (const i in players) {
+        ctx.drawImage(img.players, player.anim * 16, player.facing * 32, 16, 24, subplayerdrawx(i) * zoom, (subplayerdrawy(i) - 8) * zoom, 16 * zoom, 24 * zoom);
     }
+}
 
+function draw_weapons() {
 
-    //メッセージ描画
-    if (ability.visible) {
-        drawmessage(5 * 8, 5 * 8, 32 * 8, 16 * 8, img.gui_prompt);
+    //剣描画
+    for (const i in players) {
+        if (players[i].weapon.timer <= 0) {
+            let wtimer = players[i].weapon.timer;
+            if (players[i].weapon.timer <= -20) wtimer = -20;
 
-        ctx.drawImage(img.gui_ability, 32,32, 32, 32, 5 * 8 * zoom, 5 * 8 * zoom, 32 * zoom, 32 * zoom);
-        ctx.drawImage(img.gui_ability, 64, 0, 32, 32, 5 * 8 * zoom, 5 * 8 * zoom, 32 * zoom, 32 * zoom);
-        ctx.drawImage(img.gui_ability, 0, 32, 16, 8, 5 * 8 * zoom, 9 * 8 * zoom, 16 * zoom, 8 * zoom);
-        drawText(players[0].hp + "", 7*8, 9*8);
+            draw_weapon(0, subplayerdrawx(i) + Math.floor(make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * 16), subplayerdrawy(i) + make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * Math.floor(Math.sin(-players[i].weapon.timer / 50) * 8 - 32));
+        } else {
+
+            let weapon_rotation = Math.floor((timer / 1) % 8)
+            let weapon_offset = {
+                "x": (6 * Math.sign(game.rotate_pos[weapon_rotation][0]) * (weapon_rotation % 2)),
+                "y": (6 * Math.sign(game.rotate_pos[weapon_rotation][1]) * (weapon_rotation % 2))
+            };
+
+            draw_weapon(weapon_rotation, players[i].weapon.x - player.scrollx, players[i].weapon.y - player.scrolly);
+            ctx.drawImage(img.sweep, weapon_rotation * 32, 0, 32, 32, (players[i].weapon.x + weapon_offset.y - player.scrollx - 8) * zoom, (players[i].weapon.y + weapon_offset.y - player.scrolly - 8) * zoom, 32 * zoom, 32 * zoom);
+        }
     }
+}
+
+function draw_weapon(rotate, x, y) {
+
+    ctx.drawImage(img.item_model, weapon.atlas[rotate][0], weapon.atlas[rotate][1], weapon.atlas[rotate][2], weapon.atlas[rotate][3], (x + weapon.offset[rotate][0]) * zoom, (y + weapon.offset[rotate][1]) * zoom, weapon.atlas[rotate][2] * zoom, weapon.atlas[rotate][3] * zoom);
+
 }
 
 function player_animation() {
@@ -1175,24 +1411,6 @@ function player_animation() {
     }
 
 }
-
-
-function slime_animation(i) {
-
-    var x = 0;
-    var y = 0;
-
-    if (enemy[i].anim.animing) x = Math.floor(enemy[i].anim.tick / 20 * 3);
-
-    return [x*16,y*16]
-}
-
-function draw_weapon(rotate,x,y) {
-
-    ctx.drawImage(img.item_model, weapon.atlas[rotate][0], weapon.atlas[rotate][1], weapon.atlas[rotate][2], weapon.atlas[rotate][3], (x + weapon.offset[rotate][0]) * zoom, (y + weapon.offset[rotate][1]) * zoom, weapon.atlas[rotate][2] * zoom, weapon.atlas[rotate][3] * zoom);
-
-}
-
 
 function draw_tiles(maplayer) {
     var plx = Math.floor(player.scrollx / 16);
@@ -1212,21 +1430,40 @@ function draw_tiles(maplayer) {
 function draw_enemy() {
 
     for (const i in enemy) {
-        ctx.drawImage(img.enemy, slime_animation(i)[0], slime_animation(i)[1], 16, 16, (enemy[i].x - player.scrollx) * zoom, (enemy[i].y - player.scrolly) * zoom, 16 * zoom, 16 * zoom);
-        if (enemy[i].damage_effect.view_time != 0) drawText(enemy[i].damage_effect.damage + "", enemy[i].x - player.scrollx, enemy[i].y - 16 - Math.log10(-8 * (enemy[i].damage_effect.view_time / 100 - 1))*8 - player.scrolly);
-        //if (enemy[i].damage_effect.view_time != 0) drawText(-8 *( enemy[i].damage_effect.view_time / 100 - 1)  + "", enemy[i].x - player.scrollx, enemy[i].y + 16 - Math.log10((enemy[i].damage_effect.view_time / 100 * 8) * 2) - player.scrolly);
+        let t = enemy[i];
+
+        let anim = Math.sin(enemy[i].attack_anim.tick/ 20 * game.PI);
+        let attack_x = Math.cos(calcAngleDegrees(player.x - enemy[i].x, player.y - enemy[i].y)) * 16;
+        let attack_y = Math.sin(calcAngleDegrees(player.x - enemy[i].x, player.y - enemy[i].y)) * 16;
+
+        if (t.id == 1) ctx.drawImage(img.enemy, slime_animation(i)[0], slime_animation(i)[1], 16, 16, (t.x - player.scrollx) * zoom, (t.y - player.scrolly - anim * 16) * zoom, 16 * zoom, 16 * zoom);
+        if (t.id == 2) ctx.drawImage(img.enemy, 0,16, 16, 32, (t.x - player.scrollx) * zoom, (t.y - player.scrolly) * zoom, 16 * zoom, 32 * zoom);
+
+        if (enemy[i].damage_effect.last_damage_timer>0) draw_hp(t.hp / loadedjson.enemy[t.id].hp, getEnemyCenter(i).x - player.scrollx - 5, t.y - player.scrolly);
+        if (enemy[i].damage_effect.view_time != 0) draw_text(enemy[i].damage_effect.damage + "", enemy[i].x - player.scrollx, enemy[i].y - 16 - Math.log10(-8 * (enemy[i].damage_effect.view_time / 100 - 1))*8 - player.scrolly);
+        //if (enemy[i].damage_effect.view_time != 0) draw_text(-8 *( enemy[i].damage_effect.view_time / 100 - 1)  + "", enemy[i].x - player.scrollx, enemy[i].y + 16 - Math.log10((enemy[i].damage_effect.view_time / 100 * 8) * 2) - player.scrolly);
     }
+}
+
+function slime_animation(i) {
+
+    var x = 0;
+    var y = 0;
+
+    if (enemy[i].anim.animing) x = Math.floor(enemy[i].anim.tick / 20 * 3);
+    if (enemy[i].attack_anim.animing) x = Math.floor(enemy[i].attack_anim.tick / 20 * 3);
+
+    return [x * 16, y * 16]
 }
 
 function draw_particle() {
 
     for (const i in particle) {
-        let t = particle[i]
+        let t = particle[i];
         if (t.id == 0) ctx.drawImage(img.particle, Math.floor(t.tick / t.lifetime * 8) * 16, 0, 16, 16, (t.x - player.scrollx + particle_death_offset(i)[0]) * zoom, (t.y - player.scrolly + particle_death_offset(i)[1]) * zoom, 16 * zoom, 16 * zoom);
         if (t.id == 1) ctx.drawImage(img.particle, 0, 16, 16, 16, (t.x - player.scrollx + t.varix * 16 * make_scatter_animation(t.tick / t.lifetime) )* zoom, (t.y - player.scrolly - make_jump_animation(t.tick / t.lifetime *2)*4) * zoom, 16 * zoom, 16 * zoom);
     }
 }
-
 
 function particle_death_offset(i) {
     var t = particle[i];
@@ -1235,16 +1472,153 @@ function particle_death_offset(i) {
 }
 
 
-function make_jump_animation(x) {
-    if (x < 1) return Math.sin(x * 6.28 - 2);
-    if (x >= 1) return Math.sin(4.28);
+function gui_draw() {
+
+    //メッセージ描画
+    if (message.visible) {
+        drawmessage(5 * 8, 13 * 8, 32 * 8, 8 * 8, img.gui_message);
+        draw_text(message.text, 40, 104, 31);
+    }
+
+
+    //メッセージ描画
+    if (menu.visible) {
+        ctx.drawImage(img.gui_tab, 0, 0, 64, 32, (5 * 8 - 4) * zoom, (3 * 8 - 4) * zoom, 64 * zoom, 32 * zoom);
+        ctx.drawImage(img.gui_tab, 0, 0, 64, 32, (13 * 8 - 4) * zoom, (3 * 8 - 4) * zoom, 64 * zoom, 32 * zoom);
+        ctx.drawImage(img.gui_tab, 0, 0, 64, 32, (21 * 8 - 4) * zoom, (3 * 8 - 4) * zoom, 64 * zoom, 32 * zoom);
+        ctx.drawImage(img.gui_tab, 0, 0, 64, 32, (29 * 8 - 4) * zoom, (3 * 8 - 4) * zoom, 64 * zoom, 32 * zoom);
+
+        drawmessage(5 * 8, 5 * 8, 32 * 8, 16 * 8, img.gui_prompt);
+
+        ctx.drawImage(img.gui_tab, game.tab_offset[gui.tab], gui.tab_select*32, 64, 32, ((5 + 8 * gui.tab) * 8 - 4) * zoom, (3 * 8 - 4) * zoom, 64 * zoom, 32 * zoom);
+
+        draw_text(get_text("gui.tab.party"), 5 * 8, 3 * 8);
+        draw_text(get_text("gui.tab.item"), 13 * 8, 3 * 8);
+        draw_text(get_text("gui.tab.equip"), 21 * 8, 3 * 8);
+        draw_text(get_text("gui.tab.config"), 29 * 8, 3 * 8);
+
+
+        if (gui.tab == 0) {
+            ctx.drawImage(img.players, 0, 0, 16, 16, 5 * 8 * zoom, 5 * 8 * zoom, 16 * zoom, 16 * zoom);
+            ctx.drawImage(img.gui_menu, 0, 32, 16, 8, 5 * 8 * zoom, 8 * 8 * zoom, 16 * zoom, 8 * zoom);
+            draw_text(players[0].hp + "", 7 * 8, 8 * 8);
+        }
+
+        if (gui.tab == 1) {
+            for (const i in player.items) {
+                draw_text(get_text("item." + get_item_data(i, "name") + ".name") + " x" + player.items[i].count, 6 * 8, i * 8 + 5 * 8);
+            }
+
+            if (!gui.tab_select) ctx.drawImage(img.gui, 32, 0, 8, 8, 5 * 8 * zoom, (gui.item_select * 8 + 5 * 8) * zoom, 8 * zoom, 8 * zoom);
+        }
+
+    }
+
+
+    if (!menu.visible) {
+        drawmessage(8, 8, 7 * 8, 2 * 8, img.gui_prompt);
+        ctx.drawImage(img.gui_menu, 0, 48, 8, 8, 8 * zoom, 8 * zoom, 8 * zoom, 8 * zoom);
+        ctx.drawImage(img.gui_menu, 0, 32, 16, 8, 16 * zoom, 8 * zoom, 16 * zoom, 8 * zoom);
+        draw_text(players[0].hp + "", 32, 8);
+    }
+
+    if (gui.role_select) {
+
+        drawmessage(10 * 8, 10 * 8, 7 * 8, 7 * 8, img.gui_prompt);
+        draw_text(get_text("gui.item_use.who_use"), 10 * 8, 10 * 8);
+
+        for (const i in players) {
+            ctx.drawImage(img.gui_menu, 0, 48, 8, 8, 10 * 8 * zoom, (11 * 8 + i * 8) * zoom, 8 * zoom, 8 * zoom);
+            ctx.drawImage(img.gui_menu, 0, 32, 16, 8, 11 * 8 * zoom, (11 * 8 + i * 8) * zoom, 16 * zoom, 8 * zoom);
+            draw_text(players[0].hp + "", 13 * 8, (11 * 8 + i * 8));
+        }
+    }
+
 }
 
-function make_slip_animation(x) {
-    return Math.log10(8 * x * 4)
+function gui_proc() {
+    //メッセージ消す
+    if (keys[90].time == timer) message.visible = false;
+
+    //メニュー表示 非表示
+    if (keys[67].time == timer) {
+        if (menu.visible) {
+            menu.visible = false;
+            gui.role_select = false;
+        } else {
+            menu.visible = true;
+        }
+    }
+
+    //アイテム使用判定
+    item_use_proc()
+
+    if (menu.visible && !gui.role_select) {
+        if (gui.tab_select) {
+            if ((keys[39].timen == timer || keys[68].timen == timer) && gui.tab < 3) gui.tab++;
+            if ((keys[37].timen == timer || keys[65].timen == timer) && gui.tab > 0) gui.tab--;
+
+            if ((keys[40].timen == timer || keys[83].timen == timer || keys[32].time == timer) && gui.tab == 1) gui.tab_select = false
+
+
+            if (keys[90].time == timer) {
+                menu.visible = false;
+            }
+
+        } else {
+            if ((keys[38].timen == timer || keys[87].timen == timer) && gui.item_select == 0) gui.tab_select = true
+
+            if ((keys[40].timen == timer || keys[83].timen == timer) && gui.item_select < 15) gui.item_select++
+            if ((keys[38].timen == timer || keys[87].timen == timer) && gui.item_select > 0) gui.item_select--
+
+            if (keys[90].time == timer) {
+                gui.item_select = 0;
+                gui.tab_select = true
+            }
+        }
+    }
+
+    if (gui.role_select) {
+
+        if (keys[90].time == timer) {
+            gui.role_select = false;
+        }
+    }
+
 }
 
-function make_scatter_animation(x) {
-    if (x < 0.5) return make_slip_animation(x);
-    if (x >= 0.5) return 1;
+function canPlayerMoveForOpenGui() {
+    if (message.visible) return false;
+    if (menu.visible) return false;
+
+    return true;
+}
+
+function item_use_proc() {
+    if (menu.visible && !gui.tab_select && keys[32].time == timer && gui.item_select <= player.items.length - 1) {
+
+        //誰が使いますか画面を出す
+        if (get_item_data(gui.item_select, "role_select") && !gui.role_select) {
+            gui.role_select = true;
+            return;
+        }
+
+        //アイテム使用
+        if (!get_item_data(gui.item_select, "role_select") && gui.role_select) {
+            if (!get_item_data(gui.item_select, "role_select")) gui.who_use = 0;
+
+            item_use(gui.item_select);
+        }
+        gui.role_select = false;
+
+        //アイテムの数を減らす
+        player.items[gui.item_select].count--;
+        //アイテムの数が0だったら消す
+        if (player.items[gui.item_select].count == 0) player.items.splice(gui.item_select, 1);
+    }
+}
+
+function item_use(i) {
+
+    if (get_item_data(i, "efficacy") == "health") player_heal(gui.who_use, get_item_data(i, "heal_power"));
 }

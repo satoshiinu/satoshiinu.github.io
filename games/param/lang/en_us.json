@@ -1,0 +1,9 @@
+{
+  "gui.tab.party": "party",
+  "gui.tab.item": "item",
+  "gui.tab.equip": "equip",
+  "gui.tab.config": "config",
+  "gui.item_use.who_use": "who use",
+  "item.apple.name": "apple",
+  "item.dummy.name": "dummy"
+}

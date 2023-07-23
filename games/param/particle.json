@@ -1,8 +1,10 @@
 [
   {
-    "lifetime":[50,100] 
+    "lifetime":[50,100] ,
+    "name":"enemy_death_smoke"
   },
   {
-    "lifetime":[25,50] 
+    "lifetime":[25,50] ,
+    "name":"blue_slime_splinter"
   }
 ]

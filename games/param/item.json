@@ -1,0 +1,13 @@
+[
+  {
+    "name":"apple",
+    "efficacy":"health",
+    "heal_power":100,
+    "role_select":true
+  },
+  {
+    "efficacy":"dummy",
+    "role_select":false,
+    "name":"dummy"
+  }
+]
