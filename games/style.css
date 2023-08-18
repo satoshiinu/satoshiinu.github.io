@@ -28,3 +28,7 @@ html {
 body {
     user-select: none;
 }
+
+*{ user-select: none; } 
+*::selection{ background: none; } 
+*::-moz-selection{ background: none; }
