@@ -24,4 +24,7 @@
 }
 html {
     touch-action: manipulation;
-  }
+}
+body {
+    user-select: none;
+}
