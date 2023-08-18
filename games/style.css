@@ -22,3 +22,6 @@
     background: url(icon/arrowDown.png) no-repeat;
     background-size : 77px 77px;
 }
+html {
+    touch-action: manipulation;
+  }

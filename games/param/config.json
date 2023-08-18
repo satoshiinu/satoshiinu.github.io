@@ -1,0 +1,14 @@
+{
+	"configs":[
+		{
+			"name": "do player rotate on attacking",
+			"variable": "canrotateonattacking",
+			"default": false
+		},
+		{
+			"name": "do weapon auto aim",
+			"variable": "weapon_auto_aiming",
+			"default": true
+		}
+	]
+}	

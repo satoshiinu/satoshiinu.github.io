@@ -21,9 +21,19 @@
     -->
 
     <script src="script.js"></script><br />
-    <input id="Button1" type="button" value="button" onclick="messageView('Z to close this prompt');" />
-    <input id="Button2" type="button" value="button" onclick="messageView(prompt('input text'));" />
-    <input id="Button3" type="button" value="debug" onclick="debug.text_visible = !debug.text_visible;" />
+    <input id="msg" type="button" value="msg" onclick="messageView('Z to close this prompt');" />
+    <input id="msg2" type="button" value="custmsg" onclick="messageView(prompt('input text'));" />
+    <input id="debug" type="button" value="debug" onclick="debug.text_visible = !debug.text_visible;" />
+    <input id="saveButton" type="button" value="save" onclick="savedatawrite()" />
+    <input id="loadButton" type="button" value="load" onclick="savedataload()" />
+
+    <br>
+    <input id="about" type="button" value="about" onclick="debug.about_visible = !debug.about_visible;" />
+    <select id="debugtype">
+        <option>players</option>
+        <option>enemy</option>
+    </select>
+    <input id="debugplayerid" type="number" value="0" />
 </body>
 
 </html>

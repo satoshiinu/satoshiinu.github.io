@@ -1,0 +1,70 @@
+{
+  "hp": {
+    "img": "gui_menu",
+    "atlas": [ 0, 32, 16, 8 ]
+  },
+  "switch_on": {
+    "img": "gui",
+    "atlas": [ 0, 16, 16, 8 ]
+  },
+  "switch_off": {
+    "img": "gui",
+    "atlas": [ 0, 24, 16, 8 ]
+  },
+  "item_about_gui": {
+    "img": "gui_item_about",
+    "atlas": [ 0, 0, 64, 92 ]
+  },
+  "gui_under_page_scroll": {
+    "img": "gui_under_page_scroll",
+    "atlas": [ 0, 0, 128, 16 ]
+  },
+  "gui_under_page_left": {
+    "img": "gui_under_page_scroll",
+    "atlas": [ 0, 16, 8, 8 ]
+  },
+  "gui_under_page_right": {
+    "img": "gui_under_page_scroll",
+    "atlas": [ 8, 16, 8, 8]
+  },
+  "gui_item_text_health": {
+    "img": "gui_texts",
+    "atlas": [ 0, 0, 32, 8 ]
+  },
+  "blank": {
+    "img": "gui",
+    "atlas": [ 239, 239, 16, 16 ]
+  },
+  "touch_button_up": {
+    "img": "touch_button",
+    "atlas": [ 0,0, 16, 16 ]
+  },
+  "touch_button_down": {
+    "img": "touch_button",
+    "atlas": [ 16,0, 16, 16 ]
+  },
+  "touch_button_left": {
+    "img": "touch_button",
+    "atlas": [ 32,0, 16, 16 ]
+  },
+  "touch_button_right": {
+    "img": "touch_button",
+    "atlas": [ 48,0, 16, 16 ]
+  },
+  "touch_button_menu": {
+    "img": "touch_button",
+    "atlas": [ 0,16, 16, 16 ]
+  },
+  "touch_button_cancel": {
+    "img": "touch_button",
+    "atlas": [ 16,16, 16, 16 ]
+  },
+  "touch_button_confirm": {
+    "img": "touch_button",
+    "atlas": [ 32,16, 16, 16 ]
+  },
+  "touch_button_attack": {
+    "img": "touch_button",
+    "atlas": [ 0,32, 32, 16 ]
+  }
+}
