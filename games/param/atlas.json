@@ -66,5 +66,29 @@
   "touch_button_attack": {
     "img": "touch_button",
     "atlas": [ 0,32, 32, 16 ]
+  },
+  "scroll_bar_up": {
+    "img": "gui_scroll_bar",
+    "atlas": [ 0,0,8,0 ]
+  },
+  "scroll_bar_mid": {
+    "img": "gui_scroll_bar",
+    "atlas": [ 0,1,8,1 ]
+  },
+  "scroll_bar_down": {
+    "img": "gui_scroll_bar",
+    "atlas": [ 0,8,8,8 ]
+  },
+  "scroll_bar": {
+    "img": "gui_scroll_bar",
+    "atlas": [ 0,8,8,8 ]
+  },
+  "cursor": {
+    "img": "gui",
+    "atlas": [ 32,0,8,8 ]
+  },
+  "cursor_uns": {
+    "img": "gui",
+    "atlas": [ 32,8,8,8 ]
   }
 }

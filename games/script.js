@@ -1,8 +1,8 @@
 "use strict"
 
- ///////////////////////////////////////////////////
+///////////////////////////////////////////////////
 // Copyright 2023 satoshiinu. All rights reserved. //
- ///////////////////////////////////////////////////
+///////////////////////////////////////////////////
 
 /*
     コメントの書き方
@@ -29,21 +29,164 @@
 */
 
 //エラーメッセージ処理
-var gamestarted;
-var DoSayErrorMassege = true;
+let gamestarted;
+let DoSayErrorMassege = true;
 window.onerror = (message, file, lineNo, colNo, error) => {
     if (DoSayErrorMassege) alert("エラーが発生しました\n再読み込みしてください");
     //if (gamestarted)requestAnimationFrame(main);
 }
 
 //画面に表示される時は4倍になるので注意
-const zoom = 4;
+let zoom = 4;
 
 //その他の変数の作成
-var timer = 0;
+let timer = 0;
+let loopID;
+const siteName = ["http://127.0.0.1:8000", "https://satoshiinu.github.io/games"]
+
+//読み込むもの
+let willLoadImg = [
+    ["img/tiles.png", "tiles"],
+    ["img/items.png", "items"],
+    ["img/players/players.png", "players"],
+    ["img/enemy.png", "enemy"],
+    ["img/misc/particle.png", "particle"],
+    ["img/misc/sweep.png", "sweep"],
+    ["img/players/item_models.png", "item_model"],
+    ["img/gui/gui.png", "gui"],
+    ["img/gui/gui_item_about.png", "gui_item_about"],
+    ["img/gui/gui_texts.png", "gui_texts"],
+    ["img/gui/tab.png", "gui_tab"],
+    ["img/gui/under_page_scroll.png", "gui_under_page_scroll"],
+    ["img/gui/message.png", "gui_message"],
+    ["img/gui/prompt.png", "gui_prompt"],
+    ["img/gui/prompt2.png", "gui_prompt_more"],
+    ["img/gui/scroll_bar.png", "gui_scroll_bar"],
+    ["img/gui/ability.png", "gui_menu"],
+    ["img/gui/icons.png", "gui_icons"],
+    ["img/gui/touch.png", "touch_button"]
+]
+Object.freeze(willLoadImg);
+
+const willLoadJson = [
+    ["param/maps/Map.map", "Map"],
+
+    ["param/atlas.json", "atlas"],
+    ["param/enemy.json", "enemy"],
+    ["param/particle.json", "particle"],
+    ["param/item.json", "item"],
+    ["param/icons.json", "icons"],
+
+    ["param/lang/en_us.json", "en_us"],
+    ["param/config.json", "configs"]
+]
+Object.freeze(willLoadJson);
+
+//クラス
+class Item {
+    constructor(ID, count = 99) {
+        this.id = ID;
+        this.count = count;
+    }
+}
+
+class Player {
+    constructor(ID = 0) {
+
+        this.weapon = {
+            "startx": 0,
+            "starty": 0,
+            "drawx": 0,
+            "drawy": 0,
+            "timer": 0,
+            "rotatex": 0,
+            "rotatey": 0,
+            "autoAimx": 0,
+            "autoAimy": 0,
+            "speed": 0,
+            "lock": 0
+        }
+        this.hp = 500
+        this.hp_max = 500
+        this.damage_cooldown = 0,
+            this.id = ID
+        this.exp = {
+            exp: 0,
+            lv: 0
+        }
+        this.ability = {
+            river: false
+        }
+
+    }
+}
+
+class Enemy {
+    constructor(spx, spy, id) {
+        this.x = spx * 16
+        this.y = spy * 16
+        this.sp = [spx, spy]
+        this.id = id
+        this.xspd = 0
+        this.yspd = 0
+        this.xknb = 0
+        this.yknb =
+            this.move = [false, false, false, false, 0]
+        this.attack = {
+            "hostility": false,
+            "timer": 0,
+            "cool_down": 0
+        }
+        this.hp = loadedjson.enemy[id].hp
+        this.damage_cooldown = 0
+        this.damage_effect = {
+            "damage": 0,
+            "view_time": 0,
+            "Last_damage_timer": 0
+        }
+        this.attack_anim = {
+            "tick": 0,
+            "animing": false
+        }
+        this.anim = {
+            "tick": 0,
+            "animing": false
+        }
+        this.moving = false
+    }
+}
+
+class NPC {
+    constructor(x, y, id) {
+        this.x = x * 16
+        this.y = y * 16
+        this.sp = [x, y]
+    }
+
+}
+
+class Keys {
+    constructor() {
+        this.press = false;
+        this.pressLag = false;
+        this.down = false;
+        this.hold = false;
+        this.timer = 0;
+        this.time = -1;
+        this.timen = -1;
+        this.presstime = -1;
+    }
+}
 
 //設定
-var game = new Object();
+let game = new Object();
+
+game.ver = "beta"
+
+game.saveloadingnow = false;
+game.saveloadfaliedtime=-1;
+game.saveloadfaliedtype=-1;
+game.PopUpDelay=100;
 
 game.move_limit = 32767;
 game.weapon_canlock = false;
@@ -51,9 +194,10 @@ game.PI = Math.floor(Math.PI * Math.pow(10, 5)) / Math.pow(10, 5);
 
 game.map = new Object;
 
-game.map_path={
-	"VillageAround":"param/maps/VillageAroundMap.json",
-	"LvSpot":"param/maps/LvSpotMap.json"
+game.map_path = {
+    "VillageAround": "param/maps/VillageAroundMap.map",
+    "LvSpot": "param/maps/LvSpotMap.map",
+    "Default": "param/maps/Map.map"
 }
 
 game.rotate_pos = [
@@ -75,15 +219,15 @@ game.facing_pos = [
 ]
 
 game.tab_offset = [
-    64,128,128,128
+    64, 128, 128, 128
 ]
 
-game.item_select_limit = [
-    15,15,15,7
+game.gui_item_count = [
+    15, 7, 15, 7
 ]
 
 game.breakableTile = [
-    9,10,11
+    9, 10, 11
 ]
 
 game.breakableTileAbout = {
@@ -101,15 +245,38 @@ game.breakableTileAbout = {
     }
 }
 
+game.gui_system_items = [
+    "menu.system.config",
+    "menu.system.data"
+]
+game.gui_system_data_items = [
+    "menu.system.data.save",
+    "menu.system.data.load",
+    "menu.system.data.select",
+    "menu.system.data.download",
+    "menu.system.data.upload"
+]
+
+game.select_y_size = [
+    16, 16, 16, 16
+]
+game.savemetadata = {
+    "codename": "project2023",
+    "ver": game.ver
+}
+
+
+let IsLoading = true;
+
 //config変数の作成
-var config = {
+let config = {
     "canrotateonattacking": false,
     "weapon_auto_aiming": true
 }
 
 
 //デバッグ用の変数の作成
-var debug = new Object();
+let debug = new Object();
 debug.hitboxes = new Array();
 debug.hitbox_visible = true;
 debug.text_visible = false;
@@ -118,28 +285,17 @@ debug.about_visible = false;
 debug.camx = 0;
 debug.camy = 0;
 
+
 //json読み込み
-var loadedjson = new Object();
-var loadjsoncount=0;
-var loadimgcount=0;
-
-const willLoadJson = [
-    ["param/maps/LvSpotMap.json", "Map"],
-
-    ["param/atlas.json", "atlas"],
-    ["param/enemy.json", "enemy"],
-    ["param/particle.json", "particle"],
-    ["param/item.json", "item"],
-    ["param/icons.json", "icons"],
-
-    ["param/lang/en_us.json", "en_us"],
-    ["param/config.json", "configs"]
-]
-
-//loadingassets() 
+let loadedjson = new Object();
+let loadjsoncount = 0;
+let loadimgcount = 0;
 
 //セーブデータ読み込み用の変数の作成
 let dirHandle;
+let LastSavedFileData;
+let SaveDataFileName = "save.json"
+let LastSavedTime;
 
 //FPS計測の変数を作成
 let fps = 0;
@@ -147,15 +303,20 @@ let frameCount = 0;
 let startTime;
 let endTime;
 
+let MainProcStartTime = 0;
+let MainProcEndTime = 0;
+let MainProcTime = 0;
+
 startTime = new Date().getTime();
 
 
 //プレイヤーの変数の作成
-var player = {
+let player = {
     "x": 0,
     "y": 224,
     "xknb": 0,
     "yknb": 0,
+    "mapID": "",
     "items": [
         {
             "id": 0,
@@ -167,47 +328,65 @@ var player = {
         },
         {
             "id": 1,
-            "count": 99
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
         }
     ]
 }
 
-player.xspd = 0,player.yspd = 0;
-player.scrollx = player.x + 160,player.scrolly = player.y + 24;
-player.scroll_offsetx = 0,player.scroll_offsety = 0;
-player.drawx=0, player.drawy = 0;
+
+
+player.xspd = 0, player.yspd = 0;
+player.scrollx = player.x + 160, player.scrolly = player.y + 24;
+player.scroll_offsetx = 0, player.scroll_offsety = 0;
+player.drawx = 0, player.drawy = 0;
 player.anim = 0;
 player.rotate = 0, player.facing = 0;
 player.canRotate = true;
 player.up = false, player.down = false, player.right, player.left = false;
-player.moved = false,player.moving = false;
+player.moved = false, player.moving = false;
 player.moveTimer = 0;
 player.movelog = new Array();
 
-var players = new Array();
+let players = new Array();
 
-function createPlayer(i){
-    players[i] = {  
-        "weapon": {
-            "startx": 0,
-            "starty": 0,
-            "drawx": 0,
-            "darwy": 0,
-            "timer": 0,
-            "rotatex": 0,
-            "rotatey": 0,
-            "autoAimx": 0,
-            "autoAimy": 0,
-            "speed": 0,
-            "lock": 0
-        },
-        "hp": 500,
-        "hp_max":500,
-        "damage_cooldown": 0,
-        "id": i
-    }
-}
-createPlayer(0);
+
+players[0] = new Player(0);
 
 player.weapon = new Object();
 player.weapon.attack = 5;
@@ -218,55 +397,37 @@ player_movelog_reset();
 
 
 //敵の変数の作成
-var enemy_speed = 0.25
+let enemy_speed = 0.25
 
-var enemy = new Array();
+let enemy = new Array();
 
+//NPCの変数の作成
+let npc = new Array();
 
 //パーティクルの変数の作成
-var particle = new Array();
-
-//GUIの変数の作成
-var gui = {
-    "tab": 0,
-    "tab_select": true,
-    "item_select": 0,
-    "role_select": false,
-    "who_use":0
-}
-
-
+let particle = new Array();
 
 //キーの変数の作成
-var key = new Object();
+let key = new Object();
 
-var keys = new Array();
+let keys = new Array();
 
 for (let i = 0; i < 255; i++) {
-    keys[i] = {
-        "press": false,
-        "pressLag": false,
-        "down": false,
-        "hold":false,
-        "timer": 0,
-        "time": -1,
-        "timen":-1,
-        "presstime":-1
-    }
+    keys.push(new Keys())
 }
-var key_groups = new Object();
-var key_groups_down = new Object();
-var key_groups_hold = new Object();
+let key_groups = new Object();
+let key_groups_down = new Object();
+let key_groups_hold = new Object();
 
-var key_groups_list={
-    "up":[38,87],
-    "down":[40,83],
-    "left":[37,65],
-    "right":[39,68],
-    "attack":[32],
-    "confirm":[90],
-    "cancel":[88],
-    "menu":[67]
+let key_groups_list = {
+    "up": [38, 87],
+    "down": [40, 83],
+    "left": [37, 65],
+    "right": [39, 68],
+    "attack": [32],
+    "confirm": [90],
+    "cancel": [88],
+    "menu": [67]
 }
 
 
@@ -276,60 +437,43 @@ addEventListener("keydown", keydownfunc);
 
 //画像の設定
 
-var img = new Object();
-
-var willLoadImg=[
-    ["img/tiles.png","tiles"],
-    ["img/items.png","items"],
-    ["img/players/players.png","players"],
-    ["img/enemy.png","enemy"],
-    ["img/misc/particle.png","particle"],
-    ["img/misc/sweep.png","sweep"],
-    ["img/players/item_models.png","item_model"],
-    ["img/gui/gui.png","gui"],
-    ["img/gui/gui_item_about.png","gui_item_about"],
-    ["img/gui/gui_texts.png","gui_texts"],
-    ["img/gui/tab.png","gui_tab"],
-    ["img/gui/under_page_scroll.png","gui_under_page_scroll"],
-    ["img/gui/message.png","gui_message"],
-    ["img/gui/scroll_bar.png","gui_scroll_bar"],
-    ["img/gui/prompt.png","gui_prompt"],
-    ["img/gui/ability.png","gui_menu"],
-    ["img/gui/icons.png","gui_icons"],
-    ["img/gui/touch.png","touch_button"]
-]
+let img = new Object();
 
 
 //フォント
 img.font = new Object();
 
 //読み込みやつ
-var uni = {
+let uni = {
     "00": true,
+    "20": true,
     "30": true
 }
 
 //フォント読み込み
-for (let i = 0; i < 255; i++) {
+for (let i in uni) {
     if (uni[('00' + i.toString(16)).slice(-2)]) {
         img.font["uni_" + ('00' + i.toString(16)).slice(-2)] = new Image();
         img.font["uni_" + ('00' + i.toString(16)).slice(-2)].src = "img/font/uni_" + ('00' + i.toString(16)).slice(-2) + ".png";
     }
 }
 
+img.font.uni_00_purple = new Image();
+img.font.uni_00_purple.src = "img/font/uni_00_purple.png";
+
 
 //タイルの設定
-var tile_image_list = [img.empty, img.tile, img.tile2];
+let tile_image_list = [img.empty, img.tile, img.tile2];
 
-var tile_collision = [false, true, false, true];
+let tile_collision = [false, true, false, true];
 
 
 //テクスチャーアトラスの設定
-var atlas = new Object();
+let atlas = new Object();
 
 
 //剣の設定
-var weapon = new Object();
+let weapon = new Object();
 
 weapon.atlas = [
     [0, 0, 32, 32],
@@ -354,12 +498,35 @@ weapon.offset = [
 ]
 
 //メッセージ変数作成
-var message = new Object;
-message.text = "";
-message.visible = false;
+let message = {
+    "message.text": "",
+    "message.visible": false
+}
 
-var menu = new Object;
-menu.visible = false;
+//メニューの変数の作成
+let menu = {
+    "tab": 0,
+    "tab_select": true,
+    "item_select": 0,
+    "role_select": false,
+    "who_use": 0,
+    "scroll": 0,
+    "system_right": false,
+    "system_select": 0,
+    "CursorOldPos": { "x": 0, "y": 0 },
+    "CursorNeedUpdate": false,
+    "visible": false
+}
+//承認ウィンドウの変数の作成
+let window_confirm = {
+    "visible": false,
+    "selected": false,
+    "func_ok": () => { },
+    "func_cancel": () => { },
+    "text": "",
+    "title": "",
+    "pos": { "x": 0, "y": 0 }
+}
 
 //キャンバスのやつ
 const canvas = document.getElementById('canvas');
@@ -376,38 +543,40 @@ ctx.imageSmoothingEnabled = false;
 //コンテキストメニュー禁止
 document.oncontextmenu = () => {
     return false;
-  };
+};
 
 //フォント
-ctx.font='20px sans-serif';
+ctx.font = '20px sans-serif';
 
 //タッチ操作
 //あざす https://web-breeze.net/js-touch-event/
 // 各タッチイベントのイベントリスナー登録
-canvas.addEventListener("touchstart", function(){ updateDisplay(event) } )
-canvas.addEventListener("touchend", function(){ updateDisplay(event) } )
-canvas.addEventListener("touchmove",function(){ 
+canvas.addEventListener("touchstart", function () { updateDisplay(event) })
+canvas.addEventListener("touchend", function () { updateDisplay(event) })
+canvas.addEventListener("touchmove", function () {
     event.preventDefault()  // 画面スクロールを防止
-    updateDisplay(event) 
-} )
-canvas.addEventListener("touchcancel",function(){ updateDisplay(event) } )
+    updateDisplay(event)
+})
+canvas.addEventListener("touchcancel", function () { updateDisplay(event) })
 
-const touchpos=new Array();
-const touchButton=new Array();
-const touchButton_time=new Array();
+const touchpos = new Array();
+const touchButton = new Array();
+const touchButtonDown = new Array();
+const touchButtonHold = new Array();
+const touchtime = new Array();
 
-var touchButtons=[
-    {"x":64,"y":7*16,"type":"up","width":16,"height":16},
-    {"x":64,"y":9*16,"type":"down","width":16,"height":16},
-    {"x":80,"y":8*16,"type":"right","width":16,"height":16},
-    {"x":48,"y":8*16,"type":"left","width":16,"height":16},
-    {"x":9*16,"y":8*16,"type":"confirm","width":16,"height":16},
-    {"x":10*16,"y":8*16,"type":"cancel","width":16,"height":16},
-    {"x":11*16,"y":8*16,"type":"menu","width":16,"height":16},
-    {"x":15*16,"y":8*16,"type":"attack","width":32,"height":16}
+let touchButtons = [
+    { "x": 64, "y": 7 * 16, "type": "up", "width": 16, "height": 16 },
+    { "x": 64, "y": 9 * 16, "type": "down", "width": 16, "height": 16 },
+    { "x": 80, "y": 8 * 16, "type": "right", "width": 16, "height": 16 },
+    { "x": 48, "y": 8 * 16, "type": "left", "width": 16, "height": 16 },
+    { "x": 9 * 16, "y": 8 * 16, "type": "confirm", "width": 16, "height": 16 },
+    { "x": 10 * 16, "y": 8 * 16, "type": "cancel", "width": 16, "height": 16 },
+    { "x": 11 * 16, "y": 8 * 16, "type": "menu", "width": 16, "height": 16 },
+    { "x": 15 * 16, "y": 8 * 16, "type": "attack", "width": 32, "height": 16 }
 ]
 
-var touchmode=false;
+let touchmode = false;
 
 //言語設定
 game.lang = loadedjson.en_us;
@@ -416,10 +585,13 @@ game.lang = loadedjson.en_us;
 loadingassets();
 
 function main() {
-    game.map= loadedjson.Map;
 
     //FPS計測
     fpsCount();
+    main_proc_time(true);
+
+    
+    if (!IsLoading) game.map = Object.assign(loadedjson.Map, loadedjson.MapMeta)
 
     //キャンバスの初期化
     ctx.clearRect(0, 0, 320 * zoom, 180 * zoom);
@@ -445,8 +617,8 @@ function main() {
     //スクロール座標を取得
     player.scrollx = player.x - 160 + player.scroll_offsetx + debug.camx;
     player.scrolly = player.y - 80 + player.scroll_offsety + debug.camy;
-    if (player.scrollx < 0      ) player.scrollx = 0;
-    if (player.scrolly < 0      ) player.scrolly = 0;
+    if (player.scrollx < 0) player.scrollx = 0;
+    if (player.scrolly < 0) player.scrolly = 0;
     if (player.scrollx > 1280) player.scrollx = 1280;
     if (player.scrolly > 1420) player.scrolly = 1420;
 
@@ -469,64 +641,138 @@ function main() {
     timer++;
 
 
-    
 
+    main_proc_time(false);
     //ループ
-    requestAnimationFrame(main);
+    loopID = requestAnimationFrame(main);
 }
 
-function game_start_proc() {
+async function game_start_proc() {
 
+    await mapchange("Default");
+
+    //コンフィグ初期化
     for (const i in loadedjson.configs.configs) {
         let configs = loadedjson.configs.configs[i];
 
         config[configs.variable] = configs.default;
         //console.log(config[configs.variable])
     }
+
+    gamestarted = true;
 }
 
 function keydownfunc(parameter) {
-    touchmode=false;
+    touchmode = false;
 
-    var key_code = parameter.keyCode;
+    let key_code = parameter.keyCode;
     if (keys[key_code].press) keys[key_code].pressLag = true;
     keys[key_code].press = true;
     keys[key_code].timer++;
     keys[key_code].timen = timer;
     if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].time = timer;
-    if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].presstime = timer;
+    if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].timer = timer;
     parameter.preventDefault();
 }
 
 function keyupfunc(parameter) {
-    var key_code = parameter.keyCode
+    let key_code = parameter.keyCode
     keys[key_code].press = false;
     keys[key_code].pressLag = false;
     keys[key_code].timer = 0;
 }
 
-function keycheck(){
+function updateDisplay(event) {
+    // 要素の位置座標を取得
+    let clientRect = canvas.getBoundingClientRect();
+    // 距離取得
+    let x = clientRect.left;
+    let y = clientRect.top;
 
-    for(const i in keys){
-        if (keys[i].presstime == timer) keys[i].down = true;
-        if (keys[i].presstime != timer) keys[i].down = false;
+    let i = 0;
+    touchpos.splice(0, Infinity)
+    for (const touch of event.touches) {
+        let t = {
+            "x": touch.clientX - clientRect.left,
+            "y": touch.clientY - clientRect.top,
+            "timer": timer
+        }
+        touchpos[i] = t;
+        i++;
+    }
+
+    touchmode = true;
+    //console.log(touchpos[0])
+
+}
+
+function draw_touch_button() {
+    if (!touchmode) return;
+    for (const i in touchButtons) {
+        draw("touch_button_" + touchButtons[i].type, touchButtons[i].x, touchButtons[i].y)
+    }
+}
+
+function touch_button_proc() {
+    if (!touchmode) return;
+    //for(const i in touchpos)if(touchpos[i].timer!=timer)touchpos.splice(i,1)
+
+    for (const i in touchButtons) {
+        touchButton[touchButtons[i].type] = false;
+        for (const j in touchpos) {
+            // 点の情報
+            let point_pos_x = touchpos[j].x;
+            let point_pos_y = touchpos[j].y;
+
+            // 矩形の情報
+            let rect_pos_x = touchButtons[i].x * zoom;
+            let rect_pos_y = touchButtons[i].y * zoom;
+            let rect_width = touchButtons[i].width * zoom;
+            let rect_height = touchButtons[i].height * zoom;
+
+            if (point_pos_x >= rect_pos_x && point_pos_x <= (rect_pos_x + rect_width)) {
+                if (point_pos_y >= rect_pos_y && point_pos_y <= (rect_pos_y + rect_height)) {
+                    touchButton[touchButtons[i].type] = true;
+                    touchButtonDown[touchButtons[i].type] = touchtime[j] == 1;
+                    touchButtonHold[touchButtons[i].type] = touchpos[j].timer == timer - 1;
+                    //console.log(touchButtons[i].type)
+                }
+            }
+        }
+    }
+}
+
+function keycheck() {
+
+
+    for (const i in keys) {
+        if (keys[i].timer == timer) keys[i].down = true;
+        if (keys[i].timer != timer) keys[i].down = false;
         if (keys[i].timen == timer) keys[i].hold = true;
         if (keys[i].timen != timer) keys[i].hold = false;
     }
 
+    for (const i in touchpos) {
+        if (typeof touchtime[i] === "undefined") touchtime[i] = 0;
+        touchtime[i]++;
+    }
+    for (const i in touchtime) {
+        if (typeof touchpos[i] === "undefined") touchtime[i] = 0;
+    }
 
 
-    for(const i in key_groups_list){
-        if(typeof key_groups[i] == "undefined") key_groups[i] = {
-            "press":false,
-            "down":false
-        }        
+
+    for (const i in key_groups_list) {
+        if (typeof key_groups[i] == "undefined") key_groups[i] = {
+            "press": false,
+            "down": false
+        }
 
         let press_triggered = false;
         let down_triggered = false;
         let hold_triggered = false;
-        
-        for(const j in key_groups_list[i]){
+
+        for (const j in key_groups_list[i]) {
             if (keys[key_groups_list[i][j]].press) key_groups[i] = true;
             if (keys[key_groups_list[i][j]].press) press_triggered = true;
             if (!press_triggered) key_groups[i] = false;
@@ -540,11 +786,11 @@ function keycheck(){
             if (!hold_triggered) key_groups_hold[i] = false;
         }
 
-        for(const j in touchButton){
-            
+        for (const j in touchButton) {
+
             if (touchButton[i]) key_groups[i] = true;
-            if (touchButton[i]&&touchButton_time[i]==timer-1) key_groups_down[i] = true;
-            if (touchButton[i]&&touchButton_time[i]==timer-1) key_groups_hold[i] = true;
+            if (touchButton[i] && touchButtonDown[i]) key_groups_down[i] = true;
+            if (touchButton[i] && touchButtonHold[i]) key_groups_hold[i] = true;
         }
     }
 }
@@ -561,34 +807,15 @@ function fpsCount() {
     }
 }
 
-function updateDisplay(event){
-    // 要素の位置座標を取得
-    var clientRect = canvas.getBoundingClientRect() ;
-    // 距離取得
-    var x = clientRect.left ;
-    var y = clientRect.top ;
-
-    let i=0;
-    touchpos.splice(0,Infinity)
-    for ( const touch of event.touches){
-        let t={
-        "x":touch.clientX-clientRect.left,
-        "y":touch.clientY-clientRect.top,
-        "timer":timer
-        }
-
-        touchpos[i]=t;
-        i++;
-    }
-
-touchmode=true;
-    //console.log(touchpos[0])
-
-    }
+function main_proc_time(start) {//処理の時間を計測
+    if (start) MainProcStartTime = performance.now();
+    if (!start) MainProcEndTime = performance.now();
+    if (!start) MainProcTime = Math.floor(MainProcEndTime - MainProcStartTime);
+}
 
 function getTileAtlasXY(id, xy) {
     if (xy == 0) return id % 16 * 16
-    if (xy == 1) return Math.floor ( id / 16 ) * 16
+    if (xy == 1) return Math.floor(id / 16) * 16
 }
 
 function getPlayerAtlasXY(id, xy) {
@@ -600,18 +827,32 @@ function Random(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+function slice(str, len = 5) {
+    if (str.length > len)
+        return str.slice(0, len - 1) + "…";
+
+    if (str.length <= len)
+        return str;
+}
+
+function floor(num, k) {
+    if (Math.sign(k) === 1) return Math.floor(num / 10 ** k) * 10 ** k
+
+    if (Math.sign(k) == -1) return Math.floor(num * 10 ** -k) / 10 ** -k
+}
+
 function hsv2rgb(hsv) {// あざす https://lab.syncer.jp/Web/JavaScript/Snippet/67/
-    var h = hsv[0] / 60;
-    var s = hsv[1];
-    var v = hsv[2];
+    let h = hsv[0] / 60;
+    let s = hsv[1];
+    let v = hsv[2];
     if (s == 0) return [v * 255, v * 255, v * 255];
 
-    var rgb;
-    var i = parseInt(h);
-    var f = h - i;
-    var v1 = v * (1 - s);
-    var v2 = v * (1 - s * f);
-    var v3 = v * (1 - s * (1 - f));
+    let rgb;
+    let i = parseInt(h);
+    let f = h - i;
+    let v1 = v * (1 - s);
+    let v2 = v * (1 - s * f);
+    let v3 = v * (1 - s * (1 - f));
 
     switch (i) {
         case 0:
@@ -649,11 +890,11 @@ function hsv2rgb(hsv) {// あざす https://lab.syncer.jp/Web/JavaScript/Snippet
 async function loadingassets() {
     console.log("jsons are loading");
     {
-        let gets=new Array();
+        let gets = new Array();
         for (const i in willLoadJson) {
             gets.push(getJson(willLoadJson[i][0], willLoadJson[i][1]))
         }
-        
+
         await Promise.all(gets);
     }
 
@@ -661,20 +902,23 @@ async function loadingassets() {
     console.log("images are loading");
 
     {
-        let gets=new Array();
+        let gets = new Array();
         for (const i in willLoadImg) {
-            gets.push(loadImage(willLoadImg[i][0],willLoadImg[i][1]));
+            gets.push(loadImage(willLoadImg[i][0], willLoadImg[i][1]));
         }
-        
+
         await Promise.all(gets);
     }
 
     console.log("images are loaded");
 
+    if (gamestarted) return;
+
     console.log("game is starting");
     game_start_proc();
-    requestAnimationFrame(main);
+    loopID = requestAnimationFrame(main);
 
+    return;
     //よしゃあああaaikrretataaaaaaaaa　2023/08/07 20:38
 
 }
@@ -710,7 +954,7 @@ async function loadJson(filename, name) {
 
 async function getJson(filename, name) {
     //あざす　https://gxy-life.com/2PC/javascript/json_table20220514/
-    var startTime=new Date().getTime();
+    let startTime = new Date().getTime();
 
     //取得ここから
     const response = await fetch(
@@ -719,14 +963,14 @@ async function getJson(filename, name) {
     const members = await response.json();
     //取得ここまで
 
-    var endTime=new Date().getTime(); 
-    members.loadTime=endTime-startTime;
+    let endTime = new Date().getTime();
+    members.loadTime = endTime - startTime;
     loadjsoncount++;
-    console.log('loaded : '+filename);
+    console.log('loaded : ' + filename);
 
-    if(!gamestarted){
+    if (!gamestarted) {
         ctx.clearRect(0, 0, 320 * zoom, 180 * zoom);
-        ctx.fillText(`loading parameter: ${loadjsoncount}/${willLoadJson.length}`,320/2*zoom,180/2*zoom);
+        ctx.fillText(`loading parameter: ${loadjsoncount}/${willLoadJson.length}`, 320 / 2 * zoom, 180 / 2 * zoom);
     }
 
     loadedjson[name] = members;
@@ -735,27 +979,27 @@ async function getJson(filename, name) {
 
 //あざす https://pisuke-code.com/js-load-image-synchronously/
 /// 1.Promiseを使った同期読み込み
-async function loadImage(imgUrl,name){
-  img[name] = null;
-  var promise = new Promise(function(resolve){
-    img[name] = new Image();
-    img[name].onload = function(){
-      /// 読み込み完了後...
-        loadimgcount++
-        if(!gamestarted){
-            ctx.clearRect(0, 0, 320 * zoom, 180 * zoom);
-            ctx.fillText(`loading images: ${loadimgcount}/${willLoadImg.length}`,320/2*zoom,180/2*zoom);
-        }
+async function loadImage(imgUrl, name) {
+    img[name] = null;
+    let promise = new Promise(function (resolve) {
+        img[name] = new Image();
+        img[name].onload = function () {
+            /// 読み込み完了後...
+            loadimgcount++
+            if (!gamestarted) {
+                ctx.clearRect(0, 0, 320 * zoom, 180 * zoom);
+                ctx.fillText(`loading images: ${loadimgcount}/${willLoadImg.length}`, 320 / 2 * zoom, 180 / 2 * zoom);
+            }
 
-      console.log('loaded : '+imgUrl);
-      resolve();
-    }
-    /// 読み込み開始...
-    img[name].src = imgUrl;
-  });
-  /// 読込完了まで待つ
-  await promise;
-  return img[name];
+            console.log('loaded : ' + imgUrl);
+            resolve();
+        }
+        /// 読み込み開始...
+        img[name].src = imgUrl;
+    });
+    /// 読込完了まで待つ
+    await promise;
+    return img[name];
 }
 
 
@@ -764,12 +1008,17 @@ async function loadconfig() {
     //let dirHandle;
     let fileData;
 
-    if (typeof dirHandle == "undefined") dirHandle = await window.showDirectoryPicker();
+    try{
+        if (typeof dirHandle == "undefined") dirHandle = await window.showDirectoryPicker();
+    }catch{
+        return undefined;
+    }
 
-    const file = await dirHandle.getFileHandle("save.json", {
+    const file = await dirHandle.getFileHandle(SaveDataFileName, {
         create: true
     });
     fileData = await file.getFile();
+    LastSavedFileData = fileData;
     let text = await fileData.text();
     let json = JSON.parse(text);
     return json;
@@ -778,9 +1027,13 @@ async function loadconfig() {
 async function saveconfig(obj) {
     let fileData;
 
-    if (typeof dirHandle == "undefined") dirHandle = await window.showDirectoryPicker();
+    try{
+        if (typeof dirHandle == "undefined") dirHandle = await window.showDirectoryPicker();
+    }catch{
+        return undefined;
+    }
 
-    const file = await dirHandle.getFileHandle("save.json", {
+    const file = await dirHandle.getFileHandle(SaveDataFileName, {
         create: true
     });
 
@@ -797,30 +1050,85 @@ async function saveconfig(obj) {
 
     // Read the file text.
     fileData = await file.getFile();
+    LastSavedFileData = fileData;
     let text = await fileData.text();
+
+    return fileData;
+}
+
+async function savepathselect() {
+    let fileData;
+
+    try{
+        if (typeof dirHandle == "undefined") dirHandle = await window.showDirectoryPicker();
+    }catch{
+        return undefined;
+    }
+
+    const file = await dirHandle.getFileHandle(SaveDataFileName, {
+        create: true
+    });
+
+    // Read the file text.
+    fileData = await file.getFile();
+    LastSavedFileData = fileData;
+    let text = await fileData.text();
+
+    return fileData;
 }
 
 async function savedataload() {
     let obj = await loadconfig();
+    if(obj == undefined)return;
 
+    if (obj.iphash != await getHash(await getIP())) if (!confirm("前回セーブしたIPと違います\n第三者のセーブデータをロードすることは推奨しません\nロードしますか?")) return;
 
     player = obj.player;
     players = obj.players;
+    enemy = obj.enemy;
+    LastSavedTime = new Date(obj.LastSavedTime);
     player_movelog_reset()
+    mapchange(player.mapID, player.x, player.y, false)
+
+    return LastSavedFileData;
 }
 
 async function savedatawrite() {
-    let obj = {}
+    let obj = new Object();
 
+    obj.metadata = game.savemetadata;
+    obj.LastSavedTime = new Date();
     obj.player = player;
     obj.players = players;
+    obj.enemy = enemy;
+    obj.iphash = await getHash(await getIP());
 
-    saveconfig(obj);
+    await saveconfig(obj);
+    if(obj == undefined)return;
+
+    LastSavedTime = new Date(obj.LastSavedTime);
+    return LastSavedFileData;
 }
 
-function changeMap(mapID){
-	getJson(mapID+".json", "Map");
-	game.map= loadedjson.Map;
+//あざす https://zenn.dev/batton/articles/c84a99913b5430
+async function getHash(message) {
+    // const encoder = new TextEncoder();
+    // const data = encoder.encode(message);
+    // const hash = await crypto.subtle.digest('SHA-256', data);
+    // return hash;
+
+    const msgUint8 = new TextEncoder().encode(message);                           // encode as (utf-8) Uint8Array
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
+    const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
+    return hashHex;
+}
+
+//あざす https://onl.sc/bWZEx2w
+async function getIP() {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = response.json;
+    return data.ip
 }
 
 function calcAngleDegrees(x, y) {
@@ -831,18 +1139,18 @@ function calcAngleDegrees(x, y) {
 
 function getNearestEnemy(x, y, d) {
     if (typeof d == "undefined") d = false;
-    var distance = new Array();
+    let distance = new Array();
     for (const i in enemy) {
         distance.push(getDistance(x, y, enemy[i].x, enemy[i].y));
     }
     if (d) return [distance.indexOf(Math.min.apply(null, distance)), Math.min.apply(null, distance)];
     if (d == "distanceOnly") return Math.min.apply(null, distance);
     return distance.indexOf(Math.min.apply(null, distance));
-   
+
 }
 
 function getNearestEnemyDistance(x, y) {
-    var distance = new Array();
+    let distance = new Array();
     for (const i in enemy) {
         distance.push(getDistance(x, y, enemy[i].x, enemy[i].y));
     }
@@ -868,10 +1176,18 @@ function getEnemyCenter(i) {
     }
 }
 
-function getTileID(maplayer,x,y) {
-    try {
-        return game.map[maplayer][y][x];
-    } catch { }
+function getTileID(maplayer = "map1", x, y) {
+    if (typeof game.map[maplayer] !== "undefined")
+        if (y >= 0 && y < game.map[maplayer].length)
+            if (x >= 0 && x < game.map[maplayer][y].length)
+                return game.map[maplayer][y][x];
+
+
+}
+
+function TF(bool, True = "", False = "") {
+    if (bool) return True;
+    if (!bool) return False;
 }
 
 //数字のindex番目取得
@@ -907,12 +1223,12 @@ function changeHitbox(bool, x, y) {
 
 //当たり判定
 function hitbox(x, y) {
-    try {
-        if (game.map.hitbox[Math.floor(y / 16 + 0)][Math.floor(x / 16 + 0)]) return true;
-        if (game.map.hitbox[Math.floor(y / 16 + 0)][Math.floor(x / 16 + 0.95)]) return true;
-        if (game.map.hitbox[Math.floor(y / 16 + 0.95)][Math.floor(x / 16 + 0)]) return true;
-        if (game.map.hitbox[Math.floor(y / 16 + 0.95)][Math.floor(x / 16 + 0.95)]) return true;
-    } catch { }
+    if (getTileID("hitbox", Math.floor(x / 16 + 0), Math.floor(y / 16 + 0))) return true;
+    if (getTileID("hitbox", Math.floor(x / 16 + 0.95), Math.floor(y / 16 + 0))) return true;
+    if (getTileID("hitbox", Math.floor(x / 16 + 0), Math.floor(y / 16 + 0.95))) return true;
+    if (getTileID("hitbox", Math.floor(x / 16 + 0.95), Math.floor(y / 16 + 0.95))) return true;
+
+    return false;
 }
 
 function hitbox_rect(ax, ay, aw, ah, bx, by, bw, bh, color) {
@@ -922,16 +1238,16 @@ function hitbox_rect(ax, ay, aw, ah, bx, by, bw, bh, color) {
     debug_hitbox_push(ax, ay, aw, ah, color);
     debug_hitbox_push(bx, by, bw, bh, color);
 
-    var acx = ax + aw / 2;
-    var acy = ay + ah / 2;
-    var bcx = bx + bw / 2;
-    var bcy = by + bh / 2;
+    let acx = ax + aw / 2;
+    let acy = ay + ah / 2;
+    let bcx = bx + bw / 2;
+    let bcy = by + bh / 2;
 
-    var dx = Math.abs(acx - bcx);
-    var dy = Math.abs(acy - bcy);
+    let dx = Math.abs(acx - bcx);
+    let dy = Math.abs(acy - bcy);
 
-    var sx = (aw + bw) / 2;
-    var sy = (ah + bh) / 2;
+    let sx = (aw + bw) / 2;
+    let sy = (ah + bh) / 2;
 
     if (dx < sx && dy < sy) {
         return true;
@@ -946,12 +1262,12 @@ function hitbox_reci(ax, ay, aw, ah, bx, by, bw, bh, color) {
     debug_hitbox_push(ax, ay, aw, ah, color);
     debug_hitbox_push(bx, by, bw, bh, color);
 
-    var da = ax - bx;
-    var db = ay - by;
-    var dc = Math.sqrt(da ** 2 + db ** 2);
+    let da = ax - bx;
+    let db = ay - by;
+    let dc = Math.sqrt(da ** 2 + db ** 2);
 
-    var ar = 2 / Math.sqrt(2 * Math.max(aw, ah));
-    var br = 2 / Math.sqrt(2 * Math.max(bw, bh));
+    let ar = 2 / Math.sqrt(2 * Math.max(aw, ah));
+    let br = 2 / Math.sqrt(2 * Math.max(bw, bh));
 
     if (dc <= ar + br) {
         return true;
@@ -964,24 +1280,24 @@ function hitbox_reci(ax, ay, aw, ah, bx, by, bw, bh, color) {
 function hitbox_enemy_rect(ax, ay, aw, ah, color) {
     if (typeof color == "undefined") color = "black";
 
-    var hit = new Array();
+    let hit = new Array();
 
     for (const i in enemy) {
-        var enemy_hitbox_x = get_enemy_data(i, "width");
-        var enemy_hitbox_y = get_enemy_data(i, "height");
-        if (hitbox_rect(enemy[i].x, enemy[i].y, enemy_hitbox_x, enemy_hitbox_y, ax, ay, aw, ah,color) ) hit.push(i * 1);
+        let enemy_hitbox_x = get_enemy_data(i, "width");
+        let enemy_hitbox_y = get_enemy_data(i, "height");
+        if (hitbox_rect(enemy[i].x, enemy[i].y, enemy_hitbox_x, enemy_hitbox_y, ax, ay, aw, ah, color)) hit.push(i * 1);
     }
 
     return hit;
 }
 
-function hitbox_rema(ax, ay, aw, ah, color,checktile,maplayer) {
+function hitbox_rema(ax, ay, aw, ah, color, checktile, maplayer) {
     if (typeof color == "undefined") color = "black";
 
     let x = Math.round(ax / 16);
     let y = Math.round(ay / 16);
 
-    var hit = new Array();
+    let hit = new Array();
 
     for (let ix = 0; ix < Math.ceil(aw / 16); ix++) {
         for (let iy = 0; iy < Math.ceil(ah / 16); iy++) {
@@ -990,7 +1306,7 @@ function hitbox_rema(ax, ay, aw, ah, color,checktile,maplayer) {
 
             let TileID = getTileID(maplayer, x + ix, y + iy)
 
-            if (typeof checktile == "undefined") hit.push([(x + ix), (y + iy),TileID]);
+            if (typeof checktile == "undefined") hit.push([(x + ix), (y + iy), TileID]);
             if (typeof checktile != "undefined" && !Array.isArray(checktile)) if (checktile == TileID) hit.push([(x + ix), (y + iy), TileID]);
             if (typeof checktile != "undefined" && Array.isArray(checktile)) if (checktile.includes(TileID)) hit.push([(x + ix), (y + iy), TileID]);
         }
@@ -1000,11 +1316,12 @@ function hitbox_rema(ax, ay, aw, ah, color,checktile,maplayer) {
 
 function player_proc() {
 
+    if (IsLoading) return;
     if (canPlayerMoveForOpenGui()) player_move_proc();
     player_attack()
-	
-	mapchange_proc()
-	
+
+    mapchange_proc()
+
     for (const i in players) {
 
         //ダメージクールダウンの処理
@@ -1013,11 +1330,13 @@ function player_proc() {
         player_knockback_move(i);
 
     }
+
+    if ([player.x, player.y] != [player.movelog[0], player.movelog[1]]) player.movelog.unshift([player.x, player.y]);
 }
 
 function player_move_proc() {
 
-    if (player.canRotate && (!key_groups.attack || config.canrotateonattacking) ) rotate();
+    if (player.canRotate && (!key_groups.attack || config.canrotateonattacking)) rotate();
 
     //移動キー判定
     player.up = key_groups.up;
@@ -1040,8 +1359,9 @@ function player_move_proc() {
     //アニメーションに使用(値を変更すると速度が変わる)
     if (player.moved) player.moveTimer += 0.12;
 
+
     //上限(64)を超えたら削除
-    player.movelog.splice(64,Infinity);
+    player.movelog.splice(64, Infinity);
 
 
     //速度調整
@@ -1067,39 +1387,33 @@ function player_move_proc() {
 
 }
 
-function player_movelog_reset(){
+function player_movelog_reset() {
     player.movelog.splice(0, Infinity);
     for (let i = 0; i < 64; i++) player.movelog.push([player.x, player.y]);
 }
 
 //プレイヤーの動き
 function player_move(mvx, mvy, checkhitbox) {
-    for (var i = 0; i < Math.round(Math.abs(mvx)); i++) {
+    for (let i = 0; i < Math.round(Math.abs(mvx)); i++) {
         player.x += Math.sign(mvx);
-        player.movelog.unshift([player.x, player.y]);
 
-        if (hitbox(player.x, player.y) && checkhitbox) {
-            player.x -= Math.sign(mvx);
-            player.movelog.shift();
-        } 
+        if (hitbox(player.x, player.y) && checkhitbox) player.x -= Math.sign(mvx);
+
 
         if (i > game.move_limit) break;
     }
-    for (var i = 0; i < Math.round(Math.abs(mvy)); i++) {
+    for (let i = 0; i < Math.round(Math.abs(mvy)); i++) {
         player.y += Math.sign(mvy);
-        player.movelog.unshift([player.x, player.y]);
 
-        if (hitbox(player.x, player.y) && checkhitbox) {
-            player.y -= Math.sign(mvy);
-            player.movelog.shift();
-        }
-        
+        if (hitbox(player.x, player.y) && checkhitbox) player.y -= Math.sign(mvy);
+
         if (i > game.move_limit) break;
     }
+
 }
 
 //回復処理
-function player_heal(i, x){
+function player_heal(i, x) {
     players[i].hp += x;
     if (players[i].hp_max <= players[i].hp) players[i].hp = players[i].hp_max;
 }
@@ -1131,7 +1445,7 @@ function player_knockback(x, y) {
 
 function player_knockback_move(i) {
     //移動
-    player_move(player.xknb, player.yknb,true);
+    player_move(player.xknb, player.yknb, true);
 
     player.xknb -= player.xknb * 0.2;
     player.yknb -= player.yknb * 0.2;
@@ -1166,7 +1480,7 @@ function weapon_attack(i) {
 function weapon_proc() {
     for (const i in players) {
         if (players[i].weapon.timer > 0) {
-            
+
             //攻撃
             let hit_enemy = new Array();
             hit_enemy = hitbox_enemy_rect(players[i].weapon.x - 8, players[i].weapon.y - 8, 32, 32);
@@ -1178,13 +1492,13 @@ function weapon_proc() {
             let breaks = hitbox_rema(players[i].weapon.x - 8, players[i].weapon.y - 8, 32, 32, "red", game.breakableTile, "map1");
             for (let i in breaks) {
                 //console.log(breaks[0])
-                if (game.breakableTileAbout[breaks[i][2]].breakProbability>Math.random() ) {
+                if (game.breakableTileAbout[breaks[i][2]].breakProbability > Math.random()) {
                     replaceTile(game.breakableTileAbout[breaks[i][2]].becomeTile, "map1", breaks[i][0], breaks[i][1]);
                     changeHitbox(false, breaks[i][0], breaks[i][1]);
-                    createParticle(breaks[i][0] * 16+8, breaks[i][1] * 16+8, 2, 8);
+                    createParticle(breaks[i][0] * 16 + 8, breaks[i][1] * 16 + 8, 2, 8);
                 }
 
-                createParticle(breaks[i][0] * 16+8, breaks[i][1] * 16+8, 2, 0.2);
+                createParticle(breaks[i][0] * 16 + 8, breaks[i][1] * 16 + 8, 2, 0.2);
             }
 
 
@@ -1227,7 +1541,7 @@ function weapon_proc() {
             }
 
         } else {
-            players[i].weapon.timer --;
+            players[i].weapon.timer--;
         }
     }
 }
@@ -1268,14 +1582,28 @@ function rotate() {
     //if (player.up && player.down && player.right && player.left) player.rotate = 0;
 }
 
-function mapchange_proc(){
-	for(const i in game.map.warp){
-		if(hitbox_rect( game.map.warp[i].pos[0]*16, game.map.warp[i].pos[1]*16,16,16,player.x,player.y,16,16)) mapchange(game.map.warp[i].mapID);
-	}
+function mapchange_proc() {
+    for (const i in game.map.warp) {
+        if (hitbox_rect(game.map.warp[i].x * 16, game.map.warp[i].y * 16, 16, 16, player.x, player.y, 16, 16)) mapchange(game.map.warp[i].to.mapID, game.map.warp[i].to.x * 16, game.map.warp[i].to.y * 16);
+        if (IsLoading) break;
+    }
 }
 
-function mapchange(ID){
-	getJson(game.map_path[ID],Map);
+async function mapchange(ID, x, y, loadonly = false) {
+
+    IsLoading = true;
+    await getJson(game.map_path[ID], "Map");
+    await getJson(game.map_path[ID] + "meta", "MapMeta");
+    player.mapID = ID;
+
+    if (!loadonly) {
+        enemy.splice(0, Infinity);
+
+        //プレイヤーの場所を移動
+        if (typeof x != "undefined" && typeof y != "undefined" && !isNaN(x) && !isNaN(y)) [player.x, player.y] = [x, y];
+        if (typeof x == "undefined" || typeof y == "undefined" || isNaN(x) || isNaN(y)) [player.x, player.y] = [loadedjson.Map.player[0], loadedjson.Map.player[1]];
+    }
+    IsLoading = false;
 }
 
 function subplayerx(i) {
@@ -1311,39 +1639,27 @@ function enemydrawy(i) {
 }
 
 function get_enemy_data(i, data) {
-    try {
-        return loadedjson.enemy[enemy[i].id][data];
-    } catch {
-        return;
-    }
+    return loadedjson.enemy[enemy[i].id][data];
 }
 
 function get_item_data_index(i, data) {
-    try {
-        return loadedjson.item[i][data];
-    } catch {
-        return index
-    }
+    return loadedjson.item[i][data];
+
 }
 
 function get_item_data(i, data) {
-    try {
-        return loadedjson.item[player.items[i].id][data];
-    } catch {
-        return player.items[i].id
-    }
+    return loadedjson.item[player.items[i].id][data];
 }
 
 function get_text(i) {
-    try {
-        if (typeof loadedjson["en_us"][i] == "string") return loadedjson["en_us"][i];
-        if (typeof loadedjson["en_us"][i] != "string") return i;
-    } catch {
-        return i
-    }
+    if (typeof game.lang[i] == "string") return game.lang[i];
+    if (typeof game.lang[i] != "string") return i;
+
 }
 
 function enemy_proc() {
+
+    if (IsLoading) return;
 
     for (const i in enemy) {
         enemy_move_proc(i);
@@ -1381,12 +1697,12 @@ function enemy_move_proc(i) {
 function enemy_move(i, x, y) {
 
     //移動
-    for (var j = 0; j < Math.round(Math.abs(x)); j++) {
+    for (let j = 0; j < Math.round(Math.abs(x)); j++) {
         enemy[i].x += Math.sign(x);
         if (hitbox(enemy[i].x, enemy[i].y)) enemy[i].x -= Math.sign(x);
         if (j > game.move_limit) break;
     }
-    for (var j = 0; j < Math.round(Math.abs(y)); j++) {
+    for (let j = 0; j < Math.round(Math.abs(y)); j++) {
         enemy[i].y += Math.sign(y);
         if (hitbox(enemy[i].x, enemy[i].y)) enemy[i].y -= Math.sign(y);
         if (j > game.move_limit) break;
@@ -1433,14 +1749,14 @@ function enemy_move_normal(i) {
 }
 
 function enemy_move_hostility(i) {
-    var dis = getDistance(enemy[i].x, enemy[i].y, subplayerx(0), subplayery(0));
+    let dis = getDistance(enemy[i].x, enemy[i].y, subplayerx(0), subplayery(0));
     if (dis < 16) {
         enemy[i].moving = false;
         return
     }
 
-    var r = calcAngleDegrees(player.x + game.facing_pos[player.facing][0] - enemy[i].x, player.y + game.facing_pos[player.facing][1] - enemy[i].y);
-    enemy[i].xspd += enemy_speed * (Math.cos(r)+"").slice(0);
+    let r = calcAngleDegrees(player.x + game.facing_pos[player.facing][0] - enemy[i].x, player.y + game.facing_pos[player.facing][1] - enemy[i].y);
+    enemy[i].xspd += enemy_speed * (Math.cos(r) + "").slice(0);
     enemy[i].yspd += enemy_speed * (Math.sin(r) + "").slice(0);
 
     enemy[i].moving = true;
@@ -1473,7 +1789,7 @@ function enemy_overlap(i) {
                 let r = calcAngleDegrees(player.x + game.facing_pos[player.facing][0] - enemy[i].x, player.y + game.facing_pos[player.facing][1] - enemy[i].y);
                 let d = getDistance(enemy[i].x, enemy[i].y, enemy[j].x, enemy[j].y);
                 //enemy_knockback(i, (Math.cos(r - 180) + "").slice(0) * Random(0, 1), (Math.sin(r - 180) + "").slice(0) * Random(0, 1));
-                if(r!=1)enemy_move(i, (Math.cos(r - 180) + "").slice(0) * Random(0, 1), (Math.sin(r - 180) + "").slice(0) * Random(0, 1))
+                if (r != 1) enemy_move(i, (Math.cos(r - 180) + "").slice(0) * Random(0, 1), (Math.sin(r - 180) + "").slice(0) * Random(0, 1))
                 //console.log([enemy[i].xknb, enemy[i].yknb])
             }
         }
@@ -1496,7 +1812,7 @@ function enemy_knockback_move(i) {
 
 function enemy_become_proc(i) {
     enemy[i].attack.timer--;
-    if (enemy[i].attack.hostility && enemy[i].attack.timer <= 0 && getDistance(player.x,player.y,enemy[i].x,enemy[i].y)>64) enemy[i].attack.hostility = false;
+    if (enemy[i].attack.hostility && enemy[i].attack.timer <= 0 && getDistance(player.x, player.y, enemy[i].x, enemy[i].y) > 64) enemy[i].attack.hostility = false;
 }
 
 function enemy_slime_attack_proc(i) {
@@ -1510,7 +1826,7 @@ function enemy_slime_attack_proc(i) {
             enemy[i].attack_anim.tick = 0;
         }
 
-        if (enemy[i].attack_anim.tick == 10 ) player_damage(10, -Math.sign(getEnemyCenter(i).x -( player.x + 8) ),-Math.sign(getEnemyCenter(i).y - (player.y + 8) ));
+        if (enemy[i].attack_anim.tick == 10) player_damage(10, -Math.sign(getEnemyCenter(i).x - (player.x + 8)), -Math.sign(getEnemyCenter(i).y - (player.y + 8)));
         //console.log("attacked"); 
     }
 }
@@ -1536,7 +1852,7 @@ function enemy_damage(i, damage, rx, ry) {
     //エフェクト処理
     enemy[i].damage_effect.damage += damage;
     enemy[i].damage_effect.view_time = 100;
-    enemy[i].damage_effect.last_damage_timer = 250;
+    enemy[i].damage_effect.Last_damage_timer = 250;
     createParticle(getEnemyCenter(i).x, getEnemyCenter(i).y, 1, 1);
 
     return true;
@@ -1551,14 +1867,14 @@ function enemy_damage_proc(i) {
     enemy[i].damage_cooldown--;
 
     //ダメージタイマーの処理
-    enemy[i].damage_effect.last_damage_timer--;
+    enemy[i].damage_effect.Last_damage_timer--;
 }
 
 function enemy_death_proc() {
     for (const i in enemy) {
         if (enemy[i].hp <= 0) createParticle(enemy[i].x, enemy[i].y, 0, 5);
 
-        if ((getDistance(player.x, player.y, enemy[i].x, enemy[i].y) > 256 && !enemy[i].attack.hostility)||
+        if ((getDistance(player.x, player.y, enemy[i].x, enemy[i].y) > 256 && !enemy[i].attack.hostility) ||
             enemy[i].hp <= 0) {
             enemy.splice(i, 1);
         }
@@ -1566,90 +1882,49 @@ function enemy_death_proc() {
 }
 
 function enemy_spawn_event() {
+    //沸き上限
     if (enemy.length >= 50) return;
 
-    var func = function (x, y) {
-        if (Random(0, 10) < 9) return;
-
-        try {
-            //敵をスポーンする場所かを調べる
-            var ID = game.map["enemy"][y][x];
-            if (ID == 0 || typeof ID != "number") return;
-
-            //敵が既にスポーンされてないか調べる
-            let test = true;
-            for (const i in enemy) {
-                if (enemy[i].sp[0] == x && enemy[i].sp[1] == y) test = false;
-            }
-            if (test) enemy_spawn(x, y, ID);
-        } catch { }
+    for (let i = 0; i < 360; i += 3) {
+        let r = 16;
+        let x = Math.floor(player.x / 16 + Math.cos(i) * r);
+        let y = Math.floor(player.y / 16 + Math.sin(i) * r);
+        enemy_spawn_check(x, y);
     }
-
-    //敵がスポーンする場所をを調べる
-    for (var i = 0; i < 13; i++) {
-        func(Math.floor(player.scrollx / 16), Math.floor(player.scrolly / 16) + i, 1);
-        func(Math.floor(player.scrollx / 16) + 21, Math.floor(player.scrolly / 16) + i, 1);
-    }
-    for (var i = 0; i < 21; i++) {
-
-        func(Math.floor(player.scrollx / 16) + i, Math.floor(player.scrolly / 16), 1);
-        func(Math.floor(player.scrollx / 16) + i, Math.floor(player.scrolly / 16) + 13, 1);
-    }
-
 }
 
-function enemy_spawn(spx, spy,id) { 
+function enemy_spawn_check(x, y) {
+    //debug_hitbox_push(x * 16, y * 16, 16, 16);
 
-    //データの作成
-    var def = {
-        "x": spx * 16,
-        "y": spy * 16,
-        "sp": [spx,spy],
-        "id":id,
-        "xspd": 0,
-        "yspd": 0,
-        "xknb": 0,
-        "yknb": 0,
-        "move": [false, false, false, false, 0],
-        "attack": {
-            "hostility": false,
-            "timer": 0,
-            "cool_down":0
-        },
-        "hp": loadedjson.enemy[id].hp,
-        "damage_cooldown": 0,
-        "damage_effect": {
-            "damage": 0,
-            "view_time": 0,
-            "last_damage_timer":0
-        },
-        "attack_anim": {
-            "tick": 0,
-            "animing": false
-        },
-        "anim": {
-            "tick": 0,
-            "animing":false
-        },
-        "moving": false,
+    if (Random(0, 10) < 9) return;
+
+    //敵をスポーンする場所かを調べる
+    let ID = getTileID("enemy", x, y);
+    if (ID == 0 || typeof ID != "number") return;
+
+    //敵が既にスポーンされてないか調べる
+    for (const i in enemy) {
+        if (enemy[i].sp[0] == x && enemy[i].sp[1] == y) return;
     }
-    //データの追加
-    enemy.push(def);
+    enemy.push(new Enemy(x, y, ID));
+
 }
 
 function particle_proc() {
+
+    if (IsLoading) return;
     for (const i in particle) {
         particle[i].tick++;
     }
-    paricle_death_proc()
+    paricle_death_check()
 }
 
 function createParticle(spx, spy, id, count) {
-    if(count<1.0) if(Math.random()>count) return;
+    if (count < 1.0) if (Math.random() > count) return;
 
-    for (var j = 0; j < count; j++) {
+    for (let j = 0; j < count; j++) {
         //データの作成
-        var def = {
+        let def = {
             "x": spx,
             "y": spy,
             "id": id,
@@ -1663,18 +1938,10 @@ function createParticle(spx, spy, id, count) {
     }
 }
 
-function paricle_death_proc() {
+function paricle_death_check() {
     for (const i in particle) {
         if (particle[i].lifetime <= particle[i].tick) particle.splice(i, 1);
     }
-}
-
-//メッセージを表示する
-function messageView(text) {
-    //console.log(text);
-    message.visible = true;
-    message.text = text;
-
 }
 
 function debug_proc() {
@@ -1698,37 +1965,35 @@ function debug_proc() {
     }
     debug.hitboxes.splice(0);
 
-    let memp = Math.floor(performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit * 100 * 1000) / 1000;
-    let mem = Math.floor(performance.memory.usedJSHeapSize  /102.4)
 
     //文字描画
     {
-        let draw_text_debug=[
+        let draw_text_debug = [
             `FPS:${fps}`,
-            `Mem:${mem}k(${memp}%)`,
+            `m:${MainProcTime}ms`,
             `t:${timer}`,
             `e:${enemy.length}`,
             `p:${particle.length}`
-            
+
         ]
-        
-        draw_texts(draw_text_debug,0,140)
+
+        draw_texts(draw_text_debug, 0, 140)
     }
-    
+
     {
-        let draw_text_debug=[
-            `x:${player.x}`,
-            `y:${player.y}`,
-            
+        let draw_text_debug = [
+            `x:${player.x}(${Math.floor(player.x / 16)})`,
+            `y:${player.y}(${Math.floor(player.y / 16)})`,
+
         ]
-        
-        draw_texts(draw_text_debug,64,0)
+
+        draw_texts(draw_text_debug, 64, 0)
     }
     draw_text("dc:" + debug.camx + "," + debug.camy, 0, 24);
 
 
 
-    for (let i = 0 , j = 0; i < keys.length; i++) {
+    for (let i = 0, j = 0; i < keys.length; i++) {
         if (keys[i].press) {
             draw_text(String.fromCharCode(i), 78 * 4, j * 8);
             draw_text(`${i}`, 74 * 4, j * 8);
@@ -1736,14 +2001,14 @@ function debug_proc() {
         }
     }
 
-    let px = 0,dx=0;
+    let px = 0, dx = 0;
     for (const key in key_groups) {
         if (key_groups[key]) {
-            draw_text(key.slice(0,2), 68 * 4, px * 8);
+            draw_text(key.slice(0, 2), 68 * 4, px * 8);
             px++;
         }
         if (key_groups_down[key]) {
-            draw_text(key.slice(0,2), 64 * 4, dx * 8);
+            draw_text(key.slice(0, 2), 64 * 4, dx * 8);
             dx++;
         }
     }
@@ -1760,7 +2025,7 @@ function debug_proc() {
         //player
         if (document.getElementById("debugtype").selectedIndex == 0) {
             let id = document.getElementById("debugplayerid").value
-            if (id >= players.length) id = players.length-1;
+            if (id >= players.length) id = players.length - 1;
 
             draw_text("players" + id, 128 + 64, 0);
             let j = 0;
@@ -1774,7 +2039,7 @@ function debug_proc() {
         //enemy
         if (document.getElementById("debugtype").selectedIndex == 1) {
             let id = document.getElementById("debugplayerid").value;
-            if (id >= enemy.length - 1) id = enemy.length-1;
+            if (id >= enemy.length - 1) id = enemy.length - 1;
 
             draw_text("enemy" + id, 128 + 64, 0);
             let j = 0;
@@ -1789,31 +2054,39 @@ function debug_proc() {
         }
     }
 
+    //タッチデバック
+    debug_draw_touch();
 
 }
 
-function debug_hitbox_push(a,b,c,d,color) {
+function debug_hitbox_push(a, b, c, d, color) {
     if (typeof color == "undefined") color = "black";
 
     if (!debug.hitbox_visible) return
     if (!debug.text_visible) return
 
     //データの作成
-    var def = {
+    let def = {
         "a": a,
         "b": b,
         "c": c,
         "d": d,
-        "color":color
+        "color": color
     }
-    
+
     //データの追加
     debug.hitboxes.push(def);
 }
 
-function draw_text(text, textx, texty, textwidth, textheight) {
+function debug_draw_touch() {
+    for (let i in touchpos) {
+        draw_text("" + i + touchtime[i], touchpos[i].x / zoom, touchpos[i].y / zoom)
+    }
+}
 
-    for (let i = 0 ,at = 0, offsetx = 0 , offsety = 0; at < text.length; i++) {
+function draw_text(text, textx, texty, textwidth, textheight, font = "") {
+
+    for (let i = 0, at = 0, offsetx = 0, offsety = 0; at < text.length; i++) {
 
         //改行
         if (text.charAt(at) == "\n") {
@@ -1824,7 +2097,7 @@ function draw_text(text, textx, texty, textwidth, textheight) {
         if (text.charAt(at).match(/^(\n|\r|\t|\b|\f|\v|\0)$/) != null) at++;
 
         //描画
-        if (at <= text.length) draw_font(text.charAt(at), (textx + offsetx * 8), (texty + offsety * 8));
+        if (at <= text.length) draw_font(text.charAt(at), (textx + offsetx * 8), (texty + offsety * 8), font);
 
         //桁
         at++;
@@ -1846,79 +2119,30 @@ function draw_text(text, textx, texty, textwidth, textheight) {
     return undefined;
 }
 
-function draw_font(text,textx,texty) {
-    var codeP = ("0000" + text.charCodeAt(0).toString(16)).slice(-4);
+function draw_font(text, textx, texty, font = "") {
+    let codeP = ("0000" + text.charCodeAt(0).toString(16)).slice(-4);
+    let fontimg = img.font["uni_" + NumberofIndex(codeP, 0, 16) + NumberofIndex(codeP, 1, 16) + font]
 
-    try {
-        ctx.drawImage(img.font["uni_" + NumberofIndex(codeP, 0, 16) + NumberofIndex(codeP, 1, 16)], parseInt(NumberofIndex(codeP, 3, 16), 16) * 8, parseInt(NumberofIndex(codeP, 2, 16), 16) * 8, 8, 8, textx * zoom, texty * zoom, 8 * zoom, 8 * zoom);
-    } catch { }
+    if (fontimg == undefined) return;
+
+    ctx.drawImage(fontimg, parseInt(NumberofIndex(codeP, 3, 16), 16) * 8, parseInt(NumberofIndex(codeP, 2, 16), 16) * 8, 8, 8, textx * zoom, texty * zoom, 8 * zoom, 8 * zoom);
+
 }
 
-function draw_texts(text,x,y){
+function draw_texts(text, x, y) {
 
-    for(const i in text){
-        draw_text(text[i],x,i*8+y)
+    for (const i in text) {
+        draw_text(text[i], x, i * 8 + y)
     }
 }
-
-/*
-function draw_lang_text(text, x, y, textwidth, textheight) {
-    if (typeof game.lang == "undefined") return;
-    var offsetx = 0;
-    var offsety = 0;
-    var drawx = 0;
-    var drawy = 0;
-
-    for (const i in game.lang[text]) {
-        let t = game.lang[text][i];
-
-        drawx = x + offsetx*8, drawy = y + offsety*8;
-
-        if (t.charAt(0) == "@") {
-            draw_icon(t, drawx, drawy);
-            offsetx++;
-        } else {
-            for (let j = 0; j < t.length; j++) {
-                drawx = x + offsetx * 8, drawy = y + offsety * 8;
-
-                draw_font(t.charAt(j), drawx, drawy);
-                offsetx++;
-
-                //自動改行
-
-                if (typeof textwidth != 'undefined' && textwidth < offsetx) {
-                    offsety++;
-                    offsetx = 0;
-                }
-                //はみ出し判定
-                if (typeof textwidth != 'undefined' && textheight < offsety) {
-                    return "over height";
-                }
-            }
-        }
-        //自動改行
-
-        if (typeof textwidth != 'undefined' && textwidth < offsetx) {
-            offsety++;
-            offsetx = 0;
-        }
-        //はみ出し判定
-        if (typeof textwidth != 'undefined' && textheight < offsety) {
-            return "over height";
-        }
-
-        //console.log(dx)
-
-    }
-}*/
 
 function draw_icon(i, x, y) {
-    var id = loadedjson.icons[i]
+    let id = loadedjson.icons[i]
     ctx.drawImage(img.gui_icons, id % 8 * 8, Math.floor(id / 8) * 8, 8, 8, x * zoom, y * zoom, 8 * zoom, 8 * zoom);
 
 }
 
-function draw_prompt(dx,dy,dw,dh,img) {
+function draw_prompt(dx, dy, dw, dh, img) {
     //numlockごみ
     ctx.drawImage(img, 0, 0, 8, 8, (dx - 8) * zoom, (dy - 8) * zoom, 8 * zoom, 8 * zoom);
     ctx.drawImage(img, 8, 0, 8, 8, dx * zoom, (dy - 8) * zoom, dw * zoom, 8 * zoom);
@@ -1935,11 +2159,12 @@ function draw_prompt(dx,dy,dw,dh,img) {
 
     ctx.drawImage(img, 8, 8, 8, 8, dx * zoom, dy * zoom, dw * zoom, dh * zoom);
 }
-function draw_under_page_scroll(x,y){
 
-    draw("gui_under_page_scroll",x,y);
-    draw("gui_under_page_left",x+2*8,y+8);
-    draw("gui_under_page_right",x+13*8,y+8);
+function draw_under_page_scroll(x, y) {
+
+    draw("gui_under_page_scroll", x, y);
+    draw("gui_under_page_left", x + 2 * 8, y + 8);
+    draw("gui_under_page_right", x + 13 * 8, y + 8);
 }
 
 function draw_hp(p, x, y) {
@@ -1963,6 +2188,9 @@ function game_draw() {
     //プレイヤー描画
     draw_player()
 
+    //NPC描画
+    draw_npc()
+
     //剣描画
     draw_weapons();
 
@@ -1977,9 +2205,9 @@ function game_draw() {
 
 }
 //描画
-function draw(i,x,y) {
+function draw(i, x, y) {
     let t = loadedjson.atlas[i];
-    ctx.drawImage(img[t.img], t.atlas[0], t.atlas[1], t.atlas[2], t.atlas[3], x * zoom, y * zoom, t.atlas[2] * zoom, t.atlas[3] * zoom);
+    ctx.drawImage(img[t.img], t.atlas[0], t.atlas[1], t.atlas[2], t.atlas[3], Math.round(x) * zoom, Math.round(y) * zoom, t.atlas[2] * zoom, t.atlas[3] * zoom);
 }
 
 function draw_player() {
@@ -1987,6 +2215,14 @@ function draw_player() {
     //プレイヤー描画
     for (const i in players) {
         ctx.drawImage(img.players, player.anim * 16, player.facing * 32, 16, 24, subplayerdrawx(i) * zoom, (subplayerdrawy(i) - 8) * zoom, 16 * zoom, 24 * zoom);
+    }
+}
+
+function draw_npc() {
+
+    //プレイヤー描画
+    for (const i in npc) {
+        ctx.drawImage(img.players, 0, 0, 16, 24, (npc[i].x - player.scrollx) * zoom, (npc[i].y - player.scrolly - 8) * zoom, 16 * zoom, 24 * zoom);
     }
 }
 
@@ -2049,16 +2285,15 @@ function player_animation() {
 }
 
 function draw_tiles(maplayer) {
-    var plx = Math.floor(player.scrollx / 16);
-    var ply = Math.floor(player.scrolly / 16);
 
-    for (var y = 0; y < 13; y++) {
-        for (var x = 0; x < 21; x++) {
-            try {
-                var tileID = getTileID(maplayer,x + plx, y + ply); 
-                ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), 16, 16, (x * 16 + (16 - player.scrollx % 16) - 16) * zoom, (y * 16 + (16 - player.scrolly % 16) - 16) * zoom, 16 * zoom, 16 * zoom);
-            }
-            catch { }
+    let plx = Math.floor(player.scrollx / 16);
+    let ply = Math.floor(player.scrolly / 16);
+
+    for (let y = 0; y < 13; y++) {
+        for (let x = 0; x < 21; x++) {
+            let tileID = getTileID(maplayer, x + plx, y + ply);
+            ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), 16, 16, (x * 16 + (16 - player.scrollx % 16) - 16) * zoom, (y * 16 + (16 - player.scrolly % 16) - 16) * zoom, 16 * zoom, 16 * zoom);
+
         }
     }
 }
@@ -2068,23 +2303,21 @@ function draw_enemy() {
     for (const i in enemy) {
         let t = enemy[i];
 
-        let anim = Math.sin(enemy[i].attack_anim.tick/ 20 * game.PI);
-        let attack_x = Math.cos(calcAngleDegrees(player.x - enemy[i].x, player.y - enemy[i].y)) * 16;
-        let attack_y = Math.sin(calcAngleDegrees(player.x - enemy[i].x, player.y - enemy[i].y)) * 16;
+        let anim = Math.sin(enemy[i].attack_anim.tick / 20 * game.PI);
 
         if (t.id == 1) ctx.drawImage(img.enemy, slime_animation(i)[0], slime_animation(i)[1], 16, 16, (t.x - player.scrollx) * zoom, (t.y - player.scrolly - anim * 16) * zoom, 16 * zoom, 16 * zoom);
-        if (t.id == 2) ctx.drawImage(img.enemy, 0,16, 16, 32, (t.x - player.scrollx) * zoom, (t.y - player.scrolly) * zoom, 16 * zoom, 32 * zoom);
+        if (t.id == 2) ctx.drawImage(img.enemy, 0, 16, 16, 32, (t.x - player.scrollx) * zoom, (t.y - player.scrolly) * zoom, 16 * zoom, 32 * zoom);
 
-        if (enemy[i].damage_effect.last_damage_timer>0) draw_hp(t.hp / loadedjson.enemy[t.id].hp, getEnemyCenter(i).x - player.scrollx - 5, t.y - player.scrolly);
-        if (enemy[i].damage_effect.view_time != 0) draw_text(enemy[i].damage_effect.damage + "", enemy[i].x - player.scrollx, enemy[i].y - 16 - Math.log10(-8 * (enemy[i].damage_effect.view_time / 100 - 1))*8 - player.scrolly);
+        if (enemy[i].damage_effect.Last_damage_timer > 0) draw_hp(t.hp / loadedjson.enemy[t.id].hp, getEnemyCenter(i).x - player.scrollx - 5, t.y - player.scrolly);
+        if (enemy[i].damage_effect.view_time != 0) draw_text(enemy[i].damage_effect.damage + "", enemy[i].x - player.scrollx, enemy[i].y - 16 - Math.log10(-8 * (enemy[i].damage_effect.view_time / 100 - 1)) * 8 - player.scrolly);
         //if (enemy[i].damage_effect.view_time != 0) draw_text(-8 *( enemy[i].damage_effect.view_time / 100 - 1)  + "", enemy[i].x - player.scrollx, enemy[i].y + 16 - Math.log10((enemy[i].damage_effect.view_time / 100 * 8) * 2) - player.scrolly);
     }
 }
 
 function slime_animation(i) {
 
-    var x = 0;
-    var y = 0;
+    let x = 0;
+    let y = 0;
 
     if (enemy[i].anim.animing) x = Math.floor(enemy[i].anim.tick / 20 * 3);
     if (enemy[i].attack_anim.animing) x = Math.floor(enemy[i].attack_anim.tick / 20 * 3);
@@ -2103,19 +2336,21 @@ function draw_particle() {
 }
 
 function particle_death_offset(i) {
-    var t = particle[i];
+    let t = particle[i];
 
     return [t.tick * t.varix / 10, -t.tick / 5 - t.variy * 4];
 }
 
 
 function gui_draw() {
+    //カーソルの変数の作成
+    let cursor = new Array();
 
     //体力描画
-    draw_prompt(8, 8, 7 * 8, players.length  * 8, img.gui_prompt);
+    draw_prompt(8, 8, 7 * 8, players.length * 8, img.gui_prompt);
 
     for (const i in players) {
-        ctx.drawImage(img.gui_menu, players[i].id*8, 48, 8, 8, 8 * zoom, (i * 8 + 1 * 8) * zoom, 8 * zoom, 8 * zoom);
+        ctx.drawImage(img.gui_menu, players[i].id * 8, 48, 8, 8, 8 * zoom, (i * 8 + 1 * 8) * zoom, 8 * zoom, 8 * zoom);
         ctx.drawImage(img.gui_menu, 0, 32, 16, 8, 16 * zoom, (i * 8 + 1 * 8) * zoom, 16 * zoom, 8 * zoom);
         draw_text(players[i].hp + "", 32, (i * 8 + 1 * 8));
     }
@@ -2126,8 +2361,7 @@ function gui_draw() {
         draw_text(message.text, 40, 104, 31);
     }
 
-
-    //メッセージ描画
+    //メニュー描画
     if (menu.visible) {
         ctx.drawImage(img.gui_tab, 0, 0, 64, 32, (5 * 8 - 4) * zoom, (3 * 8 - 4) * zoom, 64 * zoom, 32 * zoom);
         ctx.drawImage(img.gui_tab, 0, 0, 64, 32, (13 * 8 - 4) * zoom, (3 * 8 - 4) * zoom, 64 * zoom, 32 * zoom);
@@ -2136,81 +2370,111 @@ function gui_draw() {
 
         draw_prompt(5 * 8, 5 * 8, 32 * 8, 16 * 8, img.gui_prompt);
 
-        ctx.drawImage(img.gui_tab, game.tab_offset[gui.tab], gui.tab_select*32+32, 64, 32, ((5 + 8 * gui.tab) * 8 - 4) * zoom, (3 * 8 - 4) * zoom, 64 * zoom, 32 * zoom);
+        ctx.drawImage(img.gui_tab, game.tab_offset[menu.tab], menu.tab_select * 32 + 32, 64, 32, ((5 + 8 * menu.tab) * 8 - 4) * zoom, (3 * 8 - 4) * zoom, 64 * zoom, 32 * zoom);
 
         //タブテキスト描画
         draw_icon("party", 5 * 8, 3 * 8);
-        draw_text(get_text("gui.tab.party"), 6 * 8, 3 * 8);
+        draw_text(get_text("menu.tab.party"), 6 * 8, 3 * 8);
         draw_icon("items", 13 * 8, 3 * 8);
-        draw_text(get_text("gui.tab.items"), 14 * 8, 3 * 8);
+        draw_text(get_text("menu.tab.items"), 14 * 8, 3 * 8);
         draw_icon("equip", 21 * 8, 3 * 8);
-        draw_text(get_text("gui.tab.equip"), 22 * 8, 3 * 8);
+        draw_text(get_text("menu.tab.equip"), 22 * 8, 3 * 8);
         draw_icon("config", 29 * 8, 3 * 8);
-        draw_text(get_text("gui.tab.config"), 30 * 8, 3 * 8);
+        draw_text(get_text("menu.tab.config"), 30 * 8, 3 * 8);
 
         //party
-        if (gui.tab == 0) {
+        if (menu.tab === 0) {
             ctx.drawImage(img.players, 0, 0, 16, 16, 5 * 8 * zoom, 5 * 8 * zoom, 16 * zoom, 16 * zoom);
             draw("hp", 5 * 8, 8 * 8);
             draw_text(players[0].hp + "", 7 * 8, 8 * 8);
         }
 
         //items
-        if (gui.tab == 1) {
-            for (const i in player.items) {
-                //アイテムの名前描画
-                draw_text(get_text("item." + get_item_data(i, "name") + ".name") + " x" + player.items[i].count, 6 * 8, i * 8 + 5 * 8);
+        if (menu.tab === 1) {
+            for (let i in player.items.slice(menu.scroll, menu.scroll + 8)) {
+                draw_gui_item(40, 5 * 8 + i * 16, Number(i) + menu.scroll);
             }
-
-            let h = player.items[gui.item_select];
-
-            draw("item_about_gui",31*8,3*8);
-            //ctx.drawImage(img.gui_parts, 0, 0, 64, 80, 33 * 8 * zoom, 3 * 8  * zoom, 64 * zoom, 80 * zoom);
-            if (player.items.length - 1 >= gui.item_select && !gui.tab_select) ctx.drawImage(img.items, getTileAtlasXY(player.items[gui.item_select].id, 0), getTileAtlasXY(player.items[gui.item_select].id, 1), 16, 16, 35 * 8 * zoom, 11 * 8 * zoom, 16 * zoom, 16 * zoom);
-            if(player.items.length - 1 >= gui.item_select && !gui.tab_select ){
-                if(get_item_data(gui.item_select, "efficacy")=="health"){
-                draw("gui_item_text_health",33*8,5*8);
-                draw_text(get_item_data(gui.item_select, "heal_power")+"",33*8,6*8);
-                }
-            }
+            draw_scroll_bar(18 * 16, 6 * 8, menu.scroll / Math.max(menu.scroll, player.items.length - 8), 128 - 16);
         }
 
         //equip
-        if (gui.tab == 2) {
+        if (menu.tab === 2) {
 
         }
 
         //config
-        if (gui.tab == 3) {
-            for (const i in loadedjson.configs.configs) {
-                let configs = loadedjson.configs.configs[i];
+        if (menu.tab === 3) {
+            //右のリスト
+            //config
+            if (menu.system_select === 0) {
+                let configs = loadedjson.configs.configs;
 
-                draw_text(loadedjson.configs.configs[i].name, 6 * 8, i * 16 + 5 * 8, 25, 1);
-
-                if (config[configs.variable]) draw("switch_on", 33 * 8, i * 16 + 5 * 8);
-                if (!config[configs.variable]) draw("switch_off", 33 * 8, i * 16 + 5 * 8);
-                if (configs.default == config[configs.variable]) draw_font("D", 35 * 8, i * 16 + 5 * 8)
-
-                draw_under_page_scroll(13 * 8 - 4,19*8);
+                let func = (
+                    function (i) {
+                        if (config[configs[i].variable]) draw("switch_on", 33 * 8, i * 16 + 5 * 8);
+                        if (!config[configs[i].variable]) draw("switch_off", 33 * 8, i * 16 + 5 * 8);
+                        if (configs[i].default == config[configs[i].variable]) draw_font("D", 35 * 8, i * 16 + 5 * 8);
+                    }
+                )
+                draw_gui_items(loadedjson.configs.configs, "name", 14 * 8, 5 * 8, 25, 8, 16, func)
             }
+
+            //data
+            if (menu.system_select === 1) {
+                draw_gui_items(game.gui_system_data_items, false, 14 * 8, 5 * 8, 25, 2, 16);
+
+                let [savepath, savename, SavedTime] = ["???", "???", "???"];
+                if (typeof LastSavedFileData !== "undefined") savename = LastSavedFileData.name;
+
+                if (typeof dirHandle !== "undefined" && typeof LastSavedFileData !== "undefined")
+                    savepath = slice(dirHandle.name, 5) + "/" + LastSavedFileData.name;
+
+                if (typeof LastSavedTime !== "undefined") SavedTime = LastSavedTime.toLocaleString();
+
+
+                if(game.saveloadfaliedtime+game.PopUpDelay>timer )
+                draw_text(get_text("menu.loadfailed.type"+game.saveloadfaliedtype), 14 * 8, 18 * 8);
+
+                draw_text(get_text("menu.LastSavedTime") + SavedTime, 14 * 8, 19 * 8);
+
+                draw_text(get_text("menu.saved") + savepath, 14 * 8, 20 * 8, 22);
+            }
+
+            //左のリスト
+            draw_gui_items(game.gui_system_items, false, 6 * 8, 5 * 8, 25, 2, 16);
+
+            //縦線
+            ctx.drawImage(img.gui_prompt_more, 0, 0, 8, 8, 12 * 8 * zoom, 4 * 8 * zoom, 8 * zoom, 8 * zoom);
+            ctx.drawImage(img.gui_prompt, 0, 8, 8, 8, 12 * 8 * zoom, 5 * 8 * zoom, 8 * zoom, 16 * 8 * zoom);
+            ctx.drawImage(img.gui_prompt_more, 0, 8, 8, 8, 12 * 8 * zoom, 21 * 8 * zoom, 8 * zoom, 8 * zoom);
+
         }
 
-        let select_y_size=0;
-        if (gui.tab == 0) select_y_size = 8;
-        if (gui.tab == 1) select_y_size = 8;
-        if (gui.tab == 2) select_y_size = 8;
-        if (gui.tab == 3) select_y_size = 16;
 
-        if (!gui.tab_select) ctx.drawImage(img.gui, 32, 0, 8, 8, 5 * 8 * zoom, (gui.item_select * select_y_size + 5 * 8) * zoom, 8 * zoom, 8 * zoom);
+
+
+        //カーソル//
+        let select_y_size = game.select_y_size[menu.tab];
+        //タブ
+        cursor.push([menu.tab * 64 + 4 * 8, 3 * 8]);
+
+        if (!menu.tab_select) {
+            /*アイテム*/
+            if (menu.tab != 3) cursor.push([5 * 8, (menu.item_select - menu.scroll) * select_y_size + 5 * 8]);
+
+            /*右*/if (menu.tab == 3) /*_________________*/cursor.push([5 * 8, (menu.system_select - menu.scroll) * select_y_size + 5 * 8]);
+            /*左*/if (menu.tab == 3 && menu.system_right) cursor.push([13 * 8, (menu.item_select - menu.scroll) * select_y_size + 5 * 8]);
+        }
+
+
+
     }
 
-
-    
-
-    if (gui.role_select) {
+    //誰が使いますか
+    if (menu.role_select) {
 
         draw_prompt(10 * 8, 10 * 8, 7 * 8, 7 * 8, img.gui_prompt);
-        draw_text(get_text("gui.item_use.who_use"), 10 * 8, 10 * 8);
+        draw_text(get_text("menu.item_use.who_use"), 10 * 8, 10 * 8);
 
         for (const i in players) {
             ctx.drawImage(img.gui_menu, players[i].id * 8, 48, 8, 8, 10 * 8 * zoom, (11 * 8 + i * 8) * zoom, 8 * zoom, 8 * zoom);
@@ -2219,54 +2483,189 @@ function gui_draw() {
         }
     }
 
+    //メッセージ描画
+    if (window_confirm.visible) {
+        let it = window_confirm;
+        draw_prompt(it.pos.x, it.pos.y, 8 * 8, 8 * 8, img.gui_prompt);
+        draw_text(it.text, pos.x, pos.y, 7);
+        cursor.push([it.pos.x + 32 - it.selected * 32, it.pos.y + 64 - 16])
+    }
+
+
+    //カーソル描画//
+    {
+        if (menu.CursorNeedUpdate) {
+            menu.CursorNeedUpdate = false;
+            menu.CursorOldPos.x = cursor[cursor.length - 1][0];
+            menu.CursorOldPos.y = cursor[cursor.length - 1][1];
+        }
+
+        if (cursor.length !== 0) {
+            menu.CursorOldPos.x += (cursor[cursor.length - 1][0] - menu.CursorOldPos.x) / 2;
+            menu.CursorOldPos.y += (cursor[cursor.length - 1][1] - menu.CursorOldPos.y) / 2;
+        }
+
+        for (let i in cursor) {
+            if (i != cursor.length - 1) draw("cursor_uns", cursor[i][0], cursor[i][1]);
+
+            if (i == cursor.length - 1) draw("cursor", menu.CursorOldPos.x, menu.CursorOldPos.y);
+        }
+    }
+    //タッチボタン描画
     draw_touch_button();
 
 }
 
+
+function draw_gui_item(x, y, i) {
+    //console.log(i)
+    //アイテムの名前描画
+    draw_text(get_text("item." + get_item_data(i, "name") + ".name"), 8 * 3 + x, y);
+
+    let count_offset = 13 * 8;
+    draw_text(" x", x + count_offset, y);
+    draw_text(player.items[i].count + "", x + count_offset + 2 * 8, y, undefined, undefined, "_purple");
+
+    ctx.drawImage(img.items, getTileAtlasXY(player.items[i].id, 0), getTileAtlasXY(player.items[i].id, 1), 16, 16, 24 + x * zoom, y * zoom, 16 * zoom, 16 * zoom);
+
+    if (get_item_data(i, "efficacy") == "health") {
+        draw("gui_item_text_health", 3 * 8 + x, y + 8);
+        draw_text(get_item_data(i, "heal_power") + "", 7 * 8 + x, y + 8, undefined, undefined, "_purple");
+    }
+}
+
+function draw_scroll_bar(x, y, p = 0, height = 64) {
+    if (isNaN(p)) p = 0;
+
+    ctx.drawImage(img.gui_scroll_bar, 0, 0, 8, 1, x * zoom, y * zoom, 8 * zoom, 1 * zoom);
+    ctx.drawImage(img.gui_scroll_bar, 0, 1, 8, 1, x * zoom, 2 + y * zoom, 8 * zoom, -2 + height * zoom);
+    ctx.drawImage(img.gui_scroll_bar, 0, 7, 8, 1, x * zoom, (y + height - 1) * zoom, 8 * zoom, 1 * zoom);
+
+    draw("scroll_bar", x, y + (height - 8) * p)
+
+    //デバッグ
+    if (debug.text_visible) draw_text("p:" + p, 128, 32);
+}
+
+function draw_gui_config() {
+    let configs = loadedjson.configs.configs;
+
+    let func = (
+        function (i) {
+            if (config[configs[i].variable]) draw("switch_on", 33 * 8, i * 16 + 5 * 8);
+            if (!config[configs[i].variable]) draw("switch_off", 33 * 8, i * 16 + 5 * 8);
+            if (configs[i].default == config[configs[i].variable]) draw_font("D", 35 * 8, i * 16 + 5 * 8);
+        }
+    )
+    draw_gui_items(loadedjson.configs.configs, "name", 14 * 8, 5 * 8, 25, 8, 16, func);
+
+}
+
+function draw_gui_items(array, a = false, x, y, w, h, s = 8, func = () => { }) {
+    for (const i in array) {
+        if (!a) draw_text(get_text(array[i]), x, i * s + y, w, h);
+        if (a) draw_text(get_text(array[i][a]), x, i * s + y, w, h);
+        func(i);
+    }
+}
+
 function gui_proc() {
+
+    if (game.saveloadingnow) return;
+
+    if (IsLoading) {
+        gui_close();
+        return;
+    }
+
     //メッセージ消す
-    if (key_groups_down.confirm) message.visible = false;
+    if (key_groups_down.confirm) gui_close("message");
 
     //メニュー表示 非表示
     if (key_groups_down.menu) {
         if (menu.visible) {
-            menu.visible = false;
-            //誰が使いますか画面も閉じる
-            gui.role_select = false;
+            gui_close("menu");
         } else {
-            menu.visible = true;
+            gui_open("menu");
         }
     }
 
+    //承認ウィンドウ
+    if (window_confirm.visible) {
+        if (key_groups_down.right) window_confirm.selected = false;
+        if (key_groups_down.left) window_confirm.selected = true;
+
+        if (key_groups_down.down || key_groups_down.confirm) {
+            if (window_confirm.selected) window_confirm.func_ok();
+            if (!window_confirm.selected) window_confirm.func_cancel();
+            gui_close("confirm");
+            return;
+        }
+        if (key_groups_down.cancel || key_groups_down.menu) {
+            window_confirm.func_cancel();
+            gui_close("confirm");
+            return;
+        }
+        return;
+    }
+
+    let scroll_limit = Infinity;
+
     //party
-    if (gui.tab == 0) {
+    if (menu.tab === 0) {
+        scroll_limit = Infinity;
 
     }
     //items
-    if (gui.tab == 1) {
+    if (menu.tab === 1) {
+        scroll_limit = player.items.length - 8;
         //アイテム使用判定
         item_use_proc();
     }
     //equip
-    if (gui.tab == 2) {
+    if (menu.tab === 2) {
+        scroll_limit = Infinity;
 
     }
     //config
-    if (gui.tab == 3) {
+    if (menu.tab === 3) {
+        scroll_limit = Infinity;
         //コンフィグ変更
-        config_change_proc();
+        if (menu.system_right && menu.system_select == 0) config_change_proc();
+        if (menu.system_right && menu.system_select == 1) save_load_proc();
+
+
+        if (menu.system_right) {
+            if ((key_groups_down.left || key_groups_down.cancel || (key_groups_down.up && menu.item_select == 0)) && !menu.tab_select) {
+                menu.system_right = false;
+                menu.item_select = menu.system_select;
+
+                return;
+            }
+        } else {
+            if (!menu.tab_select) menu.system_select = menu.item_select;
+            if ((key_groups_down.right || key_groups_down.confirm) && !menu.tab_select) {
+                menu.system_right = true;
+                menu.system_select = menu.item_select;
+                menu.item_select = 0;
+
+                return;
+            }
+        }
+
     }
 
     //メニュー動作
-    if (menu.visible && !gui.role_select) {
+    if (menu.visible && !menu.role_select) {
+        let count = game.gui_item_count[menu.tab];
 
-        if (gui.tab_select) {//カーソル上
+        if (menu.tab_select) {//カーソル上
             //タブの動き
-            if (key_groups_down.right && gui.tab < 3) gui.tab++;
-            if (key_groups_down.left && gui.tab > 0) gui.tab--;
+            if (key_groups_down.right && menu.tab < 3) menu.tab++;
+            if (key_groups_down.left && menu.tab > 0) menu.tab--;
 
-            //　　　　　　　　　　　　　　　　　　　　　　　　　　　　アイテムタブ　　設定タブ　　　　カーソルを下にずらす
-            if ((key_groups_down.confirm || key_groups_down.down) && (gui.tab == 1|| gui.tab == 3)) gui.tab_select = false
+            //　　　　　　　　　　　　　　　　　　　　　　　　　      　　　アイテムタブ　　設定タブ　　　　カーソルを下にずらす
+            if ((key_groups_down.confirm || key_groups_down.down) && (menu.tab == 1 || menu.tab == 3)) menu.tab_select = false
 
             //メニュー閉じる
             if (key_groups_down.cancel) {
@@ -2276,25 +2675,32 @@ function gui_proc() {
 
         } else {//カーソル下
             //カーソルを上にずらす
-            if (key_groups_down.up && gui.item_select == 0) gui.tab_select = true
+            if (key_groups_down.up && menu.item_select == 0 && !menu.system_right) menu.tab_select = true;
+            //if (key_groups_down.up && menu.item_select == 0 && menu.system_right) menu.system_right=false;
 
             //アイテムセレクト上下
-            if (key_groups_hold.down && gui.item_select < game.item_select_limit[gui.tab]) gui.item_select++
-            if (key_groups_hold.up && gui.item_select > 0) gui.item_select--
+            if (key_groups_hold.down && menu.scroll <= count) menu.item_select++;
+            if (key_groups_hold.up && menu.scroll >= 0) menu.item_select--;
+
+            if (menu.item_select - menu.scroll > count && menu.scroll < scroll_limit) menu.scroll++;
+            if (menu.item_select - menu.scroll < 0 && menu.scroll > 0) menu.scroll--;
+
+            if (menu.item_select - menu.scroll > count) menu.item_select--;
+            if (menu.item_select - menu.scroll < 0) menu.item_select++;
 
             //カーソルを上にずらす(閉じる)
             if (key_groups_down.cancel) {
-                gui.item_select = 0;
-                gui.tab_select = true
+                menu.item_select = 0;
+                menu.tab_select = true
             }
             return;
         }
     }
 
-    if (gui.role_select) {
+    if (menu.role_select) {
         //誰が使うか閉じる
         if (key_groups_down.cancel) {
-            gui.role_select = false;
+            menu.role_select = false;
 
             return;
         }
@@ -2302,81 +2708,132 @@ function gui_proc() {
 
 }
 
+function gui_close(input) {
+    if (!Array.isArray(input)) input = [input];//配列にする
+    let all = false;
+    if (typeof input === "undefined") all = true;//undefinedならall
+
+    if (input.includes("menu") || all) {
+        menu.visible = false;
+        //誰が使いますか画面も閉じる
+        menu.role_select = false;
+
+        menu.item_select = 0;
+        menu.system_right = false;
+        menu.system_select = 0;
+        menu.role_select = 0;
+        menu.tab_select = true;
+    }
+    if (input.includes("message") || all) {
+        message.visible = false;
+    }
+    if (input.includes("confirm") || all) {
+        window_confirm.visible = false;
+    }
+}
+
+function gui_open(input) {
+    if (!Array.isArray(input)) input = [input];//配列にする
+
+    if (input.includes("menu")) {
+        menu.visible = true;
+        menu.CursorOldPos.x = 0;
+        menu.CursorOldPos.y = 24;
+    }
+    if (input.includes("message")) {
+        message.visible = true;
+        message.text = "text";
+        console.log('gui_open("message")is not recommended')
+    }
+    if (input.includes("confirm")) {
+        let conf = window_confirm;
+        conf.visible = true;
+    }
+}
+
+//メッセージを表示する
+function messageView(text) {
+    //console.log(text);
+    message.visible = true;
+    message.text = text;
+
+}
+
+//ウィンドウを表示する
+function confirmView(text = "text", title = "title", x = 0, y = 0, func_ok = () => { }, func_cancel = () => { }) {
+    //console.log(text);
+    window_confirm.visible = true;
+    window_confirm.text = text;
+    window_confirm.title = title;
+    window_confirm.pos.x = x;
+    window_confirm.pos.y = y;
+    window_confirm.func_ok = func_ok;
+    window_confirm.func_cancel = func_cancel;
+
+}
 function canPlayerMoveForOpenGui() {
     if (message.visible) return false;
     if (menu.visible) return false;
+    if (window_confirm.visible) return false;
 
     return true;
 }
 
 function item_use_proc() {
-    if (menu.visible && !gui.tab_select && key_groups_down.confirm && gui.item_select <= player.items.length - 1 && gui.tab == 1) {
+    if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.item_select <= player.items.length - 1 && menu.tab == 1) {
 
         //誰が使いますか画面を出す
-        if (get_item_data(gui.item_select, "role_select") && !gui.role_select) {
-            gui.role_select = true;
+        if (get_item_data(menu.item_select, "role_select") && !menu.role_select) {
+            menu.role_select = true;
             return;
         }
 
         //アイテム使用
-        if (!get_item_data(gui.item_select, "role_select") || gui.role_select) {
-            if (!get_item_data(gui.item_select, "role_select")) gui.who_use = 0;
+        if (!get_item_data(menu.item_select, "role_select") || menu.role_select) {
+            if (!get_item_data(menu.item_select, "role_select")) menu.who_use = 0;
 
-            item_use(gui.item_select);
+            item_use(menu.item_select);
         }
-        gui.role_select = false;
+        menu.role_select = false;
 
         //アイテムの数を減らす
-        player.items[gui.item_select].count--;
+        player.items[menu.item_select].count--;
         //アイテムの数が0だったら消す
-        if (player.items[gui.item_select].count == 0) player.items.splice(gui.item_select, 1);
+        if (player.items[menu.item_select].count == 0) player.items.splice(menu.item_select, 1);
     }
+}
+
+async function save_load_proc() {
+    if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.tab == 3 && menu.system_right) {
+        game.saveloadingnow = true;
+        let result;
+
+        if (menu.item_select === 0) result = await savedatawrite();
+        if (menu.item_select === 1) result = await savedataload()
+        if (menu.item_select === 2) result = await savepathselect();
+        if (menu.item_select === 3) result = await savedataload()
+        if (menu.item_select === 4) result = await savepathselect();
+        //failed
+        if(result == undefined){
+            game.saveloadfaliedtime=timer;
+            game.saveloadfaliedtype=menu.item_select;
+        }
+
+        game.saveloadingnow = false;
+    }
+
 }
 
 function item_use(i) {//i = itemselectINDEX
 
-    if (get_item_data(i, "efficacy") == "health") player_heal(gui.who_use, get_item_data(i, "heal_power"));
+    if (get_item_data(i, "efficacy") == "health") player_heal(menu.who_use, get_item_data(i, "heal_power"));
 }
 
 function config_change_proc() {
-    if (menu.visible && !gui.tab_select && key_groups_down.confirm && gui.item_select <= loadedjson.configs.configs.length - 1 && gui.tab == 3) {
-        let configvar = loadedjson.configs.configs[gui.item_select].variable;
+    if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.item_select <= loadedjson.configs.configs.length - 1 && menu.tab == 3) {
+        let configvar = loadedjson.configs.configs[menu.item_select].variable;
         config[configvar] = !config[configvar];
         //console.log(configvar)
     }
 }
 
-function draw_touch_button(){
-    if(!touchmode)return;
-    for(const i in touchButtons){
-        draw("touch_button_"+touchButtons[i].type,touchButtons[i].x,touchButtons[i].y)
-    }
-}
-
-function touch_button_proc(){
-    if(!touchmode)return;
-    //for(const i in touchpos)if(touchpos[i].timer!=timer)touchpos.splice(i,1)
-    
-    for(const i in touchButtons){
-        touchButton[touchButtons[i].type]=false;
-        for(const j in touchpos){
-            // 点の情報
-            let point_pos_x = touchpos[j].x;
-            let point_pos_y = touchpos[j].y;
-                    
-            // 矩形の情報
-            let rect_pos_x = touchButtons[i].x*zoom;
-            let rect_pos_y = touchButtons[i].y*zoom;
-            let rect_width = touchButtons[i].width*zoom;
-            let rect_height = touchButtons[i].height*zoom;
-
-            if (point_pos_x >= rect_pos_x && point_pos_x <= (rect_pos_x + rect_width) )
-                if(point_pos_y >= rect_pos_y && point_pos_y <= (rect_pos_y + rect_height) ){
-                    touchButton[touchButtons[i].type]=true;
-                    touchButton_time[touchButtons[i].type]=touchpos[j].timer;
-                    console.log(touchButtons[i].type)
-                }
-            
-        }
-    }
-}

@@ -6,12 +6,18 @@
     "hp": 200,
     "width": 16,
     "height": 16,
-    "name":"blue_slime"
+    "name":"blue_slime",
+    "exp":[
+      10,10
+    ]
   },
   {
     "hp": 9999,
     "width": 16,
     "height": 24,
-    "name":"dummy"
+    "name":"dummy",
+    "exp":[
+      10,10
+    ]
   }
 ]

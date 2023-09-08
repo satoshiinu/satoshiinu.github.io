@@ -1,0 +1,29 @@
+{
+	"type": "mapmeta",
+	"warp": [
+		{
+			"x": 99,
+			"y": 25,
+			"to": {
+				"mapID": "VillageAround",
+				"x":6,"y":25
+			}
+		},
+		{
+			"x": 99,
+			"y": 26,
+			"to": {
+				"mapID": "VillageAround",
+				"x":6,"y":26
+			}
+		},
+		{
+			"x": 99,
+			"y": 27,
+			"to": {
+				"mapID": "VillageAround",
+				"x":6,"y":27
+			}
+		}
+	]
+}

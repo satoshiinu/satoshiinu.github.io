@@ -9,21 +9,12 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
-    <!--
-    <input type="button" value="btnUp" id="btnUp" class="buttonUp" onmousedown="btnUpDown()" onmouseup="btnUpUp()"
-        onmousemove="btnUpUp()">
-    <input type="button" value="btnLeft" id="btnLeft" class="buttonLeft" onmousedown="btnLeftDown()"
-        onmouseup="btnLeftUp()" onmousemove="btnLeftUp()">
-    <input type="button" value="btnRight" id="btnRight" class="buttonRight" onmousedown="btnRightDown()"
-        onmouseup="btnRightUp()" onmousemove="btnRightUp()">
-    <input type="button" value="btnDown" id="btnDown" class="buttonDown" onmousedown="btnDownDown()"
-        onmouseup="btnDownUp()" onmousemove="btnDownUp()">
-    -->
-
     <script src="script.js"></script><br />
+
     <input id="msg" type="button" value="msg" onclick="messageView('Z to close this prompt');" />
     <input id="msg2" type="button" value="custmsg" onclick="messageView(prompt('input text'));" />
     <input id="debug" type="button" value="debug" onclick="debug.text_visible = !debug.text_visible;" />
+    <input id="debug" type="button" value="reload" onclick="loadingassets();" />
     <input id="saveButton" type="button" value="save" onclick="savedatawrite()" />
     <input id="loadButton" type="button" value="load" onclick="savedataload()" />
 
