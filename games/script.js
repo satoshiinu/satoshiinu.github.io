@@ -41,12 +41,14 @@ let zoom = 4;
 
 //その他の変数の作成
 let timer = 0;
+let u = undefined;
 let loopID;
 const siteName = ["http://127.0.0.1:8000", "https://satoshiinu.github.io/games"]
 
 //読み込むもの
 let willLoadImg = [
     ["img/tiles.png", "tiles"],
+    ["img/tiles/water.png", "water"],
     ["img/items.png", "items"],
     ["img/players/players.png", "players"],
     ["img/enemy.png", "enemy"],
@@ -69,13 +71,12 @@ let willLoadImg = [
 Object.freeze(willLoadImg);
 
 const willLoadJson = [
-    ["param/maps/Map.map", "Map"],
-
     ["param/atlas.json", "atlas"],
     ["param/enemy.json", "enemy"],
     ["param/particle.json", "particle"],
     ["param/item.json", "item"],
     ["param/icons.json", "icons"],
+    ["param/message.json", "message"],
 
     ["param/lang/en_us.json", "en_us"],
     ["param/config.json", "configs"]
@@ -114,10 +115,14 @@ class Player {
             exp: 0,
             lv: 0
         }
-        this.ability = {
-            river: false
-        }
 
+    }
+}
+
+class Effect {
+    constructor(time, power) {
+        this.time = time;
+        this.power = power;
     }
 }
 
@@ -130,8 +135,8 @@ class Enemy {
         this.xspd = 0
         this.yspd = 0
         this.xknb = 0
-        this.yknb =
-            this.move = [false, false, false, false, 0]
+        this.yknb = 0
+        this.move = [false, false, false, false, 0]
         this.attack = {
             "hostility": false,
             "timer": 0,
@@ -161,6 +166,9 @@ class NPC {
         this.x = x * 16
         this.y = y * 16
         this.sp = [x, y]
+        this.id = id
+        this.xspd = 0
+        this.yspd = 0
     }
 
 }
@@ -178,15 +186,26 @@ class Keys {
     }
 }
 
+//クラス
+class XY {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+
 //設定
 let game = new Object();
 
-game.ver = "beta"
+game.ver = "23m09w4"
 
 game.saveloadingnow = false;
-game.saveloadfaliedtime=-1;
-game.saveloadfaliedtype=-1;
-game.PopUpDelay=100;
+game.saveloadfaliedtime = -1;
+game.saveloadfaliedtype = -1;
+game.saveloadsuccesstime = -1;
+game.saveloadsuccesstype = -1;
+game.PopUpDelay = 100;
 
 game.move_limit = 32767;
 game.weapon_canlock = false;
@@ -245,6 +264,12 @@ game.breakableTileAbout = {
     }
 }
 
+game.animationTile = {
+    7: {
+
+    }
+}
+
 game.gui_system_items = [
     "menu.system.config",
     "menu.system.data"
@@ -252,7 +277,7 @@ game.gui_system_items = [
 game.gui_system_data_items = [
     "menu.system.data.save",
     "menu.system.data.load",
-    "menu.system.data.select",
+    "menu.system.data.reset",
     "menu.system.data.download",
     "menu.system.data.upload"
 ]
@@ -265,8 +290,28 @@ game.savemetadata = {
     "ver": game.ver
 }
 
-
 let IsLoading = true;
+
+//キャンバスのやつ
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 320 * zoom;
+canvas.height = 180 * zoom;
+
+//アンチエイリアスを無効にする
+ctx.mozImageSmoothingEnabled = false;
+ctx.webkitImageSmoothingEnabled = false;
+ctx.msImageSmoothingEnabled = false;
+ctx.imageSmoothingEnabled = false;
+
+//コンテキストメニュー禁止
+document.oncontextmenu = () => {
+    return false;
+};
+
+//フォント
+ctx.font = '20px sans-serif';
+
 
 //config変数の作成
 let config = {
@@ -282,6 +327,8 @@ debug.hitbox_visible = true;
 debug.text_visible = false;
 debug.about_visible = false;
 
+debug.info = new Array();
+
 debug.camx = 0;
 debug.camy = 0;
 
@@ -293,9 +340,22 @@ let loadimgcount = 0;
 
 //セーブデータ読み込み用の変数の作成
 let dirHandle;
+let fileHandle;
 let LastSavedFileData;
 let SaveDataFileName = "save.json"
 let LastSavedTime;
+
+let saveFileOptions = {
+    suggestedName: 'save.json',
+    types: [
+        {
+            description: "savedata",
+            accept: {
+                "application/json": [".json"],
+            },
+        },
+    ],
+};
 
 //FPS計測の変数を作成
 let fps = 0;
@@ -317,6 +377,7 @@ let player = {
     "xknb": 0,
     "yknb": 0,
     "mapID": "",
+    "effect": [],
     "items": [
         {
             "id": 0,
@@ -430,10 +491,57 @@ let key_groups_list = {
     "menu": [67]
 }
 
+//コントローラー
+let gamepads = {};
 
 //キー判定
 addEventListener("keyup", keyupfunc);
 addEventListener("keydown", keydownfunc);
+
+
+// ------------------------------------------------------------
+// ゲームパッドを接続すると実行されるイベント
+// ------------------------------------------------------------
+window.addEventListener("gamepadconnected", function (e) {
+    var gamepad = e.gamepad;
+});
+
+// ------------------------------------------------------------
+// ゲームパッドの接続を解除すると実行されるイベント
+// ------------------------------------------------------------
+window.addEventListener("gamepaddisconnected", function (e) {
+    var gamepad = e.gamepad;
+});
+
+//タッチ操作
+//あざす https://web-breeze.net/js-touch-event/
+// 各タッチイベントのイベントリスナー登録
+canvas.addEventListener("touchstart", function () { updateDisplay(event) })
+canvas.addEventListener("touchend", function () { updateDisplay(event) })
+canvas.addEventListener("touchmove", function () {
+    event.preventDefault()  // 画面スクロールを防止
+    updateDisplay(event)
+})
+canvas.addEventListener("touchcancel", function () { updateDisplay(event) })
+
+const touchpos = new Array();
+const touchButton = new Array();
+const touchButtonDown = new Array();
+const touchButtonHold = new Array();
+const touchtime = new Array();
+
+let touchButtons = [
+    { "x": 64, "y": 7 * 16, "type": "up", "width": 16, "height": 16 },
+    { "x": 64, "y": 9 * 16, "type": "down", "width": 16, "height": 16 },
+    { "x": 80, "y": 8 * 16, "type": "right", "width": 16, "height": 16 },
+    { "x": 48, "y": 8 * 16, "type": "left", "width": 16, "height": 16 },
+    { "x": 9 * 16, "y": 8 * 16, "type": "confirm", "width": 16, "height": 16 },
+    { "x": 10 * 16, "y": 8 * 16, "type": "cancel", "width": 16, "height": 16 },
+    { "x": 11 * 16, "y": 8 * 16, "type": "menu", "width": 16, "height": 16 },
+    { "x": 15 * 16, "y": 8 * 16, "type": "attack", "width": 32, "height": 16 }
+]
+
+let touchmode = false;
 
 //画像の設定
 
@@ -507,15 +615,16 @@ let message = {
 let menu = {
     "tab": 0,
     "tab_select": true,
-    "item_select": 0,
+    "item_select": [0],
+    "item_select_length": 1,
     "role_select": false,
     "who_use": 0,
     "scroll": 0,
-    "system_right": false,
     "system_select": 0,
     "CursorOldPos": { "x": 0, "y": 0 },
     "CursorNeedUpdate": false,
-    "visible": false
+    "visible": false,
+    "cursor_time": 0
 }
 //承認ウィンドウの変数の作成
 let window_confirm = {
@@ -528,58 +637,16 @@ let window_confirm = {
     "pos": { "x": 0, "y": 0 }
 }
 
-//キャンバスのやつ
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = 320 * zoom;
-canvas.height = 180 * zoom;
-
-//アンチエイリアスを無効にする
-ctx.mozImageSmoothingEnabled = false;
-ctx.webkitImageSmoothingEnabled = false;
-ctx.msImageSmoothingEnabled = false;
-ctx.imageSmoothingEnabled = false;
-
-//コンテキストメニュー禁止
-document.oncontextmenu = () => {
-    return false;
-};
-
-//フォント
-ctx.font = '20px sans-serif';
-
-//タッチ操作
-//あざす https://web-breeze.net/js-touch-event/
-// 各タッチイベントのイベントリスナー登録
-canvas.addEventListener("touchstart", function () { updateDisplay(event) })
-canvas.addEventListener("touchend", function () { updateDisplay(event) })
-canvas.addEventListener("touchmove", function () {
-    event.preventDefault()  // 画面スクロールを防止
-    updateDisplay(event)
-})
-canvas.addEventListener("touchcancel", function () { updateDisplay(event) })
-
-const touchpos = new Array();
-const touchButton = new Array();
-const touchButtonDown = new Array();
-const touchButtonHold = new Array();
-const touchtime = new Array();
-
-let touchButtons = [
-    { "x": 64, "y": 7 * 16, "type": "up", "width": 16, "height": 16 },
-    { "x": 64, "y": 9 * 16, "type": "down", "width": 16, "height": 16 },
-    { "x": 80, "y": 8 * 16, "type": "right", "width": 16, "height": 16 },
-    { "x": 48, "y": 8 * 16, "type": "left", "width": 16, "height": 16 },
-    { "x": 9 * 16, "y": 8 * 16, "type": "confirm", "width": 16, "height": 16 },
-    { "x": 10 * 16, "y": 8 * 16, "type": "cancel", "width": 16, "height": 16 },
-    { "x": 11 * 16, "y": 8 * 16, "type": "menu", "width": 16, "height": 16 },
-    { "x": 15 * 16, "y": 8 * 16, "type": "attack", "width": 32, "height": 16 }
-]
-
-let touchmode = false;
-
+//承認ウィンドウの変数の作成
+let MapNameText = {
+    "active": false,
+    "time": 0,
+    "text": "",
+    "title": ""
+}
 //言語設定
 game.lang = loadedjson.en_us;
+let lang = "en_us"
 
 //json読み込み
 loadingassets();
@@ -590,22 +657,25 @@ function main() {
     fpsCount();
     main_proc_time(true);
 
-    
-    if (!IsLoading) game.map = Object.assign(loadedjson.Map, loadedjson.MapMeta)
+
+    if (!IsLoading) game.map = Object.assign(loadedjson.Map, loadedjson.MapMeta);
+    game.lang = Object.assign(loadedjson.en_us, loadedjson[lang]);
 
     //キャンバスの初期化
     ctx.clearRect(0, 0, 320 * zoom, 180 * zoom);
 
     keycheck();
+    GamepadUpdate();
     touch_button_proc();
-
-    game.lang = loadedjson.en_us;
 
     //プレイヤーの動作
     player_proc();
 
     //敵の動作
     enemy_proc();
+
+    //NPCの動作
+    npc_proc();
 
     //パーティクルの動作
     particle_proc();
@@ -640,8 +710,6 @@ function main() {
     //タイマー
     timer++;
 
-
-
     main_proc_time(false);
     //ループ
     loopID = requestAnimationFrame(main);
@@ -650,6 +718,7 @@ function main() {
 async function game_start_proc() {
 
     await mapchange("Default");
+    document.title = "project 2023 " + game.ver
 
     //コンフィグ初期化
     for (const i in loadedjson.configs.configs) {
@@ -711,6 +780,32 @@ function draw_touch_button() {
     for (const i in touchButtons) {
         draw("touch_button_" + touchButtons[i].type, touchButtons[i].x, touchButtons[i].y)
     }
+}
+
+
+
+// ログを再構築
+function GamepadUpdate() {
+    // 最新の Gamepad のリストを取得する
+    gamepads = navigator.getGamepads();
+
+};
+
+for (let i = 0; i < gamepads.length; i++) {
+    var a = new Array();
+
+    // Gamepad オブジェクトを取得
+    var gamepad = gamepads[i];
+
+    // Gamepad オブジェクトが存在する
+    if (gamepad) {
+        console.log(gamepad)
+
+        // Gamepad オブジェクトが存在しない
+    } else {
+    }
+
+    // テキストを更新
 }
 
 function touch_button_proc() {
@@ -827,9 +922,11 @@ function Random(min, max) {
     return Math.random() * (max - min) + min;
 }
 
-function slice(str, len = 5) {
+function slice(str = "", len = 5, dot = "…") {
+    str += ""//string変換
+
     if (str.length > len)
-        return str.slice(0, len - 1) + "…";
+        return str.slice(0, len - 1) + dot;
 
     if (str.length <= len)
         return str;
@@ -966,7 +1063,7 @@ async function getJson(filename, name) {
     let endTime = new Date().getTime();
     members.loadTime = endTime - startTime;
     loadjsoncount++;
-    console.log('loaded : ' + filename);
+    console.log('loaded: ' + filename);
 
     if (!gamestarted) {
         ctx.clearRect(0, 0, 320 * zoom, 180 * zoom);
@@ -991,7 +1088,7 @@ async function loadImage(imgUrl, name) {
                 ctx.fillText(`loading images: ${loadimgcount}/${willLoadImg.length}`, 320 / 2 * zoom, 180 / 2 * zoom);
             }
 
-            console.log('loaded : ' + imgUrl);
+            console.log('loaded: ' + imgUrl);
             resolve();
         }
         /// 読み込み開始...
@@ -1008,9 +1105,9 @@ async function loadconfig() {
     //let dirHandle;
     let fileData;
 
-    try{
+    try {
         if (typeof dirHandle == "undefined") dirHandle = await window.showDirectoryPicker();
-    }catch{
+    } catch {
         return undefined;
     }
 
@@ -1027,9 +1124,9 @@ async function loadconfig() {
 async function saveconfig(obj) {
     let fileData;
 
-    try{
+    try {
         if (typeof dirHandle == "undefined") dirHandle = await window.showDirectoryPicker();
-    }catch{
+    } catch {
         return undefined;
     }
 
@@ -1056,12 +1153,67 @@ async function saveconfig(obj) {
     return fileData;
 }
 
+async function uploadsavedata() {
+
+    try {
+        fileHandle = await window.showOpenFilePicker(saveFileOptions);
+    } catch {
+        return;
+    }
+
+    if (Array.isArray(fileHandle)) fileHandle = fileHandle[0];
+    let fileData = await fileHandle.getFile();
+    let text = await fileData.text();
+    let json = JSON.parse(text);
+    return json;
+}
+
+async function downloadsavedata(obj) {
+    let fileData;
+
+    const textContent = JSON.stringify(obj);
+    fileHandle = await saveFile(textContent, fileHandle)
+    if (fileHandle === undefined) return;
+
+    // Read the file text.
+    fileData = await fileHandle.getFile();
+    LastSavedFileData = fileData;
+    let text = await fileData.text();
+
+    return fileData;
+}
+
+
+//あざす https://qiita.com/pentamania/items/ada07c45d4e5cc139c03
+async function writeFile(Handle, content) {
+    // writable作成
+    const writable = await Handle.createWritable();
+
+    // コンテンツを書き込む
+    await writable.write(content);
+
+    // ファイル閉じる
+    await writable.close();
+}
+
+async function saveFile(content, handle) {
+    if (!handle) {
+        try {
+            handle = await window.showSaveFilePicker(saveFileOptions);
+        } catch {
+            return;
+        }
+    }
+    await writeFile(handle, content);
+    return handle;
+}
+
 async function savepathselect() {
     let fileData;
 
-    try{
+    try {
         if (typeof dirHandle == "undefined") dirHandle = await window.showDirectoryPicker();
-    }catch{
+    } catch {
         return undefined;
     }
 
@@ -1077,11 +1229,16 @@ async function savepathselect() {
     return fileData;
 }
 
-async function savedataload() {
-    let obj = await loadconfig();
-    if(obj == undefined)return;
+function savepathreset() {
+    [fileHandle, dirHandle] = [undefined, undefined];
+}
 
-    if (obj.iphash != await getHash(await getIP())) if (!confirm("前回セーブしたIPと違います\n第三者のセーブデータをロードすることは推奨しません\nロードしますか?")) return;
+async function savedataload(dir = true) {
+    let obj;
+    if (dir) obj = await loadconfig();
+    else obj = await uploadsavedata();
+
+    if (obj == undefined) return;
 
     player = obj.player;
     players = obj.players;
@@ -1093,7 +1250,7 @@ async function savedataload() {
     return LastSavedFileData;
 }
 
-async function savedatawrite() {
+async function savedatawrite(dir = true) {
     let obj = new Object();
 
     obj.metadata = game.savemetadata;
@@ -1101,10 +1258,11 @@ async function savedatawrite() {
     obj.player = player;
     obj.players = players;
     obj.enemy = enemy;
-    obj.iphash = await getHash(await getIP());
 
-    await saveconfig(obj);
-    if(obj == undefined)return;
+    if (dir) await saveconfig(obj);
+    else await downloadsavedata(obj);
+
+    if (obj == undefined) return;
 
     LastSavedTime = new Date(obj.LastSavedTime);
     return LastSavedFileData;
@@ -1185,18 +1343,13 @@ function getTileID(maplayer = "map1", x, y) {
 
 }
 
-function TF(bool, True = "", False = "") {
-    if (bool) return True;
-    if (!bool) return False;
-}
-
 //数字のindex番目取得
 function NumberofIndex(num, index, shinsu) {
     if (typeof shinsu == "undefined") shinsu = 10;
     return (String(num.toString(shinsu))[index]);
 }
 
-//アニメーションいろいろ(0～1)
+//アニメーションいろいろ(0.0～1.0)
 function make_jump_animation(x) {
     if (x < 1) return Math.sin(x * 6.28 - 2);
     if (x >= 1) return Math.sin(4.28);
@@ -1210,7 +1363,22 @@ function make_scatter_animation(x) {
     if (x < 0.5) return make_slip_animation(x);
     if (x >= 0.5) return 1;
 }
+//あざす https://easings.net/ja
+function easeOutElastic(x) {
+    const c4 = (2 * Math.PI) / 3;
 
+    return x === 0
+        ? 0
+        : x === 1
+            ? 1
+            : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
+}
+function easeOutExpo(x) {
+    return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+}
+function easeInExpo(x) {
+    return x === 0 ? 0 : Math.pow(2, 10 * x - 10);
+}
 function replaceTile(id, maplayer, x, y) {
     game.map[maplayer][y][x] = id;
     return id;
@@ -1231,9 +1399,8 @@ function hitbox(x, y) {
     return false;
 }
 
-function hitbox_rect(ax, ay, aw, ah, bx, by, bw, bh, color) {
+function hitbox_rect(ax, ay, aw, ah, bx, by, bw, bh, color = "black") {
     //あざす https://yttm-work.jp/collision/collision_0002.html
-    if (typeof color == "undefined") color = "black";
 
     debug_hitbox_push(ax, ay, aw, ah, color);
     debug_hitbox_push(bx, by, bw, bh, color);
@@ -1256,8 +1423,21 @@ function hitbox_rect(ax, ay, aw, ah, bx, by, bw, bh, color) {
     }
 }
 
-function hitbox_reci(ax, ay, aw, ah, bx, by, bw, bh, color) {
-    if (typeof color == "undefined") color = "black";
+function hitbox_repo(ax, ay, aw, ah, px, py, color = "black") {
+    //あざす https://yttm-work.jp/collision/collision_0004.html
+
+    debug_hitbox_push(ax, ay, aw, ah, color);
+    debug_hitbox_push(px, py, 1, 1, color);
+
+    if (px >= ax && px <= (ax + aw) &&
+        py >= ay && py <= (ay + ay)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function hitbox_reci(ax, ay, aw, ah, bx, by, bw, bh, color = "black") {
 
     debug_hitbox_push(ax, ay, aw, ah, color);
     debug_hitbox_push(bx, by, bw, bh, color);
@@ -1277,8 +1457,7 @@ function hitbox_reci(ax, ay, aw, ah, bx, by, bw, bh, color) {
     }
 }
 
-function hitbox_enemy_rect(ax, ay, aw, ah, color) {
-    if (typeof color == "undefined") color = "black";
+function hitbox_enemy_rect(ax, ay, aw, ah, color = "black") {
 
     let hit = new Array();
 
@@ -1291,8 +1470,7 @@ function hitbox_enemy_rect(ax, ay, aw, ah, color) {
     return hit;
 }
 
-function hitbox_rema(ax, ay, aw, ah, color, checktile, maplayer) {
-    if (typeof color == "undefined") color = "black";
+function hitbox_rema(ax, ay, aw, ah, color = "black", checktile, maplayer) {
 
     let x = Math.round(ax / 16);
     let y = Math.round(ay / 16);
@@ -1318,9 +1496,11 @@ function player_proc() {
 
     if (IsLoading) return;
     if (canPlayerMoveForOpenGui()) player_move_proc();
-    player_attack()
+    player_attack();
+    player_npc_talk();
+    player_effect_proc();
 
-    mapchange_proc()
+    mapchange_proc();
 
     for (const i in players) {
 
@@ -1462,6 +1642,21 @@ function player_attack() {
     weapon_proc();
 }
 
+function player_effect_add(id, time = 30, power = 0) {
+    time *= 60;
+
+    if (player.effect[id] != undefined)
+        if (player.effect[id].timetime) return;
+    player.effect[id] = new Effect(time, power)
+}
+
+function player_effect_proc() {
+    for (const effect of player.effect) {
+        if (effect == undefined) continue;
+        effect.time--;
+    }
+}
+
 function weapon_attack(i) {
 
     players[i].weapon.timer = 1;
@@ -1582,6 +1777,20 @@ function rotate() {
     //if (player.up && player.down && player.right && player.left) player.rotate = 0;
 }
 
+function player_npc_talk() {
+    for (let i in npc) {
+        let it = npc[i];
+        let facing = new Object();
+        facing.x = game.facing_pos[player.facing][0];
+        facing.y = game.facing_pos[player.facing][1];
+        hitbox_repo(it.x, it.y, 16, 16, player.x + 8 + facing.x * 16, player.y + 8 + facing.y * 16);
+    }
+}
+
+function talk_npc(i) {
+
+}
+
 function mapchange_proc() {
     for (const i in game.map.warp) {
         if (hitbox_rect(game.map.warp[i].x * 16, game.map.warp[i].y * 16, 16, 16, player.x, player.y, 16, 16)) mapchange(game.map.warp[i].to.mapID, game.map.warp[i].to.x * 16, game.map.warp[i].to.y * 16);
@@ -1598,6 +1807,11 @@ async function mapchange(ID, x, y, loadonly = false) {
 
     if (!loadonly) {
         enemy.splice(0, Infinity);
+        npc.splice(0, Infinity);
+        for (let i in loadedjson.MapMeta.npc) {
+            let it = loadedjson.MapMeta.npc[i]
+            npc.push(new NPC(it.x, it.y, it.id))
+        }
 
         //プレイヤーの場所を移動
         if (typeof x != "undefined" && typeof y != "undefined" && !isNaN(x) && !isNaN(y)) [player.x, player.y] = [x, y];
@@ -1910,6 +2124,48 @@ function enemy_spawn_check(x, y) {
 
 }
 
+function npc_proc() {
+    for (let i in npc) {
+
+    }
+}
+
+function npc_move_proc(i) {
+
+    //スピード調整
+    if (npc[i].xspd > 0) {
+        npc[i].xspd = Math.floor(npc[i].xspd * 0.85 * 1000) / 1000;
+    } else {
+        npc[i].xspd = Math.ceil(npc[i].xspd * 0.85 * 1000) / 1000;
+    }
+    if (npc[i].yspd > 0) {
+        npc[i].yspd = Math.floor(npc[i].yspd * 0.85 * 1000) / 1000;
+    } else {
+        npc[i].yspd = Math.ceil(npc[i].yspd * 0.85 * 1000) / 1000;
+    }
+
+    //動き替える
+    if (npc[i].id == 1) npc_slime_move_proc(i);
+
+    //移動
+    npc_move(i, npc[i].xspd, npc[i].yspd);
+}
+
+function npc_move(i, x, y) {
+
+    //移動
+    for (let j = 0; j < Math.round(Math.abs(x)); j++) {
+        npc[i].x += Math.sign(x);
+        if (hitbox(npc[i].x, npc[i].y)) npc[i].x -= Math.sign(x);
+        if (j > game.move_limit) break;
+    }
+    for (let j = 0; j < Math.round(Math.abs(y)); j++) {
+        npc[i].y += Math.sign(y);
+        if (hitbox(npc[i].x, npc[i].y)) npc[i].y -= Math.sign(y);
+        if (j > game.move_limit) break;
+    }
+}
+
 function particle_proc() {
 
     if (IsLoading) return;
@@ -1929,7 +2185,7 @@ function createParticle(spx, spy, id, count) {
             "y": spy,
             "id": id,
             "tick": 0,
-            "lifetime": Random(loadedjson.particle[id].lifetime[0], loadedjson.particle[id].lifetime[1]),
+            "lifetime": Math.floor(Random(loadedjson.particle[id].lifetime[0], loadedjson.particle[id].lifetime[1])),
             "varix": Random(-1, 1),
             "variy": Random(-1, 1)
         }
@@ -1967,6 +2223,7 @@ function debug_proc() {
 
 
     //文字描画
+    draw_texts(debug.info, 64, 64)
     {
         let draw_text_debug = [
             `FPS:${fps}`,
@@ -1977,7 +2234,7 @@ function debug_proc() {
 
         ]
 
-        draw_texts(draw_text_debug, 0, 140)
+        draw_texts(draw_text_debug, 0, 136)
     }
 
     {
@@ -1992,11 +2249,29 @@ function debug_proc() {
     draw_text("dc:" + debug.camx + "," + debug.camy, 0, 24);
 
 
-
+    //キー表示
     for (let i = 0, j = 0; i < keys.length; i++) {
         if (keys[i].press) {
             draw_text(String.fromCharCode(i), 78 * 4, j * 8);
             draw_text(`${i}`, 74 * 4, j * 8);
+            j++;
+        }
+    }
+
+    //コントローラー表示
+    for (let x in gamepads) {
+        let gp = gamepads[x];
+        draw_text(`${x}`, 72 * 4 + x * -40, 32);
+        if (gp === null) continue;
+        for (let i = 0, j = 0; i < gp.buttons.length; i++) {
+            if (gp.buttons[i].pressed) {
+                draw_text(`${i}`, 78 * 4 + x * -40, j * 8);
+                j++;
+            }
+        }
+        for (let i = 0, j = 0; i < gp.axes.length; i++) {
+            let ax = gp.axes[i];
+            draw_text(`${slice(ax, 4, "")}`, 72 * 4 + x * -40, j * 8);
             j++;
         }
     }
@@ -2057,6 +2332,8 @@ function debug_proc() {
     //タッチデバック
     debug_draw_touch();
 
+    draw_text("project2023\nbeta build\n" + game.ver, 15 * 16 - 8, 10 * 16 - 8)
+
 }
 
 function debug_hitbox_push(a, b, c, d, color) {
@@ -2084,7 +2361,9 @@ function debug_draw_touch() {
     }
 }
 
-function draw_text(text, textx, texty, textwidth, textheight, font = "") {
+function draw_text(text, textx, texty, textwidth = Infinity, textheight = Infinity, font = "", offset = -1) {
+    if (offset == 0) textx -= text.length * 8 / 2;
+    if (offset == 1) textx -= text.length * 8;
 
     for (let i = 0, at = 0, offsetx = 0, offsety = 0; at < text.length; i++) {
 
@@ -2107,12 +2386,12 @@ function draw_text(text, textx, texty, textwidth, textheight, font = "") {
 
 
         //自動改行
-        if (typeof textwidth != 'undefined' && textwidth < offsetx) {
+        if (textwidth < offsetx) {
             offsety++;
             offsetx = 0;
         }
         //はみ出し判定
-        if (typeof textwidth != 'undefined' && textheight < offsety) {
+        if (textheight < offsety) {
             return "over height";
         }
     }
@@ -2210,6 +2489,11 @@ function draw(i, x, y) {
     ctx.drawImage(img[t.img], t.atlas[0], t.atlas[1], t.atlas[2], t.atlas[3], Math.round(x) * zoom, Math.round(y) * zoom, t.atlas[2] * zoom, t.atlas[3] * zoom);
 }
 
+function drawImg(img) {
+    let it = i => Math.floor(arguments[i])
+    ctx.drawImage(img, it(1), it(2), it(3), it(4), it(5) * zoom, it(6) * zoom, it(3) * zoom, it(4) * zoom)
+}
+
 function draw_player() {
 
     //プレイヤー描画
@@ -2292,6 +2576,7 @@ function draw_tiles(maplayer) {
     for (let y = 0; y < 13; y++) {
         for (let x = 0; x < 21; x++) {
             let tileID = getTileID(maplayer, x + plx, y + ply);
+
             ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), 16, 16, (x * 16 + (16 - player.scrollx % 16) - 16) * zoom, (y * 16 + (16 - player.scrolly % 16) - 16) * zoom, 16 * zoom, 16 * zoom);
 
         }
@@ -2329,9 +2614,9 @@ function draw_particle() {
 
     for (const i in particle) {
         let t = particle[i];
-        if (t.id == 0) ctx.drawImage(img.particle, Math.floor(t.tick / t.lifetime * 8) * 16, 0, 16, 16, (t.x - player.scrollx + particle_death_offset(i)[0]) * zoom, (t.y - player.scrolly + particle_death_offset(i)[1]) * zoom, 16 * zoom, 16 * zoom);
-        if (t.id == 1) ctx.drawImage(img.particle, 0, 16, 16, 16, (t.x - player.scrollx + t.varix * 16 * make_scatter_animation(t.tick / t.lifetime)) * zoom, (t.y - player.scrolly - make_jump_animation(t.tick / t.lifetime * 2) * 4) * zoom, 16 * zoom, 16 * zoom);
-        if (t.id == 2) ctx.drawImage(img.particle, 16, 16, 16, 16, (t.x - player.scrollx + t.varix * 16 * make_scatter_animation(t.tick / t.lifetime)) * zoom, (t.y - player.scrolly - make_jump_animation(t.tick / t.lifetime * 2) * 4) * zoom, 16 * zoom, 16 * zoom);
+        if (t.id == 0) drawImg(img.particle, Math.floor(t.tick / t.lifetime * 8) * 16, 0, 16, 16, t.x - player.scrollx + particle_death_offset(i)[0], t.y - player.scrolly + particle_death_offset(i)[1]);
+        if (t.id == 1) drawImg(img.particle, 0, 16, 16, 16, t.x - player.scrollx + t.varix * 16 * make_scatter_animation(t.tick / t.lifetime), t.y - player.scrolly - make_jump_animation(t.tick / t.lifetime * 2) * 4);
+        if (t.id == 2) drawImg(img.particle, 16, 16, 16, 16, t.x - player.scrollx + t.varix * 16 * make_scatter_animation(t.tick / t.lifetime), t.y - player.scrolly - make_jump_animation(t.tick / t.lifetime * 2) * 4);
     }
 }
 
@@ -2353,6 +2638,15 @@ function gui_draw() {
         ctx.drawImage(img.gui_menu, players[i].id * 8, 48, 8, 8, 8 * zoom, (i * 8 + 1 * 8) * zoom, 8 * zoom, 8 * zoom);
         ctx.drawImage(img.gui_menu, 0, 32, 16, 8, 16 * zoom, (i * 8 + 1 * 8) * zoom, 16 * zoom, 8 * zoom);
         draw_text(players[i].hp + "", 32, (i * 8 + 1 * 8));
+    }
+
+    //マップ名描画
+    if (MapNameText.active) {
+        let x = 0;
+        if (0 <= MapNameText.time < 60) x += easeOutExpo((MapNameText.time - 0) / 60);
+        if (180 <= MapNameText.time < 240) x += easeInExpo((MapNameText.time - 180) / 60);
+        x *= 320 / 2;
+        draw_text(MapNameText.text, x, 64, u, u, u, 0);
     }
 
     //メッセージ描画
@@ -2382,6 +2676,8 @@ function gui_draw() {
         draw_icon("config", 29 * 8, 3 * 8);
         draw_text(get_text("menu.tab.config"), 30 * 8, 3 * 8);
 
+        let cursorX = [40];
+
         //party
         if (menu.tab === 0) {
             ctx.drawImage(img.players, 0, 0, 16, 16, 5 * 8 * zoom, 5 * 8 * zoom, 16 * zoom, 16 * zoom);
@@ -2391,6 +2687,7 @@ function gui_draw() {
 
         //items
         if (menu.tab === 1) {
+            cursorX = [40];
             for (let i in player.items.slice(menu.scroll, menu.scroll + 8)) {
                 draw_gui_item(40, 5 * 8 + i * 16, Number(i) + menu.scroll);
             }
@@ -2404,9 +2701,10 @@ function gui_draw() {
 
         //config
         if (menu.tab === 3) {
+            cursorX = [5 * 8, 13 * 8];
             //右のリスト
             //config
-            if (menu.system_select === 0) {
+            if (menu.item_select[0] === 0) {
                 let configs = loadedjson.configs.configs;
 
                 let func = (
@@ -2420,7 +2718,7 @@ function gui_draw() {
             }
 
             //data
-            if (menu.system_select === 1) {
+            if (menu.item_select[0] === 1) {
                 draw_gui_items(game.gui_system_data_items, false, 14 * 8, 5 * 8, 25, 2, 16);
 
                 let [savepath, savename, SavedTime] = ["???", "???", "???"];
@@ -2429,11 +2727,16 @@ function gui_draw() {
                 if (typeof dirHandle !== "undefined" && typeof LastSavedFileData !== "undefined")
                     savepath = slice(dirHandle.name, 5) + "/" + LastSavedFileData.name;
 
+                if (typeof fileHandle !== "undefined")
+                    savepath = fileHandle.name;
+
                 if (typeof LastSavedTime !== "undefined") SavedTime = LastSavedTime.toLocaleString();
 
 
-                if(game.saveloadfaliedtime+game.PopUpDelay>timer )
-                draw_text(get_text("menu.loadfailed.type"+game.saveloadfaliedtype), 14 * 8, 18 * 8);
+                if (game.saveloadfaliedtime + game.PopUpDelay > timer)
+                    draw_text(get_text("menu.loadfailed.type" + game.saveloadfaliedtype), 14 * 8, 18 * 8);
+                if (game.saveloadsuccesstime + game.PopUpDelay > timer)
+                    draw_text(get_text("menu.loadsuccess.type" + game.saveloadsuccesstype), 14 * 8, 18 * 8);
 
                 draw_text(get_text("menu.LastSavedTime") + SavedTime, 14 * 8, 19 * 8);
 
@@ -2456,15 +2759,12 @@ function gui_draw() {
         //カーソル//
         let select_y_size = game.select_y_size[menu.tab];
         //タブ
-        cursor.push([menu.tab * 64 + 4 * 8, 3 * 8]);
+        cursor.push(new XY(menu.tab * 64 + 4 * 8, 3 * 8));
 
-        if (!menu.tab_select) {
-            /*アイテム*/
-            if (menu.tab != 3) cursor.push([5 * 8, (menu.item_select - menu.scroll) * select_y_size + 5 * 8]);
+        if (!menu.tab_select)
+            for (let l in menu.item_select)
+                cursor.push(new XY(cursorX[l], (menu.item_select[l] - menu.scroll) * select_y_size + 5 * 8));
 
-            /*右*/if (menu.tab == 3) /*_________________*/cursor.push([5 * 8, (menu.system_select - menu.scroll) * select_y_size + 5 * 8]);
-            /*左*/if (menu.tab == 3 && menu.system_right) cursor.push([13 * 8, (menu.item_select - menu.scroll) * select_y_size + 5 * 8]);
-        }
 
 
 
@@ -2477,40 +2777,50 @@ function gui_draw() {
         draw_text(get_text("menu.item_use.who_use"), 10 * 8, 10 * 8);
 
         for (const i in players) {
-            ctx.drawImage(img.gui_menu, players[i].id * 8, 48, 8, 8, 10 * 8 * zoom, (11 * 8 + i * 8) * zoom, 8 * zoom, 8 * zoom);
-            ctx.drawImage(img.gui_menu, 0, 32, 16, 8, 11 * 8 * zoom, (11 * 8 + i * 8) * zoom, 16 * zoom, 8 * zoom);
-            draw_text(players[i].hp + "", 13 * 8, (11 * 8 + i * 8));
+            drawImg(img.gui_menu, players[i].id * 8, 48, 8, 8, 10 * 8, (11 * 8 + i * 8));
+            drawImg(img.gui_menu, 0, 32, 16, 8, 11 * 8, (11 * 8 + i * 8));
+            draw_text(String(players[i].hp), 13 * 8, (11 * 8 + i * 8));
         }
+        cursor.push(new XY(9 * 8, 11 * 8));
     }
 
     //メッセージ描画
     if (window_confirm.visible) {
         let it = window_confirm;
         draw_prompt(it.pos.x, it.pos.y, 8 * 8, 8 * 8, img.gui_prompt);
-        draw_text(it.text, pos.x, pos.y, 7);
-        cursor.push([it.pos.x + 32 - it.selected * 32, it.pos.y + 64 - 16])
+        draw_text(it.text, it.pos.x, it.pos.y, 7);
+        cursor.push(new XY(it.pos.x + 32 - it.selected * 32, it.pos.y + 64 - 16));
     }
 
 
     //カーソル描画//
     {
+        let cursorOfseX = 0;
+        cursorOfseX += easeOutExpo(timer % 100 / 100) * 5;
+        cursorOfseX += easeOutExpo(1 - timer % 100 / 100) * 5;
+        cursorOfseX -= 8;
+
         if (menu.CursorNeedUpdate) {
             menu.CursorNeedUpdate = false;
-            menu.CursorOldPos.x = cursor[cursor.length - 1][0];
-            menu.CursorOldPos.y = cursor[cursor.length - 1][1];
+            menu.CursorOldPos.x = cursor[cursor.length - 1].x;
+            menu.CursorOldPos.y = cursor[cursor.length - 1].y;
         }
 
         if (cursor.length !== 0) {
-            menu.CursorOldPos.x += (cursor[cursor.length - 1][0] - menu.CursorOldPos.x) / 2;
-            menu.CursorOldPos.y += (cursor[cursor.length - 1][1] - menu.CursorOldPos.y) / 2;
+            menu.CursorOldPos.x += (cursor[cursor.length - 1].x - menu.CursorOldPos.x) / 2;
+            menu.CursorOldPos.y += (cursor[cursor.length - 1].y - menu.CursorOldPos.y) / 2;
         }
 
         for (let i in cursor) {
-            if (i != cursor.length - 1) draw("cursor_uns", cursor[i][0], cursor[i][1]);
+            if (i != cursor.length - 1) draw("cursor_uns", cursor[i].x, cursor[i].y);
 
-            if (i == cursor.length - 1) draw("cursor", menu.CursorOldPos.x, menu.CursorOldPos.y);
+            if (i == cursor.length - 1) draw("cursor", menu.CursorOldPos.x + cursorOfseX, menu.CursorOldPos.y);
         }
     }
+
+    //ロード画面
+    if (IsLoading) draw_loading();
+
     //タッチボタン描画
     draw_touch_button();
 
@@ -2534,7 +2844,7 @@ function draw_gui_item(x, y, i) {
     }
 }
 
-function draw_scroll_bar(x, y, p = 0, height = 64) {
+function draw_scroll_bar(x, y, p = 0, height = 64, id = null) {
     if (isNaN(p)) p = 0;
 
     ctx.drawImage(img.gui_scroll_bar, 0, 0, 8, 1, x * zoom, y * zoom, 8 * zoom, 1 * zoom);
@@ -2569,6 +2879,11 @@ function draw_gui_items(array, a = false, x, y, w, h, s = 8, func = () => { }) {
     }
 }
 
+function draw_loading() {
+    draw_prompt(15 * 16, 160, 8 * 8, 8, img.gui_prompt)
+    draw_text("loading…", 15 * 16, 160, 32, 8)
+}
+
 function gui_proc() {
 
     if (game.saveloadingnow) return;
@@ -2576,6 +2891,11 @@ function gui_proc() {
     if (IsLoading) {
         gui_close();
         return;
+    }
+
+    if (MapNameText.active) {
+        MapNameText.time++;
+        if (240 <= MapNameText.time) MapNameText.active = false;
     }
 
     //メッセージ消す
@@ -2610,6 +2930,7 @@ function gui_proc() {
     }
 
     let scroll_limit = Infinity;
+    let select_limit = Infinity;
 
     //party
     if (menu.tab === 0) {
@@ -2629,25 +2950,36 @@ function gui_proc() {
     }
     //config
     if (menu.tab === 3) {
-        scroll_limit = Infinity;
+        scroll_limit = 0;
+
+        if (menu.item_select_length != 2) select_limit = 7;
+
+        if (menu.item_select_length == 2 && menu.item_select[0] == 0) select_limit = game.gui_system_items.length - 1;
+        if (menu.item_select_length == 2 && menu.item_select[0] == 1) select_limit = game.gui_system_data_items.length - 1;
+
+
         //コンフィグ変更
-        if (menu.system_right && menu.system_select == 0) config_change_proc();
-        if (menu.system_right && menu.system_select == 1) save_load_proc();
+        if (menu.item_select_length == 2 && menu.item_select[0] == 0) {
+            if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.item_select[1] <= loadedjson.configs.configs.length - 1 && menu.tab == 3) {
+                let configvar = loadedjson.configs.configs[menu.item_select[1]].variable;
+                config[configvar] = !config[configvar];
+                //console.log(configvar)
+            }
+        }
+        //データ
+        if (menu.item_select_length == 2 && menu.item_select[0] == 1) save_load_proc();
 
 
-        if (menu.system_right) {
-            if ((key_groups_down.left || key_groups_down.cancel || (key_groups_down.up && menu.item_select == 0)) && !menu.tab_select) {
-                menu.system_right = false;
-                menu.item_select = menu.system_select;
+        if (menu.item_select_length === 2) {
+            if ((key_groups_down.left || key_groups_down.cancel || (key_groups_down.up && menu.item_select[1] == 0)) && !menu.tab_select) {
+                menu.item_select_length = 1;
 
                 return;
             }
-        } else {
-            if (!menu.tab_select) menu.system_select = menu.item_select;
+        }
+        if (menu.item_select_length === 1) {
             if ((key_groups_down.right || key_groups_down.confirm) && !menu.tab_select) {
-                menu.system_right = true;
-                menu.system_select = menu.item_select;
-                menu.item_select = 0;
+                menu.item_select_length = 2;
 
                 return;
             }
@@ -2658,6 +2990,11 @@ function gui_proc() {
     //メニュー動作
     if (menu.visible && !menu.role_select) {
         let count = game.gui_item_count[menu.tab];
+
+        //アイテムセレクト
+        let l = menu.item_select_length - 1;
+        while (menu.item_select_length > menu.item_select.length) menu.item_select.push(0);
+        menu.item_select.splice(menu.item_select_length, Infinity);
 
         if (menu.tab_select) {//カーソル上
             //タブの動き
@@ -2675,22 +3012,22 @@ function gui_proc() {
 
         } else {//カーソル下
             //カーソルを上にずらす
-            if (key_groups_down.up && menu.item_select == 0 && !menu.system_right) menu.tab_select = true;
-            //if (key_groups_down.up && menu.item_select == 0 && menu.system_right) menu.system_right=false;
+            if (key_groups_down.up && menu.item_select[l] == 0 && menu.item_select_length != 2) menu.tab_select = true;
+            //if (key_groups_down.up && menu.item_select[l] == 0 && menu.item_select_length==2) menu.item_select_length==2=false;
 
             //アイテムセレクト上下
-            if (key_groups_hold.down && menu.scroll <= count) menu.item_select++;
-            if (key_groups_hold.up && menu.scroll >= 0) menu.item_select--;
+            if (key_groups_hold.down && menu.scroll <= count && menu.item_select[l] < select_limit) menu.item_select[l]++;
+            if (key_groups_hold.up && menu.scroll >= 0) menu.item_select[l]--;
 
-            if (menu.item_select - menu.scroll > count && menu.scroll < scroll_limit) menu.scroll++;
-            if (menu.item_select - menu.scroll < 0 && menu.scroll > 0) menu.scroll--;
+            if (menu.item_select[l] - menu.scroll > count && menu.scroll < scroll_limit) menu.scroll++;
+            if (menu.item_select[l] - menu.scroll < 0 && menu.scroll > 0) menu.scroll--;
 
-            if (menu.item_select - menu.scroll > count) menu.item_select--;
-            if (menu.item_select - menu.scroll < 0) menu.item_select++;
+            if (menu.item_select[l] - menu.scroll > count) menu.item_select[l]--;
+            if (menu.item_select[l] - menu.scroll < 0) menu.item_select[l]++;
 
             //カーソルを上にずらす(閉じる)
             if (key_groups_down.cancel) {
-                menu.item_select = 0;
+                menu.item_select[l] = 0;
                 menu.tab_select = true
             }
             return;
@@ -2699,7 +3036,7 @@ function gui_proc() {
 
     if (menu.role_select) {
         //誰が使うか閉じる
-        if (key_groups_down.cancel) {
+        if (key_groups_down.cancel || key_groups_down.left) {
             menu.role_select = false;
 
             return;
@@ -2718,9 +3055,8 @@ function gui_close(input) {
         //誰が使いますか画面も閉じる
         menu.role_select = false;
 
-        menu.item_select = 0;
-        menu.system_right = false;
-        menu.system_select = 0;
+        menu.item_select.fill(0);
+        menu.item_select_length = 1;
         menu.role_select = 0;
         menu.tab_select = true;
     }
@@ -2771,6 +3107,13 @@ function confirmView(text = "text", title = "title", x = 0, y = 0, func_ok = () 
     window_confirm.func_cancel = func_cancel;
 
 }
+
+function MapNameTextActive(text) {
+    MapNameText.text = text; 
+    MapNameText.active = true; 
+    MapNameText.time = 0;
+}
+
 function canPlayerMoveForOpenGui() {
     if (message.visible) return false;
     if (menu.visible) return false;
@@ -2780,43 +3123,47 @@ function canPlayerMoveForOpenGui() {
 }
 
 function item_use_proc() {
-    if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.item_select <= player.items.length - 1 && menu.tab == 1) {
+    if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.item_select[0] <= player.items.length - 1 && menu.tab == 1) {
 
         //誰が使いますか画面を出す
-        if (get_item_data(menu.item_select, "role_select") && !menu.role_select) {
+        if (get_item_data(menu.item_select[0], "role_select") && !menu.role_select) {
             menu.role_select = true;
             return;
         }
 
         //アイテム使用
-        if (!get_item_data(menu.item_select, "role_select") || menu.role_select) {
-            if (!get_item_data(menu.item_select, "role_select")) menu.who_use = 0;
+        if (!get_item_data(menu.item_select[0], "role_select") || menu.role_select) {
+            if (!get_item_data(menu.item_select[0], "role_select")) menu.who_use = 0;
 
-            item_use(menu.item_select);
+            item_use(menu.item_select[0]);
         }
         menu.role_select = false;
 
         //アイテムの数を減らす
-        player.items[menu.item_select].count--;
+        player.items[menu.item_select[0]].count--;
         //アイテムの数が0だったら消す
-        if (player.items[menu.item_select].count == 0) player.items.splice(menu.item_select, 1);
+        if (player.items[menu.item_select[0]].count == 0) player.items.splice(menu.item_select[0], 1);
     }
 }
 
 async function save_load_proc() {
-    if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.tab == 3 && menu.system_right) {
+    if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.tab == 3 && menu.item_select_length == 2) {
         game.saveloadingnow = true;
         let result;
 
-        if (menu.item_select === 0) result = await savedatawrite();
-        if (menu.item_select === 1) result = await savedataload()
-        if (menu.item_select === 2) result = await savepathselect();
-        if (menu.item_select === 3) result = await savedataload()
-        if (menu.item_select === 4) result = await savepathselect();
+        if (menu.item_select[1] === 0) result = await savedatawrite(true);
+        if (menu.item_select[1] === 1) result = await savedataload(true)
+        if (menu.item_select[1] === 2) result = await savepathreset(true);
+        if (menu.item_select[1] === 3) result = await savedatawrite(false)
+        if (menu.item_select[1] === 4) result = await savedataload(false);
         //failed
-        if(result == undefined){
-            game.saveloadfaliedtime=timer;
-            game.saveloadfaliedtype=menu.item_select;
+        if (result == undefined && menu.item_select[1] !== 2) {
+            game.saveloadfaliedtime = timer;
+            game.saveloadfaliedtype = menu.item_select[1];
+        }
+        if (result != undefined) {
+            game.saveloadsuccesstime = timer;
+            game.saveloadsuccesstype = menu.item_select[1];
         }
 
         game.saveloadingnow = false;
@@ -2828,12 +3175,3 @@ function item_use(i) {//i = itemselectINDEX
 
     if (get_item_data(i, "efficacy") == "health") player_heal(menu.who_use, get_item_data(i, "heal_power"));
 }
-
-function config_change_proc() {
-    if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.item_select <= loadedjson.configs.configs.length - 1 && menu.tab == 3) {
-        let configvar = loadedjson.configs.configs[menu.item_select].variable;
-        config[configvar] = !config[configvar];
-        //console.log(configvar)
-    }
-}
-
