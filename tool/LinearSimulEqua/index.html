@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="ButtonPanel">
+        <button class="input" onclick="setNumByElem('result_a','result_b',...linearFuncCalc(getNumByElem('input_x1','input_y1'),getNumByElem('input_x2','input_y2')).getArray() )">計算</button>
+    </div>
+    <div class="InputPanel" >
+        <div class="InputPanel1">
+            <span class="space">&nbsp;</span>
+            <input type="number" id="input_y1" class="input numInput" placeholder="𝒚">
+            <span class="input">=</span>
+            <input type="number" id="input_x1" class="input numInput" placeholder="𝒙">
+            <span class="input">𝒂+𝒃</span>
+
+        </div>
+        <div class="InputPanel2">
+            <span class="space">&nbsp;</span>
+            <input type="number" id="input_y2" class="input numInput" placeholder="𝒚">
+            <span class="input">=</span>
+            <input type="number" id="input_x2" class="input numInput" placeholder="𝒙">
+            <span class="input">𝒂+𝒃</span>
+
+        </div>
+        <div class="ResultPanel">
+            <span class="space">&nbsp;</span>
+            <span class="input">(𝒂,𝒃)=</span>
+            <span class="input">(</span>
+            <input type="number" id="result_a" class="input numInput" placeholder="𝒂" readonly>
+            <span class="input">,</span>
+            <input type="number" id="result_b" class="input numInput" placeholder="𝒃" readonly>
+            <span class="input">)</span>
+
+        </div>
+    </div>
+</body>
+
+<head>
+    <script src="script.js"></script>
+    <link href="style.css" rel="stylesheet">
+</head>
+
+</html>

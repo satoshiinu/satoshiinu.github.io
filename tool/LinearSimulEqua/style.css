@@ -1,0 +1,50 @@
+.InputPanel {
+    width: 50%;
+    height: 25%;
+    background-color: white;
+    border-radius: 10px;
+    position: absolute; left: 12%;
+    box-shadow: 0 2px 4px gray;
+}
+
+.input {
+    width: 10%;
+    font-size: 200%;
+    border-radius: 10px;
+}
+
+input.input {
+    outline: none;
+    border: none;
+    border-bottom: 1px solid black;
+    text-align: right;
+    background: none;
+}
+
+input.input:focus {
+    outline: 1px solid blue;
+}
+
+button.input {
+    background: linear-gradient(to bottom right, royalblue, 70%,blue);
+    border-radius: 20px;
+    outline: none;
+    border: none;
+    position: absolute;
+    color: azure;
+    box-shadow: 0 2px 4px gray;
+    width: 10% 0;
+    font-size: 200% 0;
+    transition: transform cubic-bezier(0.215, 0.61, 0.355, 1) 0.25s;
+}
+button.input:active {
+    transform: scale(0.95);
+}
+
+html {
+    background-color: aliceblue;
+}
+
+body{
+    font-family:'メイリオ', 'Meiryo', sans-serif,'Hiragino Kaku Gothic ProN','ヒラギノ角ゴ ProN W3',sans-serif;
+}
