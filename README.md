@@ -64,7 +64,7 @@
                 </p>
             </div>
             <img src="right.gif" alt="" width="15" height="15"><a href="/calc/">電卓</a><br>
-            <img src="right.gif" alt="" width="15" height="15"><a href="/minecraft_texture/">マイクラテクスチャー配布</a>
+            <img src="right.gif" alt="" width="15" height="15"><a href="/tool/LinearSimulEqua/">一次関数の連立方程式とくやつ</a>
             <div class="tab_text">
                 <img src="tab.gif" alt="">
                 <p>
