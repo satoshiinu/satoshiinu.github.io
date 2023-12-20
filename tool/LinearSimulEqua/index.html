@@ -9,7 +9,8 @@
 
 <body>
     <div class="ButtonPanel">
-        <button class="input" onclick="setNumByElem('result_a','result_b',...linearFuncCalc(getNumByElem('input_x1','input_y1'),getNumByElem('input_x2','input_y2')).getArray() )">計算</button>
+        <div><button class="input calcButton" onclick="setNumByElem('result_a','result_b',...linearFuncCalc(getNumByElem('input_x1','input_y1'),getNumByElem('input_x2','input_y2')).getArray() )">計算</button></div>
+        <div><button class="input resetButton" onclick="reset()">ﾘｾｯﾄ</button></div>
     </div>
     <div class="InputPanel" >
         <div class="InputPanel1">
@@ -38,6 +39,18 @@
             <span class="input">)</span>
 
         </div>
+        <div class="ResultPanel">
+            <span class="space">&nbsp;</span>
+            <span class="input">調整する</span>
+
+        </div>
+    </div>
+    <div class="changelogPanel">
+        <div>2023/11/22 v1.0</div>
+        <div>2023/12/20 v1.1 リセットボタンの追加</div>
+    </div>
+    <div class="copyrightPanel">
+        <div>©Copyright 2023 Satoshiinu</div>
     </div>
 </body>
 

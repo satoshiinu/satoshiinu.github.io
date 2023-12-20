@@ -1,15 +1,16 @@
 .InputPanel {
-    width: 50%;
-    height: 25%;
+    width: 400px;
+    height: 200px;
     background-color: white;
     border-radius: 10px;
-    position: absolute; left: 12%;
+    position: absolute;
+    left: 120px;
     box-shadow: 0 2px 4px gray;
 }
 
 .input {
     width: 10%;
-    font-size: 200%;
+    font-size: 2em;
     border-radius: 10px;
 }
 
@@ -26,25 +27,65 @@ input.input:focus {
 }
 
 button.input {
-    background: linear-gradient(to bottom right, royalblue, 70%,blue);
+    background: linear-gradient(to bottom right, royalblue, 70%, blue);
     border-radius: 20px;
     outline: none;
     border: none;
     position: absolute;
     color: azure;
     box-shadow: 0 2px 4px gray;
-    width: 10% 0;
+    width: 100px;
     font-size: 200% 0;
     transition: transform cubic-bezier(0.215, 0.61, 0.355, 1) 0.25s;
 }
+
 button.input:active {
     transform: scale(0.95);
+}
+
+.calcButton {
+    position: absolute;
+    top: 0px;
+}
+
+.resetButton {
+    position: absolute;
+    top: 55px;
+}
+
+@media screen and (max-width: 500px) {
+    .calcButton {
+        position: absolute;
+        top: 220px;
+    }
+
+    .resetButton {
+        position: absolute;
+        top: 275px;
+    }
+
+    .InputPanel {
+        width: 100%;
+        position: absolute;
+        left: 0px;
+    }
+}
+
+.changelogPanel{
+    position: absolute;
+    bottom: 100px;
+    visibility: hidden;
+}
+.copyrightPanel{
+    position: absolute;
+    bottom: 0px;
 }
 
 html {
     background-color: aliceblue;
 }
 
-body{
-    font-family:'メイリオ', 'Meiryo', sans-serif,'Hiragino Kaku Gothic ProN','ヒラギノ角ゴ ProN W3',sans-serif;
+body {
+    font-family: 'メイリオ', 'Meiryo', sans-serif, 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', sans-serif;
+    white-space: nowrap;
 }
