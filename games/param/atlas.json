@@ -90,5 +90,21 @@
   "cursor_uns": {
     "img": "gui",
     "atlas": [ 32,8,8,8 ]
+  },
+  "cursor_busy_0": {
+    "img": "gui",
+    "atlas": [ 40,0,8,8 ]
+  },
+  "cursor_busy_1": {
+    "img": "gui",
+    "atlas": [ 40,8,8,8 ]
+  },
+  "config_num_up": {
+    "img": "gui",
+    "atlas": [ 16,16,8,8 ]
+  },
+  "config_num_down": {
+    "img": "gui",
+    "atlas": [ 16,24,8,8 ]
   }
 }

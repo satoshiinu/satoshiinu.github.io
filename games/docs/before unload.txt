@@ -1,0 +1,15 @@
+16:34 2023/10/08
+
+ロードしたとき:
+10秒後にbeforeUnloadOn()
+
+セーブしたとき:
+beforeUnloadOff()
+60秒後にbeforeUnloadOn()
+
+beforeUnloadConfigON:
+60秒後にbeforeUnloadOn()
+
+beforeUnloadConfigOFF:
+TimeOutクリア
+beforeUnloadOff()

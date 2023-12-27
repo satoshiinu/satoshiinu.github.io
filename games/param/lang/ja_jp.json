@@ -1,7 +1,7 @@
 {
   "$comment":"",
-  "config.rotate_lock":"rotate lock",
-  "config.autoaim":"auto aim",
+  "config.rotate_lock":"向きをロック",
+  "config.autoaim":"オートエイム",
   "menu.tab.party": "party",
   "menu.tab.items": "items",
   "menu.tab.equip": "equip",
@@ -41,9 +41,9 @@
   "menu.loadsuccess.type5":"successfully upload",
   "menu.loadsuccess.about":"please reload",
   "menu.item.count":"x%0",
-  "item.apple.name": "apple",
+  "item.apple.name": "りんこ゛",
   "item.dummy.name": "dummy",
-  "item.egg.name": "egg",
-  "item.banana.name": "banana",
+  "item.egg.name": "たまご゛",
+  "item.banana.name": "バ゛ナナ",
   "test.param":"0:%0,1:%1,2:%2,3:%3"
 }

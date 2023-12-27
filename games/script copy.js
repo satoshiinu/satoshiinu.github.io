@@ -32,30 +32,17 @@
 let gamestarted;
 let DoSayErrorMassege = true;
 window.onerror = (message, file, lineNo, colNo, error) => {
-    if (DoSayErrorMassege) alert(`エラーが発生しました\n再読み込みしてください\nerror: ${message}}\nat ${file},${lineNo}:${colNo}`);
+    if (DoSayErrorMassege) alert("エラーが発生しました\n再読み込みしてください");
     //if (gamestarted)requestAnimationFrame(main);
 }
 
 //画面に表示される時は4倍になるので注意
 let zoom = 4;
-let ScreenWidth = 320;
-let ScreenHeight = 180;
 
 //その他の変数の作成
 let timer = 0;
 let u = undefined;
-let loopID = 0;
-let OneFrameOnly = false;
-/**
- * @param {number } playTime プレイ時間 
- * @param {number } SavedPlayTime 最後にセーブロードしたプレイ時間 
- * @param {number } SaveDataPlayTime セーブデータのプレイ時間 
- */
-let playTime = 0;
-let SavedPlayTime = 0;
-let SaveDataPlayTime = 0;
-let GameStartedTime = new Date();
-let beforeUnloadEnventID = 0;
+let loopID;
 const siteName = ["http://127.0.0.1:8000", "https://satoshiinu.github.io/games"]
 
 //読み込むもの
@@ -89,25 +76,12 @@ const willLoadJson = [
     ["param/particle.json", "particle"],
     ["param/item.json", "item"],
     ["param/icons.json", "icons"],
-    ["param/dialogue.json", "dialogue"],
+    ["param/message.json", "message"],
 
     ["param/lang/en_us.json", "en_us"],
-    ["param/lang/ja_jp.json", "ja_jp"],
-    ["param/config.json", "configs"],
-    ["param/ui.json", "jsonui"]
+    ["param/config.json", "configs"]
 ]
 Object.freeze(willLoadJson);
-
-const willLoadSounds = [
-    ["audio/select.ogg", "select"],
-    ["audio/break.ogg", "break", 0.5],
-    ["audio/breakbit.ogg", "breakbit", 0.5],
-    ["audio/attack.ogg", "attack"],
-    ["audio/attack2.ogg", "damage"],
-    ["audio/attack2.ogg", "death"],
-    ["audio/cancel.ogg", "cancel"]
-]
-Object.freeze(willLoadSounds);
 
 //クラス
 class Item {
@@ -117,7 +91,7 @@ class Item {
     }
 }
 
-class Players {
+class Player {
     constructor(ID = 0) {
 
         this.weapon = {
@@ -131,9 +105,7 @@ class Players {
             "autoAimx": 0,
             "autoAimy": 0,
             "speed": 0,
-            "lock": 0,
-            "breakingTile": false,
-            "attack": 5
+            "lock": 0
         }
         this.hp = 500
         this.hp_max = 500
@@ -143,85 +115,7 @@ class Players {
             exp: 0,
             lv: 0
         }
-        this.alive = true;
 
-    }
-}
-
-class Player {
-    constructor() {
-        this.x = 0;
-        this.y = 0;
-        this.xknb = 0;
-        this.yknb = 0;
-        this.mapID = "";
-        this.effect = new Array();
-        this.boat = false;
-        this.items = [
-            {
-                "id": 0,
-                "count": 10
-            },
-            {
-                "id": 0,
-                "count": 99
-            },
-            {
-                "id": 1,
-                "count": 2
-            },
-            {
-                "id": 2,
-                "count": 2
-            },
-            {
-                "id": 3,
-                "count": 2
-            },
-            {
-                "id": 1,
-                "count": 2
-            },
-            {
-                "id": 1,
-                "count": 2
-            },
-            {
-                "id": 1,
-                "count": 2
-            },
-            {
-                "id": 1,
-                "count": 2
-            },
-            {
-                "id": 1,
-                "count": 2
-            },
-            {
-                "id": 1,
-                "count": 2
-            },
-            {
-                "id": 1,
-                "count": 2
-            }
-        ]
-
-        this.xspd = 0, this.yspd = 0;
-        this.scrollx = this.x + 160, this.scrolly = this.y + 24;
-        this.scroll_offsetx = 0, this.scroll_offsety = 0;
-
-        this.drawx = 0, this.drawy = 0;
-        this.anim = 0;
-        this.rotate = 0, this.facing = 0;
-        this.canRotate = true;
-        this.up = false, this.down = false, this.right, this.left = false;
-        this.moved = false, this.moving = false;
-        this.moveTimer = 0;
-        this.movelog = new Array();
-
-        this.alive = true;
     }
 }
 
@@ -234,22 +128,22 @@ class Effect {
 
 class Enemy {
     constructor(spx, spy, id) {
-        this.x = spx * 16;
-        this.y = spy * 16;
-        this.sp = [spx, spy];
-        this.id = id;
-        this.xspd = 0;
-        this.yspd = 0;
-        this.xknb = 0;
-        this.yknb = 0;
-        this.move = [false, false, false, false, 0];
+        this.x = spx * 16
+        this.y = spy * 16
+        this.sp = [spx, spy]
+        this.id = id
+        this.xspd = 0
+        this.yspd = 0
+        this.xknb = 0
+        this.yknb = 0
+        this.move = [false, false, false, false, 0]
         this.attack = {
             "hostility": false,
             "timer": 0,
             "cool_down": 0
         }
-        this.hp = loadedjson.enemy[id].hp;
-        this.damage_cooldown = 0;
+        this.hp = loadedjson.enemy[id].hp
+        this.damage_cooldown = 0
         this.damage_effect = {
             "damage": 0,
             "view_time": 0,
@@ -263,29 +157,18 @@ class Enemy {
             "tick": 0,
             "animing": false
         }
-        this.moving = false;
+        this.moving = false
     }
 }
 
 class NPC {
-    constructor(x, y, id, dialogueID) {
-        this.x = x * 16;
-        this.y = y * 16;
-        this.sp = [x, y];
-        this.id = id;
-        this.xspd = 0;
-        this.yspd = 0;
-        this.dialogueID = dialogueID;
-        this.moving = false;
-        this.move = [false, false, false, false, 0];
-        this.moved = false;
-        this.moveTimer = 0;
-        this.facing = 0;
-        this.rotate = 0;
-        this.up = false;
-        this.down = false;
-        this.left = false;
-        this.right = false;
+    constructor(x, y, id) {
+        this.x = x * 16
+        this.y = y * 16
+        this.sp = [x, y]
+        this.id = id
+        this.xspd = 0
+        this.yspd = 0
     }
 
 }
@@ -296,7 +179,7 @@ class Keys {
         this.pressLag = false;
         this.down = false;
         this.hold = false;
-        this.timer = -1;
+        this.timer = 0;
         this.time = -1;
         this.timen = -1;
         this.presstime = -1;
@@ -304,8 +187,8 @@ class Keys {
 }
 
 //クラス
-class Vec2 {
-    constructor(x = undefined, y = undefined) {
+class XY {
+    constructor(x, y) {
         this.x = x;
         this.y = y;
     }
@@ -313,309 +196,98 @@ class Vec2 {
 
 
 //設定
-class Game {
-    constructor() {
-        this.ver = "23m11w3";
+let game = new Object();
 
-        this.saveloadingnow = false;
-        this.saveloadfaliedtime = -1;
-        this.saveloadfaliedtype = -1;
-        this.saveloadsuccesstime = -111;
-        this.saveloadsuccesstype = -111;
-        this.PopUpDelay = 100;
+game.ver = "23m09w5"
 
-        this.PlayingScreen = false;
+game.saveloadingnow = false;
+game.saveloadfaliedtime = -1;
+game.saveloadfaliedtype = -1;
+game.saveloadsuccesstime = -1;
+game.saveloadsuccesstype = -1;
+game.PopUpDelay = 100;
 
-        this.move_limit = 32767;
-        this.weapon_canlock = false;
-        this.PI = Math.floor(Math.PI * Math.pow(10, 5)) / Math.pow(10, 5);
+game.move_limit = 32767;
+game.weapon_canlock = false;
+game.PI = Math.floor(Math.PI * Math.pow(10, 5)) / Math.pow(10, 5);
 
-        this.map = new Object;
+game.map = new Object;
 
-        this.map_path = {
-            "VillageAround": "param/maps/VillageAroundMap.map",
-            "LvSpot": "param/maps/LvSpotMap.map",
-            "Default": "param/maps/Map.map"
-        }
-
-        this.rotate_pos = [
-            [0, 1],//　 ↓
-            [-1, 1],//  ↙
-            [-1, 0],//  ←
-            [-1, -1],// ↖
-            [0, -1],//  ↑
-            [1, -1],//  ↗　
-            [1, 0],//　 →
-            [1, 1],//　 ↘
-        ]
-
-        this.facing_pos = [
-            [0, 1],//　 ↓
-            [-1, 0],//  ←
-            [0, -1],//  ↑
-            [1, 0],//　 →
-        ]
-
-        this.tab_offset = [
-            64, 128, 128, 128
-        ]
-
-        this.gui_item_count = [
-            15, 7, 15, 7
-        ]
-
-        this.breakableTile = [
-            9, 10, 11
-        ]
-
-        this.breakableTileAbout = {
-            9: {
-                "breakProbability": 0.1,
-                "becomeTile": 12
-            },
-            10: {
-                "breakProbability": 0.05,
-                "becomeTile": 12
-            },
-            11: {
-                "breakProbability": 0.05,
-                "becomeTile": 13
-            }
-        }
-
-        this.animationTile = {
-            7: {
-
-            }
-        }
-
-        this.DontDrawTIle = [
-            0
-        ]
-
-        this.enemy_type = [
-            "slime",
-            "gorilla",
-            "fish",
-            "desert",
-            "snow",
-            "poison",
-            "fire",
-            "dark",
-            "other"
-        ]
-
-        this.gui_system_items = [
-            "menu.system.config",
-            "menu.system.data",
-            "menu.system.about"
-        ]
-        this.gui_system_data_items = [
-            "menu.system.data.select",
-            "menu.system.data.save",
-            "menu.system.data.load"
-        ]
-
-        this.config_name = [
-            "player",
-            "weapon",
-            "data",
-            "control",
-            "sounds",
-            "other",
-            "debug"
-        ]
-
-        this.config_icons = [
-            "player",
-            "weapon",
-            "colorFloppy",
-            "gamepad",
-            "sound",
-            "other",
-            "debug"
-        ]
-
-        this.soundGroupsConfig = {
-            "player": "sound_player",
-            "tile": "sound_tile",
-            "enemy": "sound_enemy",
-            "gui": "sound_gui",
-            "bgm": "bgm",
-            "other": "other"
-        }
-
-        this.select_y_size = [
-            16, 16, 16, 16
-        ]
-
-        this.savemetadata = {
-            "codename": "project2023",
-            "ver": this.ver
-        }
-
-        this.title_items = [
-            "newgame",
-            "loadgame"
-        ]
-
-        this.JSONUIScrollable/*CustomRenderer*/ = [//マイクラも見習え
-            "items",
-            "roles",
-            "hud_hp",
-            "UIOpen"
-        ]
-
-    }
-    getTileID(maplayer = "map1", x, y) {
-        if (typeof game.map[maplayer] !== "undefined")
-            if (y >= 0 && y < game.map[maplayer].length)
-                if (x >= 0 && x < game.map[maplayer][y].length)
-                    return game.map[maplayer][y][x];
-    }
-    async NewGame() {
-
-        //コンフィグリセット
-        configReset();
-
-        //マップDefault(placeholder)
-        await mapchange("Default");
-
-        game.PlayingScreen = true;
-        gamestarted = true;
-    }
-    async LoadGame() {
-
-        await savedataload();
-
-        game.PlayingScreen = true;
-        gamestarted = true;
-    }
+game.map_path = {
+    "VillageAround": "param/maps/VillageAroundMap.map",
+    "LvSpot": "param/maps/LvSpotMap.map",
+    "Default": "param/maps/Map.map"
 }
-let game = new Game();
 
-class Message {
-    constructor() {
-        this.visible = false;
-        this.text = "";
-        this.index = 0;
-        this.cool_down = 0;
-    }
-    view(text) {
-        this.visible = true;
-        this.text = text;
-        this.index = 0;
-        this.cool_down = 5;
-    }
-    next() {
-        if (typeof this.text == "object") {
-            this.index++;
-            this.cool_down = 5;
-            if (this.index < this.text.length) return;
-        }
-        gui_close("message");
+game.rotate_pos = [
+    [0, 1],//　 ↓
+    [-1, 1],//  ↙
+    [-1, 0],//  ←
+    [-1, -1],// ↖
+    [0, -1],//  ↑
+    [1, -1],//  ↗　
+    [1, 0],//　 →
+    [1, 1],//　 ↘
+]
+
+game.facing_pos = [
+    [0, 1],//　 ↓
+    [-1, 0],//  ←
+    [0, -1],//  ↑
+    [1, 0],//　 →
+]
+
+game.tab_offset = [
+    64, 128, 128, 128
+]
+
+game.gui_item_count = [
+    15, 7, 15, 7
+]
+
+game.breakableTile = [
+    9, 10, 11
+]
+
+game.breakableTileAbout = {
+    9: {
+        "breakProbability": 0.1,
+        "becomeTile": 12
+    },
+    10: {
+        "breakProbability": 0.05,
+        "becomeTile": 12
+    },
+    11: {
+        "breakProbability": 0.05,
+        "becomeTile": 13
     }
 }
 
-class GuiConfirm {
-    constructor() {
-        this.visible = false;
-        this.selected = false;
-        this.func_ok = () => { };
-        this.func_cancel = () => { };
-        this.text = "";
-        this.title = "";
-        this.pos = { "x": 0, "y": 0 };
-    }
-
-    view(text = "text", title = "title", x = 0, y = 0, func_ok = () => { }, func_cancel = () => { }) {
-        //console.log(text);
-        this.visible = true;
-        this.text = text;
-        this.title = title;
-        this.pos.x = x;
-        this.pos.y = y;
-        this.func_ok = func_ok;
-        this.func_cancel = func_cancel;
+game.animationTile = {
+    7: {
 
     }
 }
 
-class Gui {
-    constructor() {
-        this.confirm = new GuiConfirm();
-        this.message = new Message();
-    }
-}
-let gui = new Gui();
+game.gui_system_items = [
+    "menu.system.config",
+    "menu.system.data"
+]
+game.gui_system_data_items = [
+    "menu.system.data.save",
+    "menu.system.data.load",
+    "menu.system.data.reset",
+    "menu.system.data.download",
+    "menu.system.data.upload"
+]
 
-class Cursor {
-    constructor() {
-        this.CursorOldPos = new Object();
-        this.CursorNeedUpdate = false;
-        this.CursorOldPos.x = 0;
-        this.CursorOldPos.y = 0;
-        this.cursors = new Array();
-    }
-    draw() {
-
-        let cursorOfseX = 0;
-        cursorOfseX += easeOutExpo(timer % 100 / 100) * 5;
-        cursorOfseX += easeOutExpo(1 - timer % 100 / 100) * 5;
-        cursorOfseX -= 8;
-
-        if (IsBusy()) cursorOfseX = 0;
-
-        let busyCorsor = `cursor_busy_${timer / 8 % 8 >= 6 ? 0 : 1}`;
-
-        if (this.CursorNeedUpdate) {
-            let cursor = this.cursors[this.cursors.length - 1];
-            this.CursorNeedUpdate = false;
-            this.CursorOldPos.x = cursor.x;
-            this.CursorOldPos.y = cursor.y;
-        }
-
-        if (this.cursors.length !== 0) {
-            let cursor = this.cursors[this.cursors.length - 1];
-            this.CursorOldPos.x += (cursor.x - this.CursorOldPos.x) / 2;
-            this.CursorOldPos.y += (cursor.y - this.CursorOldPos.y) / 2;
-        }
-
-        for (let i in this.cursors) {
-            let cursor = this.cursors[i];
-            if (i != this.cursors.length - 1) draw("cursor_uns", cursor.x, cursor.y);
-
-            if (i == this.cursors.length - 1) draw(IsBusy() ? busyCorsor : "cursor", Math.round(this.CursorOldPos.x + cursorOfseX), this.CursorOldPos.y);
-        }
-
-        this.cursors = new Array();//初期化
-    }
-    push(pos) {//use Vec2
-        this.cursors.push(pos);
-    }
-}
-
-//あざす https://blog.myntinc.com/2019/05/javascriptaudioplay.html
-//あざす https://www.w3schools.com/graphics/game_sound.asp
-class Sound {
-    constructor(src, volume = 1) {
-        this.sound = document.createElement("audio");
-        this.sound.src = src;
-        this.sound.setAttribute("preload", "auto");
-        this.sound.setAttribute("controls", "none");
-        this.sound.style.display = "none";
-        this.sound.volume = volume;
-        document.body.appendChild(this.sound);
-        this.play = function (DoNotStop = false) {
-            if (!DoNotStop)
-                this.sound.currentTime = 0;
-            this.sound.play();
-        }
-        this.stop = function () {
-            this.sound.currentTime = 0;
-            this.sound.pause();
-        }
-    }
+game.select_y_size = [
+    16, 16, 16, 16
+]
+game.savemetadata = {
+    "codename": "project2023",
+    "ver": game.ver
 }
 
 let IsLoading = true;
@@ -623,8 +295,8 @@ let IsLoading = true;
 //キャンバスのやつ
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-canvas.width = ScreenWidth * zoom;
-canvas.height = ScreenHeight * zoom;
+canvas.width = 320 * zoom;
+canvas.height = 180 * zoom;
 
 //アンチエイリアスを無効にする
 ctx.mozImageSmoothingEnabled = false;
@@ -646,14 +318,13 @@ let config = {
     "canrotateonattacking": false,
     "weapon_auto_aiming": true
 }
-let configs = new Object();
 
 
 //デバッグ用の変数の作成
 let debug = new Object();
 debug.hitboxes = new Array();
 debug.hitbox_visible = true;
-debug.visible = false;
+debug.text_visible = false;
 debug.about_visible = false;
 
 debug.info = new Array();
@@ -661,17 +332,11 @@ debug.info = new Array();
 debug.camx = 0;
 debug.camy = 0;
 
-debug.pause_frame = new Array();
-
 
 //json読み込み
 let loadedjson = new Object();
-let img = new Object();
-let sounds = new Object();
-
 let loadjsoncount = 0;
 let loadimgcount = 0;
-let loadsoundcount = 0;
 
 //セーブデータ読み込み用の変数の作成
 let dirHandle;
@@ -698,19 +363,95 @@ let frameCount = 0;
 let startTime;
 let endTime;
 
-startTime = new Date().getTime();
-
 let MainProcStartTime = 0;
 let MainProcEndTime = 0;
 let MainProcTime = 0;
 
+startTime = new Date().getTime();
 
 
 //プレイヤーの変数の作成
-let player = new Player();
+let player = {
+    "x": 0,
+    "y": 224,
+    "xknb": 0,
+    "yknb": 0,
+    "mapID": "",
+    "effect": [],
+    "items": [
+        {
+            "id": 0,
+            "count": 10
+        },
+        {
+            "id": 0,
+            "count": 99
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        },
+        {
+            "id": 1,
+            "count": 2
+        }
+    ]
+}
+
+
+
+player.xspd = 0, player.yspd = 0;
+player.scrollx = player.x + 160, player.scrolly = player.y + 24;
+player.scroll_offsetx = 0, player.scroll_offsety = 0;
+player.drawx = 0, player.drawy = 0;
+player.anim = 0;
+player.rotate = 0, player.facing = 0;
+player.canRotate = true;
+player.up = false, player.down = false, player.right, player.left = false;
+player.moved = false, player.moving = false;
+player.moveTimer = 0;
+player.movelog = new Array();
+
 let players = new Array();
 
-players[0] = new Players(0);
+
+players[0] = new Player(0);
+
+player.weapon = new Object();
+player.weapon.attack = 5;
+
 
 //事前に埋めとく
 player_movelog_reset();
@@ -802,6 +543,10 @@ let touchButtons = [
 
 let touchmode = false;
 
+//画像の設定
+
+let img = new Object();
+
 
 //フォント
 img.font = new Object();
@@ -860,28 +605,29 @@ weapon.offset = [
     [0, 0, true]
 ]
 
+//メッセージ変数作成
+let message = {
+    "message.text": "",
+    "message.visible": false
+}
+
 //メニューの変数の作成
 let menu = {
     "tab": 0,
     "tab_select": true,
     "item_select": [0],
-    "select_length": 1,
+    "item_select_length": 1,
     "role_select": false,
     "who_use": 0,
-    "scroll": [0],
+    "scroll": 0,
     "system_select": 0,
     "CursorOldPos": { "x": 0, "y": 0 },
     "CursorNeedUpdate": false,
     "visible": false,
-    "cursor_time": 0,
-    "mode": "Default",
-    "config_num": {
-        "timer": -1,
-        "mode": -1
-    }
+    "cursor_time": 0
 }
 //承認ウィンドウの変数の作成
-let window_comfirm = {
+let window_confirm = {
     "visible": false,
     "selected": false,
     "func_ok": () => { },
@@ -898,63 +644,6 @@ let MapNameText = {
     "text": "",
     "title": ""
 }
-
-let title_gui = {
-    "item_select": 0
-}
-
-let MenuTabSelect = 0;
-
-class JsonUI {
-    constructor(type, x = 0, y = 0, select = undefined, param) {
-        if (!type in loadedjson.jsonui) throw (type + " is not defined");
-
-        let UIGroup = loadedjson.jsonui[type];
-        this.type = type;
-        this.state = 1;//open:1 close:-1 
-        this.openTime = 0;
-        this.closeTime = 0;
-        this.openDelay = UIGroup[0].openDelay !== undefined ? UIGroup[0].openDelay : 0;
-        this.closeDelay = UIGroup[0].closeDelay !== undefined ? UIGroup[0].closeDelay : 0;
-        this.opened = false;
-        this.closed = false;
-        this.select = select !== undefined ? select : UIGroup[0].default_select !== undefined ? UIGroup[0].default_select : 0;
-        this.pos = new Vec2(x, y);
-        this.data = new Object();
-        this.CanMovePlayer = UIGroup[0].CanMovePlayer !== undefined ? UIGroup[0].CanMovePlayer : false;
-
-
-        for (const UIContentKey of Object.keys(UIGroup)) {
-            let UIContent = UIGroup[UIContentKey]
-            switch (UIContent.type) {
-                case "custom":
-                    if (game.JSONUIScrollable.includes(UIContent.renderer))
-                        this.data[UIContent.id] = { "scroll": 0, "select": 0 };
-
-                    if (UIContent.renderer === "roles")
-                        this.data[UIContent.id].itemIndex = param;
-                    break;
-            }
-        }
-    }
-    open() {
-        this.state = 1;
-        this.openTime = 0;
-    }
-    close() {
-        this.state = -1;
-        this.closeTime = 0;
-    }
-    GetSelectID() {
-        let UIGroup = loadedjson.jsonui[this.type];
-        return UIGroup[this.select].id
-    }
-}
-
-let JsonUIOpen = new Array();
-
-let JsonUICursor = new Cursor();
-
 //言語設定
 game.lang = loadedjson.en_us;
 let lang = "en_us"
@@ -968,55 +657,16 @@ function main() {
     fpsCount();
     main_proc_time(true);
 
+
+    if (!IsLoading) game.map = Object.assign(loadedjson.Map, loadedjson.MapMeta);
     game.lang = Object.assign(loadedjson.en_us, loadedjson[lang]);
 
     //キャンバスの初期化
-    ctx.clearRect(0, 0, ScreenWidth * zoom, ScreenHeight * zoom);
+    ctx.clearRect(0, 0, 320 * zoom, 180 * zoom);
 
     keycheck();
     GamepadUpdate();
     touch_button_proc();
-
-    if (game.PlayingScreen) GAMEMAIN();
-
-    if (!game.PlayingScreen) TITLEMAIN();
-
-
-    //タイマー
-    timer++;
-
-    main_proc_time(false);
-    //ループ
-    if (!OneFrameOnly) loopID = requestAnimationFrame(main);
-}
-
-async function game_start_proc() {
-
-
-    //クエリパラメータ 取得
-    const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get("debug") != null) debug.visible = searchParams.has("debug");
-
-    //タイトル変更
-    document.title = "project 2023 " + game.ver
-
-    //コンフィグリセット
-    configReset();
-
-    jsonui_open("hud")
-
-    //アンロード時に確認メッセージを表示する
-    if (config.beforeunload) beforeUnloadEnventID = setTimeout(beforeUnloadOn, 1000 * 10);
-
-
-    gamestarted = true;
-}
-
-function GAMEMAIN() {
-
-
-    if (!IsLoading) game.map = Object.assign(loadedjson.Map, loadedjson.MapMeta);
-    playTime = SavedPlayTime + (new Date() - GameStartedTime);
 
     //プレイヤーの動作
     player_proc();
@@ -1044,25 +694,41 @@ function GAMEMAIN() {
 
 
     //GUIの処理
-    //gui_proc()
+    gui_proc()
 
 
     //描画メイン
     game_draw();
 
     //GUI描画
-    //gui_draw();
-
-
-    jsonui_proc();
+    gui_draw();
 
     //デバッグ
-    if (debug.visible) debug_proc();
+    if (debug.text_visible) debug_proc();
+
+
+    //タイマー
+    timer++;
+
+    main_proc_time(false);
+    //ループ
+    loopID = requestAnimationFrame(main);
 }
 
-function TITLEMAIN() {
-    title_gui_proc();
-    title_gui_draw();
+async function game_start_proc() {
+
+    await mapchange("Default");
+    document.title = "project 2023 " + game.ver
+
+    //コンフィグ初期化
+    for (const i in loadedjson.configs.configs) {
+        let configs = loadedjson.configs.configs[i];
+
+        config[configs.variable] = configs.default;
+        //console.log(config[configs.variable])
+    }
+
+    gamestarted = true;
 }
 
 function keydownfunc(parameter) {
@@ -1076,9 +742,6 @@ function keydownfunc(parameter) {
     if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].time = timer;
     if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].timer = timer;
     parameter.preventDefault();
-
-    if (debug.visible && key_code == 80) cancelAnimationFrame(loopID);
-    if (debug.visible && key_code == 79) { OneFrameOnly = true; requestAnimationFrame(main); };
 }
 
 function keyupfunc(parameter) {
@@ -1086,9 +749,6 @@ function keyupfunc(parameter) {
     keys[key_code].press = false;
     keys[key_code].pressLag = false;
     keys[key_code].timer = 0;
-
-
-    if (debug.visible && key_code == 80) { OneFrameOnly = false; requestAnimationFrame(main); };
 }
 
 function updateDisplay(event) {
@@ -1181,9 +841,10 @@ function keycheck() {
 
 
     for (const i in keys) {
-        keys[i].timer == timer ? keys[i].down = true : keys[i].down = false;
-        keys[i].presstime == 0 || keys[i].presstime > 10 && keys[i].presstime % 2 == 0 ? keys[i].hold = true : keys[i].hold = false;
-        keys[i].press ? keys[i].presstime++ : keys[i].presstime = -1;
+        if (keys[i].timer == timer) keys[i].down = true;
+        if (keys[i].timer != timer) keys[i].down = false;
+        if (keys[i].timen == timer) keys[i].hold = true;
+        if (keys[i].timen != timer) keys[i].hold = false;
     }
 
     for (const i in touchpos) {
@@ -1197,38 +858,27 @@ function keycheck() {
 
 
     for (const i in key_groups_list) {
-        /*
         if (typeof key_groups[i] == "undefined") key_groups[i] = {
             "press": false,
             "down": false
         }
+
         let press_triggered = false;
         let down_triggered = false;
         let hold_triggered = false;
-                
+
         for (const j in key_groups_list[i]) {
             if (keys[key_groups_list[i][j]].press) key_groups[i] = true;
             if (keys[key_groups_list[i][j]].press) press_triggered = true;
             if (!press_triggered) key_groups[i] = false;
-                
+
             if (keys[key_groups_list[i][j]].down) key_groups_down[i] = true;
             if (keys[key_groups_list[i][j]].down) down_triggered = true;
             if (!down_triggered) key_groups_down[i] = false;
-                
+
             if (keys[key_groups_list[i][j]].hold) key_groups_hold[i] = true;
             if (keys[key_groups_list[i][j]].hold) hold_triggered = true;
             if (!hold_triggered) key_groups_hold[i] = false;
-        }
-                */
-        key_groups[i] = false;
-        key_groups_down[i] = false;
-        key_groups_hold[i] = false;
-        for (const j in key_groups_list[i]) {
-            if (keys[key_groups_list[i][j]].press) key_groups[i] = true;
-
-            if (keys[key_groups_list[i][j]].down) key_groups_down[i] = true;
-
-            if (keys[key_groups_list[i][j]].hold) key_groups_hold[i] = true;
         }
 
         for (const j in touchButton) {
@@ -1257,12 +907,7 @@ function main_proc_time(start) {//処理の時間を計測
     if (!start) MainProcEndTime = performance.now();
     if (!start) MainProcTime = Math.floor(MainProcEndTime - MainProcStartTime);
 }
-/**
- * IDを渡すとテクスチャーアトラスのXかYを返します
- * @param {*} id TileID
- * @param {*} xy 0:X 1:Y
- * @returns テクスチャーアトラスのXかY
- */
+
 function getTileAtlasXY(id, xy) {
     if (xy == 0) return id % 16 * 16
     if (xy == 1) return Math.floor(id / 16) * 16
@@ -1271,98 +916,26 @@ function getTileAtlasXY(id, xy) {
 function getPlayerAtlasXY(id, xy) {
     return playerAtlas[id] * 16
 }
-/**
- * 
- * @param {number} min 
- * @param {number} max 
- * @param {bool} floor 切り捨てるか
- * @returns 2つの間の乱数を返します
- */
-function Random(min, max = min, floor = false) {
-    //あざす https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Math/random
-    if (floor) return Math.floor(Math.random() * (max - min) + min);
 
+function Random(min, max) {
+    //あざす https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Math/random
     return Math.random() * (max - min) + min;
 }
 
-/**
- * @deprecated
- * @function 2つの配列を渡すとその間の乱数を返します 配列以外を渡すとそのまま返します
- */
-function RandomArray(input) {
-    if (Array.isArray(input)) return Random(...input);
-    return input;
-}
-
-function ConvertArray(input) {
-    if (!Array.isArray(input)) return [input];
-    return input;
-}
-
-/**
- * 文字を範囲内におさめます
- * @param {string} str 文字列
- * @param {number} len 文字の桁数
- * @param {string} dot 最後に付ける文字
- * @returns str
- */
-function slice(str = "", len = 5, dot = undefined) {
-    str = String(str);//string変換
-    if (dot != undefined) {
-        len--;
-        dot = dot[0];
-    }
+function slice(str = "", len = 5, dot = "…") {
+    str += ""//string変換
 
     if (str.length > len)
-        return str.slice(0, len) + (dot == undefined ? "" : String(dot));
+        return str.slice(0, len - 1) + dot;
 
-    return str;
+    if (str.length <= len)
+        return str;
 }
 
-//あざす　https://www.webdesignleaves.com/pr/jquery/js-sec-to-time.html
-function milsecToTime(milsec) {
-    const seconds = Math.floor(milsec / 1000);
+function floor(num, k) {
+    if (Math.sign(k) === 1) return Math.floor(num / 10 ** k) * 10 ** k
 
-    const hour = Math.floor(seconds / 3600);
-    const min = Math.floor(seconds % 3600 / 60);
-    const sec = seconds % 60;
-
-    const data = {
-        "hour": hour,
-        "min": min,
-        "sec": sec
-    }
-    return data;
-}
-
-//あざす　https://rfs.jp/sb/javascript/js-lab/zeropadding.html
-function zeroPadding(NUM, LEN) {
-    return (Array(LEN).join('0') + NUM).slice(-LEN);
-}
-
-/**
- * @function 切り捨てます
- * @param {*} num 切り捨てる数値
- * @param {*} k 切り捨てる桁 e.g. 8.161, -2= 8.16
- * @returns 切り捨てた数値
- */
-function floor(num, k = 0) {
-    if (Math.sign(k) === 1) return Math.floor(num / 10 ** k) * 10 ** k;
-
-    if (Math.sign(k) == -1) return Math.floor(num * 10 ** -k) / 10 ** -k;
-
-    if (k == 0) return Math.floor(num);
-}
-
-/**
- * 範囲制限します
- * @param {number} input
- * @param {number} min 
- * @param {number} max 
- * @returns 範囲制限した数値
- */
-function limit(input, min, max) {
-    return Math.min(Math.max(min, input), max);
+    if (Math.sign(k) == -1) return Math.floor(num * 10 ** -k) / 10 ** -k
 }
 
 function hsv2rgb(hsv) {// あざす https://lab.syncer.jp/Web/JavaScript/Snippet/67/
@@ -1435,18 +1008,6 @@ async function loadingassets() {
     }
 
     console.log("images are loaded");
-    console.log("sounds are loading");
-
-    {
-        let gets = new Array();
-        for (const i in willLoadSounds) {
-            gets.push(loadSound(willLoadSounds[i][0], willLoadSounds[i][1], willLoadSounds[i][2]));
-        }
-
-        await Promise.all(gets);
-    }
-
-    console.log("sounds are loaded");
 
     if (gamestarted) return;
 
@@ -1505,8 +1066,8 @@ async function getJson(filename, name) {
     console.log('loaded: ' + filename);
 
     if (!gamestarted) {
-        ctx.clearRect(0, 0, ScreenWidth * zoom, ScreenHeight * zoom);
-        ctx.fillText(`loading parameter: ${loadjsoncount}/${willLoadJson.length}`, ScreenWidth / 2 * zoom, ScreenHeight / 2 * zoom);
+        ctx.clearRect(0, 0, 320 * zoom, 180 * zoom);
+        ctx.fillText(`loading parameter: ${loadjsoncount}/${willLoadJson.length}`, 320 / 2 * zoom, 180 / 2 * zoom);
     }
 
     loadedjson[name] = members;
@@ -1523,8 +1084,8 @@ async function loadImage(imgUrl, name) {
             /// 読み込み完了後...
             loadimgcount++
             if (!gamestarted) {
-                ctx.clearRect(0, 0, ScreenWidth * zoom, ScreenHeight * zoom);
-                ctx.fillText(`loading images: ${loadimgcount}/${willLoadImg.length}`, ScreenWidth / 2 * zoom, ScreenHeight / 2 * zoom);
+                ctx.clearRect(0, 0, 320 * zoom, 180 * zoom);
+                ctx.fillText(`loading images: ${loadimgcount}/${willLoadImg.length}`, 320 / 2 * zoom, 180 / 2 * zoom);
             }
 
             console.log('loaded: ' + imgUrl);
@@ -1538,16 +1099,6 @@ async function loadImage(imgUrl, name) {
     return img[name];
 }
 
-async function loadSound(url, name, volume) {
-    sounds[name] = await new Sound(url, volume);
-    loadsoundcount++;
-    if (!gamestarted) {
-        ctx.clearRect(0, 0, ScreenWidth * zoom, ScreenHeight * zoom);
-        ctx.fillText(`loading sounds: ${loadsoundcount}/${willLoadSounds.length}`, ScreenWidth / 2 * zoom, ScreenHeight / 2 * zoom);
-        console.log('loaded: ' + url);
-    }
-    return sounds[name];
-}
 
 //あざす　https://feeld-uni.com/?p=2162
 async function loadconfig() {
@@ -1675,14 +1226,6 @@ async function savepathselect() {
     LastSavedFileData = fileData;
     let text = await fileData.text();
 
-
-    let obj;
-    obj = await loadconfig();
-
-    if (obj == undefined) return;
-
-    SaveDataPlayTime = obj.playTime;
-
     return fileData;
 }
 
@@ -1697,14 +1240,10 @@ async function savedataload(dir = true) {
 
     if (obj == undefined) return;
 
-    SavedPlayTime = obj.playTime;
-    SaveDataPlayTime = obj.playTime;
     player = obj.player;
     players = obj.players;
     enemy = obj.enemy;
-    config = obj.config;
     LastSavedTime = new Date(obj.LastSavedTime);
-    GameStartedTime = new Date();
     player_movelog_reset()
     mapchange(player.mapID, player.x, player.y, false)
 
@@ -1715,13 +1254,10 @@ async function savedatawrite(dir = true) {
     let obj = new Object();
 
     obj.metadata = game.savemetadata;
-    obj.playTime = playTime;
     obj.LastSavedTime = new Date();
-    obj.player = JSON.parse(JSON.stringify(player));
-    obj.player.movelog = new Array(1);
+    obj.player = player;
     obj.players = players;
-    obj.enemy = saveDataEnemyCompress();
-    obj.config = config;
+    obj.enemy = enemy;
 
     if (dir) await saveconfig(obj);
     else await downloadsavedata(obj);
@@ -1729,46 +1265,7 @@ async function savedatawrite(dir = true) {
     if (obj == undefined) return;
 
     LastSavedTime = new Date(obj.LastSavedTime);
-    SavedPlayTime = playTime;
-    SaveDataPlayTime = playTime;
-    GameStartedTime = new Date();
-
-    //アンロード時に確認メッセージを表示する
-    beforeUnloadOff();
-    if (config.beforeunload) beforeUnloadEnventID = setTimeout(beforeUnloadOn, 1000 * 60);
     return LastSavedFileData;
-}
-
-function saveDataEnemyCompress() {
-    let obj_enemy = JSON.parse(JSON.stringify(enemy));
-    for (let enem of obj_enemy) {
-        enem.xspd = floor(enem.xspd, 0);
-        enem.yspd = floor(enem.yspd, 0);
-    }
-    return obj_enemy;
-}
-
-//あざす https://www.javadrive.jp/javascript/event/index16.html
-function beforeUnloadOn() {
-
-    let beforeUnload = event => {
-        event.preventDefault();
-        event.returnValue = 'Check';
-    }
-
-    window.onbeforeunload = beforeUnload;
-}
-
-function beforeUnloadOff() {
-    window.onbeforeunload = null;
-}
-
-function beforeUnloadConfigON() {
-    beforeUnloadEnventID = setTimeout(beforeUnloadOn, 1000 * 60);
-}
-function beforeUnloadConfigOFF() {
-    clearTimeout(beforeUnloadEnventID);
-    beforeUnloadOff();
 }
 
 //あざす https://zenn.dev/batton/articles/c84a99913b5430
@@ -1790,10 +1287,6 @@ async function getIP() {
     const response = await fetch('https://api.ipify.org?format=json');
     const data = response.json;
     return data.ip
-}
-
-function IsBusy() {
-    return game.saveloadingnow || IsLoading;
 }
 
 function calcAngleDegrees(x, y) {
@@ -1839,6 +1332,15 @@ function getEnemyCenter(i) {
         "x": getEnemyCenterx(i),
         "y": getEnemyCentery(i)
     }
+}
+
+function getTileID(maplayer = "map1", x, y) {
+    if (typeof game.map[maplayer] !== "undefined")
+        if (y >= 0 && y < game.map[maplayer].length)
+            if (x >= 0 && x < game.map[maplayer][y].length)
+                return game.map[maplayer][y][x];
+
+
 }
 
 //数字のindex番目取得
@@ -1889,13 +1391,10 @@ function changeHitbox(bool, x, y) {
 
 //当たり判定
 function hitbox(x, y) {
-
-    let gethitBox = (x, y) => game.getTileID("hitbox", x, y) || (game.getTileID("map1", x, y) == 7 && !player.boat)
-
-    if (gethitBox(Math.floor(x / 16 + 0), Math.floor(y / 16 + 0))) return true;
-    if (gethitBox(Math.floor(x / 16 + 0.95), Math.floor(y / 16 + 0))) return true;
-    if (gethitBox(Math.floor(x / 16 + 0), Math.floor(y / 16 + 0.95))) return true;
-    if (gethitBox(Math.floor(x / 16 + 0.95), Math.floor(y / 16 + 0.95))) return true;
+    if (getTileID("hitbox", Math.floor(x / 16 + 0), Math.floor(y / 16 + 0))) return true;
+    if (getTileID("hitbox", Math.floor(x / 16 + 0.95), Math.floor(y / 16 + 0))) return true;
+    if (getTileID("hitbox", Math.floor(x / 16 + 0), Math.floor(y / 16 + 0.95))) return true;
+    if (getTileID("hitbox", Math.floor(x / 16 + 0.95), Math.floor(y / 16 + 0.95))) return true;
 
     return false;
 }
@@ -1983,7 +1482,7 @@ function hitbox_rema(ax, ay, aw, ah, color = "black", checktile, maplayer) {
 
             debug_hitbox_push((x + ix) * 16, (y + iy) * 16, 16, 16, color);
 
-            let TileID = game.getTileID(maplayer, x + ix, y + iy)
+            let TileID = getTileID(maplayer, x + ix, y + iy)
 
             if (typeof checktile == "undefined") hit.push([(x + ix), (y + iy), TileID]);
             if (typeof checktile != "undefined" && !Array.isArray(checktile)) if (checktile == TileID) hit.push([(x + ix), (y + iy), TileID]);
@@ -1996,13 +1495,10 @@ function hitbox_rema(ax, ay, aw, ah, color = "black", checktile, maplayer) {
 function player_proc() {
 
     if (IsLoading) return;
-    if (canPlayerMoveForOpenGui()) {
-        player_move_proc();
-        player_npc_talk();
-    }
+    if (canPlayerMoveForOpenGui()) player_move_proc();
     player_attack();
+    player_npc_talk();
     player_effect_proc();
-    player_death_check()
 
     mapchange_proc();
 
@@ -2015,12 +1511,12 @@ function player_proc() {
 
     }
 
-    if (player.x != player.movelog[0][0] || player.y != player.movelog[0][1]) player.movelog.unshift([player.x, player.y]);
+    if ([player.x, player.y] != [player.movelog[0], player.movelog[1]]) player.movelog.unshift([player.x, player.y]);
 }
 
 function player_move_proc() {
 
-    if (player.canRotate && (!key_groups.attack || !config.rotatelockonattacking)) player_rotate();
+    if (player.canRotate && (!key_groups.attack || config.canrotateonattacking)) rotate();
 
     //移動キー判定
     player.up = key_groups.up;
@@ -2121,17 +1617,6 @@ function player_damage(damage, rx, ry) {
     return true;
 }
 
-function player_death_check() {
-    let alive = false;
-    for (let player of players) {
-        player.alive = player.hp > 0;
-        if (player.hp > 0) {
-            alive = true
-        }
-    }
-    player.alive = alive;
-}
-
 function player_knockback(x, y) {
     //if (x == Infinity || y == Infinity) alert("infinity")
     player.xknb += x;
@@ -2157,13 +1642,6 @@ function player_attack() {
     weapon_proc();
 }
 
-/**
- * 
- * @param {number} id 効果のID
- * @param {number} time 効果の秒数
- * @param {number} power 効果の強さ
- * @returns 
- */
 function player_effect_add(id, time = 30, power = 0) {
     time *= 60;
 
@@ -2202,23 +1680,22 @@ function weapon_proc() {
             let hit_enemy = new Array();
             hit_enemy = hitbox_enemy_rect(players[i].weapon.x - 8, players[i].weapon.y - 8, 32, 32);
             for (const j in hit_enemy) {
-                enemy_damage(hit_enemy[j], players[i].weapon.attack, players[i].rotatex, players[i].rotatey, true);
+                enemy_damage(hit_enemy[j], player.weapon.attack, players[i].rotatex, players[i].rotatey);
             }
 
             //岩壊す
             let breaks = hitbox_rema(players[i].weapon.x - 8, players[i].weapon.y - 8, 32, 32, "red", game.breakableTile, "map1");
-            for (const b in breaks) {
+            for (let i in breaks) {
                 //console.log(breaks[0])
                 if (game.breakableTileAbout[breaks[i][2]].breakProbability > Math.random()) {
                     replaceTile(game.breakableTileAbout[breaks[i][2]].becomeTile, "map1", breaks[i][0], breaks[i][1]);
                     changeHitbox(false, breaks[i][0], breaks[i][1]);
                     createParticle(breaks[i][0] * 16 + 8, breaks[i][1] * 16 + 8, 2, 8);
-                    PlaySound("break", "tile")
                 }
 
                 createParticle(breaks[i][0] * 16 + 8, breaks[i][1] * 16 + 8, 2, 0.2);
-                PlaySound("breakbit", "tile", true);
             }
+
 
             //オートエイム
             if (players[i].weapon.timer <= 12 && (hit_enemy.length == 0 || !game.weapon_canlock) && config.weapon_auto_aiming) {
@@ -2265,7 +1742,7 @@ function weapon_proc() {
 }
 
 //向きを取得
-function player_rotate() {
+function rotate() {
     if (player.up && !player.down && !player.right && !player.left) player.facing = 2;
     if (!player.up && player.down && !player.right && !player.left) player.facing = 0;
     if (!player.up && !player.down && player.right && !player.left) player.facing = 3;
@@ -2303,20 +1780,15 @@ function player_rotate() {
 function player_npc_talk() {
     for (let i in npc) {
         let it = npc[i];
-        let facing = new Vec2(game.facing_pos[player.facing][0], game.facing_pos[player.facing][1]);
-
-        if (key_groups_down.confirm) {
-            if (hitbox_rect(it.x, it.y, 16, 16, player.x + 4 + facing.x * 16, player.y + 4 + facing.y * 16, 8, 8)) {
-                talk_npc(i); return;
-            }
-        }
+        let facing = new Object();
+        facing.x = game.facing_pos[player.facing][0];
+        facing.y = game.facing_pos[player.facing][1];
+        hitbox_repo(it.x, it.y, 16, 16, player.x + 8 + facing.x * 16, player.y + 8 + facing.y * 16);
     }
 }
 
 function talk_npc(i) {
-    let dialogueID = npc[i].dialogueID;
-    let dialogue = loadedjson.dialogue[dialogueID];
-    gui.message.view(dialogue);
+
 }
 
 function mapchange_proc() {
@@ -2325,17 +1797,14 @@ function mapchange_proc() {
         if (isNaN(w)) w = 16; if (isNaN(h)) h = 16;
 
         if (hitbox_rect(x, y, w, h, player.x, player.y, 16, 16)) {
-            let [x, y] = [player.x, player.y];
             if (game.map.warp[i].relpos != undefined) {
-                [x, y] = [x + game.map.warp[i].relpos.x * 16, y + game.map.warp[i].relpos.y * 16];
-                mapchange(game.map.warp[i].to, x, y);
+                mapchange(game.map.warp[i].to, player.x + game.map.warp[i].relpos.x * 16, player.y + game.map.warp[i].relpos.y * 16)
                 return;
             }
             if (game.map.warp[i].abspos != undefined) {
-                [x, y] = [game.map.warp[i].abspos.x * 16, game.map.warp[i].abspos.y * 16];
-                mapchange(game.map.warp[i].to, x, y);
+                mapchange(game.map.warp[i].to, game.map.warp[i].abspos.x * 16, game.map.warp[i].abspos.y * 16)
                 return;
-            }
+            } 
             {
                 mapchange(game.map.warp[i].to);
                 return;
@@ -2353,13 +1822,9 @@ function map_change_proc_check(i, x, y, w = 16, h = 16) {
 
 async function mapchange(ID, x, y, loadonly = false) {
 
-    IsLoading = true; {
-        let gets = new Array();
-        gets.push(getJson(game.map_path[ID], "Map"));
-        gets.push(getJson(game.map_path[ID] + "meta", "MapMeta"));
-
-        await Promise.all(gets);
-    }
+    IsLoading = true;
+    await getJson(game.map_path[ID], "Map");
+    await getJson(game.map_path[ID] + "meta", "MapMeta");
     player.mapID = ID;
 
     if (!loadonly) {
@@ -2367,7 +1832,7 @@ async function mapchange(ID, x, y, loadonly = false) {
         npc.splice(0, Infinity);
         for (let i in loadedjson.MapMeta.npc) {
             let it = loadedjson.MapMeta.npc[i]
-            npc.push(new NPC(it.x, it.y, it.id, it.dialogueID))
+            npc.push(new NPC(it.x, it.y, it.id))
         }
 
         //プレイヤーの場所を移動
@@ -2421,20 +1886,11 @@ function get_item_data_index(i, data) {
 function get_item_data(i, data) {
     return loadedjson.item[player.items[i].id][data];
 }
-/**
- * 翻訳後の文字列を返します
- * @param {string} key 翻訳キー
- * @param  {...string} param パラメーター
- * @returns 
- */
-function get_text(key, ...param) {
-    if (typeof game.lang[key] != "string") return key;
 
-    let text = game.lang[key];
-    for (let i in param) {
-        text = text.replace("%" + i, param[i]);
-    }
-    return text;
+function get_text(i) {
+    if (typeof game.lang[i] == "string") return game.lang[i];
+    if (typeof game.lang[i] != "string") return i;
+
 }
 
 function enemy_proc() {
@@ -2469,7 +1925,6 @@ function enemy_move_proc(i) {
 
     //動き替える
     if (enemy[i].id == 1) enemy_slime_move_proc(i);
-    if (enemy[i].id == 3) enemy_gorilla_move_proc(i);
 
     //移動
     enemy_move(i, enemy[i].xspd, enemy[i].yspd);
@@ -2491,15 +1946,6 @@ function enemy_move(i, x, y) {
 }
 
 function enemy_slime_move_proc(i) {
-
-    if (enemy[i].attack.hostility) {
-        enemy_move_hostility(i)
-    } else {
-        enemy_move_normal(i)
-    }
-}
-
-function enemy_gorilla_move_proc(i) {
 
     if (enemy[i].attack.hostility) {
         enemy_move_hostility(i)
@@ -2621,24 +2067,13 @@ function enemy_slime_attack_proc(i) {
     }
 }
 
-/**
- * 
- * @param {*} i enemyID
- * @param {*} damage 与えるダメージの量
- * @param {*} rx ノックバックの方向
- * @param {*} ry ノックバックの方向
- * @param {*} byPlayer 敵対するかどうか
- * @returns true:ダメージを与えた　false:ダメージを与えられなかった
- */
-function enemy_damage(i, damage, rx = 0, ry = 0, byPlayer = false) {
+function enemy_damage(i, damage, rx, ry) {
     //クールダウン判定
     if (enemy[i].damage_cooldown > 0) return false;
 
     //敵対処理
-    if (byPlayer) enemy_become_hostility(i);
-
-    //効果音
-    PlaySound("damage", "enemy", true);
+    enemy[i].attack.hostility = true
+    enemy[i].attack.timer = 1000;
 
     //ノックバック処理
     if (typeof rx != "undefined" && typeof ry != "undefined") {
@@ -2659,11 +2094,6 @@ function enemy_damage(i, damage, rx = 0, ry = 0, byPlayer = false) {
     return true;
 }
 
-function enemy_become_hostility(i, timer = 1000) {
-    enemy[i].attack.hostility = true
-    enemy[i].attack.timer = timer;
-}
-
 function enemy_damage_proc(i) {
     //エフェクトの処理
     if (enemy[i].damage_effect.view_time > 0) enemy[i].damage_effect.view_time--;
@@ -2678,25 +2108,13 @@ function enemy_damage_proc(i) {
 
 function enemy_death_proc() {
     for (const i in enemy) {
-        if (enemy[i].hp <= 0) {
-            //倒したときのパーティクル
-            createParticle(enemy[i].x, enemy[i].y, 0, 5); enemy_delete(i);
+        if (enemy[i].hp <= 0) createParticle(enemy[i].x, enemy[i].y, 0, 5);
 
-            //効果音
-            PlaySound("death", "enemy");
-            return;
-        }
-
-        //despawn
-        if (getDistance(player.x + 8, player.y + 8, enemy[i].x, enemy[i].y) > 256 + 16 && !enemy[i].attack.hostility) {
-            enemy_delete(i);
-            return;
+        if ((getDistance(player.x, player.y, enemy[i].x, enemy[i].y) > 256 && !enemy[i].attack.hostility) ||
+            enemy[i].hp <= 0) {
+            enemy.splice(i, 1);
         }
     }
-}
-
-function enemy_delete(i) {
-    enemy.splice(i, 1);
 }
 
 function enemy_spawn_event() {
@@ -2717,7 +2135,7 @@ function enemy_spawn_check(x, y) {
     if (Random(0, 10) < 9) return;
 
     //敵をスポーンする場所かを調べる
-    let ID = game.getTileID("enemy", x, y);
+    let ID = getTileID("enemy", x, y);
     if (ID == 0 || typeof ID != "number") return;
 
     //敵が既にスポーンされてないか調べる
@@ -2730,25 +2148,11 @@ function enemy_spawn_check(x, y) {
 
 function npc_proc() {
     for (let i in npc) {
-        npc_move_proc(i)
 
     }
 }
 
 function npc_move_proc(i) {
-
-    npc_rotate(i);
-
-
-    if (Math.abs(npc[i].xspd) != 0 || Math.abs(npc[i].yspd) != 0) {
-        npc[i].moved = true;
-    } else {
-        npc[i].moved = false;
-    }
-
-    //アニメーションに使用(値を変更すると速度が変わる)
-    if (npc[i].moved) npc[i].moveTimer += 0.12;
-
 
     //スピード調整
     if (npc[i].xspd > 0) {
@@ -2763,18 +2167,10 @@ function npc_move_proc(i) {
     }
 
     //動き替える
-
-
-    //速度移動
-    if (npc[i].up) npc[i].yspd -= 0.5;
-    if (npc[i].down) npc[i].yspd += 0.5;
-    if (npc[i].right) npc[i].xspd += 0.5;
-    if (npc[i].left) npc[i].xspd -= 0.5;
+    if (npc[i].id == 1) npc_slime_move_proc(i);
 
     //移動
     npc_move(i, npc[i].xspd, npc[i].yspd);
-
-
 }
 
 function npc_move(i, x, y) {
@@ -2790,80 +2186,6 @@ function npc_move(i, x, y) {
         if (hitbox(npc[i].x, npc[i].y)) npc[i].y -= Math.sign(y);
         if (j > game.move_limit) break;
     }
-}
-
-function npc_move_spd_add(i, x, y) {
-    x = Math.sign(x);
-    y = Math.sign(y);
-
-    npc[i].xspd += enemy_speed * x;
-    npc[i].yspd += enemy_speed * y;
-}
-
-function npc_move_random(i) {
-
-    npc[i].move[0] ? npc[i].down = true : npc[i].down = false;
-    npc[i].move[1] ? npc[i].up = true : npc[i].up = false;
-    npc[i].move[2] ? npc[i].right = true : npc[i].right = false;
-    npc[i].move[3] ? npc[i].left = true : npc[i].left = false;
-    if (npc[i].move[4] > 0) npc[i].move[4] -= 1;
-
-    if (!npc[i].move[4] > 0) {
-        npc[i].move[0] = false;
-        npc[i].move[1] = false;
-        npc[i].move[2] = false;
-        npc[i].move[3] = false;
-
-        if (Math.random() > 0.95) {
-            if (Math.random() > 0.9) npc[i].move[0] = true;
-            if (Math.random() > 0.9) npc[i].move[1] = true;
-            if (Math.random() > 0.9) npc[i].move[2] = true;
-            if (Math.random() > 0.9) npc[i].move[3] = true;
-            if (npc[i].move[0] || npc[i].move[1] || npc[i].move[2] || npc[i].move[3]) npc[i].move[4] = Math.floor(Math.random() * 5 + 5);
-        }
-    }
-
-    if (npc[i].move[4] > 0) {
-        npc[i].moving = true;
-    } else {
-        npc[i].moving = false;
-    }
-}
-
-//向きを取得
-function npc_rotate(i) {
-    if (npc[i].up && !npc[i].down && !npc[i].right && !npc[i].left) npc[i].facing = 2;
-    if (!npc[i].up && npc[i].down && !npc[i].right && !npc[i].left) npc[i].facing = 0;
-    if (!npc[i].up && !npc[i].down && npc[i].right && !npc[i].left) npc[i].facing = 3;
-    if (!npc[i].up && !npc[i].down && !npc[i].right && npc[i].left) npc[i].facing = 1;
-    if (npc[i].up && !npc[i].down && npc[i].right && !npc[i].left) npc[i].facing = 3;
-    if (npc[i].up && !npc[i].down && !npc[i].right && npc[i].left) npc[i].facing = 1;
-    if (!npc[i].up && npc[i].down && npc[i].right && !npc[i].left) npc[i].facing = 3;
-    if (!npc[i].up && npc[i].down && !npc[i].right && npc[i].left) npc[i].facing = 1;
-    //if (!npc[i].up && !npc[i].down && npc[i].right && npc[i].left) npc[i].facing = 0;
-    //if (npc[i].up && npc[i].down && !npc[i].right && !npc[i].left) npc[i].facing = 0;
-    if (npc[i].up && !npc[i].down && npc[i].right && npc[i].left) npc[i].facing = 2;
-    if (!npc[i].up && npc[i].down && npc[i].right && npc[i].left) npc[i].facing = 0;
-    if (npc[i].up && npc[i].down && npc[i].right && !npc[i].left) npc[i].facing = 3;
-    if (npc[i].up && npc[i].down && !npc[i].right && npc[i].left) npc[i].facing = 1;
-    //if (npc[i].up && npc[i].down && npc[i].right && npc[i].left) npc[i].facing = 0;
-
-
-    if (npc[i].up && !npc[i].down && !npc[i].right && !npc[i].left) npc[i].rotate = 4;
-    if (!npc[i].up && npc[i].down && !npc[i].right && !npc[i].left) npc[i].rotate = 0;
-    if (!npc[i].up && !npc[i].down && npc[i].right && !npc[i].left) npc[i].rotate = 6;
-    if (!npc[i].up && !npc[i].down && !npc[i].right && npc[i].left) npc[i].rotate = 2;
-    if (npc[i].up && !npc[i].down && npc[i].right && !npc[i].left) npc[i].rotate = 5;
-    if (npc[i].up && !npc[i].down && !npc[i].right && npc[i].left) npc[i].rotate = 3;
-    if (!npc[i].up && npc[i].down && npc[i].right && !npc[i].left) npc[i].rotate = 7;
-    if (!npc[i].up && npc[i].down && !npc[i].right && npc[i].left) npc[i].rotate = 1;
-    //if (!npc[i].up && !npc[i].down && npc[i].right && npc[i].left) npc[i].rotate = 0;
-    //if (npc[i].up && npc[i].down && !npc[i].right && !npc[i].left) npc[i].rotate = 0;
-    if (npc[i].up && !npc[i].down && npc[i].right && npc[i].left) npc[i].rotate = 4;
-    if (!npc[i].up && npc[i].down && npc[i].right && npc[i].left) npc[i].rotate = 0;
-    if (npc[i].up && npc[i].down && npc[i].right && !npc[i].left) npc[i].rotate = 6;
-    if (npc[i].up && npc[i].down && !npc[i].right && npc[i].left) npc[i].rotate = 2;
-    //if (npc[i].up && npc[i].down && npc[i].right && npc[i].left) npc[i].rotate = 0;
 }
 
 function particle_proc() {
@@ -2948,30 +2270,6 @@ function debug_proc() {
     }
     draw_text("dc:" + debug.camx + "," + debug.camy, 0, 24);
 
-    if (menu.visible) {
-        {
-            let draw_text_debug = [
-                "itmsel:" + menu.item_select,
-                "scroll:" + menu.scroll
-            ]
-            draw_texts(draw_text_debug, 64 + 64, 0);
-        }
-        if (menu.tab === 3 && menu.item_select[0] == 0) {
-            draw_text("timer:" + menu.config_num.timer, 128, 64 + 64);
-            draw_text("mode:" + menu.config_num.mode, 128, 64 + 64 + 8);
-        }
-    }
-
-
-    {//jsonUIselect
-        let draw_text_debug = ["jsonuisel"]
-
-        for (let i in JsonUIOpen)
-            draw_text_debug.push(`${JsonUIOpen[i].select},${JsonUIOpen[i].GetSelectID()}`);
-
-        draw_texts(draw_text_debug, 128 + 32, 0)
-    }
-
 
     //キー表示
     for (let i = 0, j = 0; i < keys.length; i++) {
@@ -2981,22 +2279,9 @@ function debug_proc() {
             j++;
         }
     }
-    {
-        let px = 0, dx = 0;
-        for (const key in key_groups) {
-            if (key_groups[key]) {
-                draw_text(key.slice(0, 2), 68 * 4, px * 8);
-                px++;
-            }
-            if (key_groups_down[key]) {
-                draw_text(key.slice(0, 2), 64 * 4, dx * 8);
-                dx++;
-            }
-        }
-    }
 
     //コントローラー表示
-    if (gamepads.filter(e => e === null).length !== gamepads.length) for (let x in gamepads) {
+    for (let x in gamepads) {
         let gp = gamepads[x];
         draw_text(`${x}`, 72 * 4 + x * -40, 32);
         if (gp === null) continue;
@@ -3013,9 +2298,17 @@ function debug_proc() {
         }
     }
 
-    //タッチデバック
-    debug_draw_touch();
-
+    let px = 0, dx = 0;
+    for (const key in key_groups) {
+        if (key_groups[key]) {
+            draw_text(key.slice(0, 2), 68 * 4, px * 8);
+            px++;
+        }
+        if (key_groups_down[key]) {
+            draw_text(key.slice(0, 2), 64 * 4, dx * 8);
+            dx++;
+        }
+    }
 
 
     //敵描画
@@ -3024,10 +2317,42 @@ function debug_proc() {
         draw_text(i.toString(), enemy[i].x - player.scrollx, enemy[i].y - player.scrolly - 8);
     }
 
-    for (const pause of debug.pause_frame) {
-        if (timer == pause) cancelAnimationFrame(loopID);
+    //about debug
+    if (debug.about_visible) {
+        //player
+        if (document.getElementById("debugtype").selectedIndex == 0) {
+            let id = document.getElementById("debugplayerid").value
+            if (id >= players.length) id = players.length - 1;
+
+            draw_text("players" + id, 128 + 64, 0);
+            let j = 0;
+            for (const key in players[id]) {
+                j++;
+                let keyname = (key + "    ").slice(0, 4) + ("    " + key).slice(-1, 4);
+                draw_text(keyname + ":" + players[id][key], 128 + 64, j * 8 + 8);
+            }
+        }
+
+        //enemy
+        if (document.getElementById("debugtype").selectedIndex == 1) {
+            let id = document.getElementById("debugplayerid").value;
+            if (id >= enemy.length - 1) id = enemy.length - 1;
+
+            draw_text("enemy" + id, 128 + 64, 0);
+            let j = 0;
+            for (const key in enemy[id]) {
+                j++;
+                let keyname = (key + "    ").slice(0, 4) + ("    " + key).slice(-1, 4);
+                draw_text(keyname + ":" + enemy[id][key], 128 + 64, j * 8 + 8);
+            }
+
+            ctx.strokeStyle = "red";
+            if (id < enemy.length - 1) ctx.strokeRect((enemy[id].x - player.scrollx) * zoom, (enemy[id].y - player.scrolly) * zoom, get_enemy_data(id, "width") * zoom, get_enemy_data(id, "height") * zoom);
+        }
     }
 
+    //タッチデバック
+    debug_draw_touch();
 
     draw_text("project2023\nbeta build\n" + game.ver, 15 * 16 - 8, 10 * 16 - 8)
 
@@ -3037,7 +2362,7 @@ function debug_hitbox_push(a, b, c, d, color) {
     if (typeof color == "undefined") color = "black";
 
     if (!debug.hitbox_visible) return
-    if (!debug.visible) return
+    if (!debug.text_visible) return
 
     //データの作成
     let def = {
@@ -3058,26 +2383,9 @@ function debug_draw_touch() {
     }
 }
 
-/**
- * @function テキストを描画します
- * @param {string} text 描画するテキスト
- * @param {number} textx X(ドット数)
- * @param {number} texty Y(ドット数)
- * @param {number} textwidth 幅(文字数)
- * @param {number} textheight 高さ(文字数)
- * @param {string} font uni_00(font)
- * @param {sign} offset -1:左寄せ 0:中央寄せ 1:右寄せ
- * @param {number} drawOffsetX 描画する範囲をずらします
- * @param {number} drawOffsetY 描画する範囲をずらします
- * @param {number} drawWidth 描画する範囲をずらします
- * @param {number} drawHeight 描画する範囲をずらします
- */
-function draw_text(text, textx, texty, textwidth = Infinity, textheight = Infinity, font = "", offset = -1, drawOffsetX = 0, drawOffsetY = 0, drawWidth = 8, drawHeight = 8) {
-    text = String(text);//型変換
-
-    if (offset == -1) textx -= text.length * 0;//左寄せ　調整
-    if (offset == 0) textx -= text.length * 4;//中央寄せ　調整
-    if (offset == 1) textx -= text.length * 8;//右寄せ　調整
+function draw_text(text, textx, texty, textwidth = Infinity, textheight = Infinity, font = "", offset = -1) {
+    if (offset == 0) textx -= text.length * 8 / 2;
+    if (offset == 1) textx -= text.length * 8;
 
     for (let i = 0, at = 0, offsetx = 0, offsety = 0; at < text.length; i++) {
 
@@ -3090,7 +2398,7 @@ function draw_text(text, textx, texty, textwidth = Infinity, textheight = Infini
         if (text.charAt(at).match(/^(\n|\r|\t|\b|\f|\v|\0)$/) != null) at++;
 
         //描画
-        if (at <= text.length) draw_font(text.charAt(at), (textx + offsetx * 8), (texty + offsety * 8), font, drawOffsetX, drawOffsetY, drawWidth, drawHeight);
+        if (at <= text.length) draw_font(text.charAt(at), (textx + offsetx * 8), (texty + offsety * 8), font);
 
         //桁
         at++;
@@ -3112,26 +2420,13 @@ function draw_text(text, textx, texty, textwidth = Infinity, textheight = Infini
     return undefined;
 }
 
-/**
- * @function フォント(１文字)描画します
- * @param {string} text 文字
- * @param {number} textx X(ドット数)
- * @param {number} texty Y(ドット数)
- * @param {string} font uni_00(font)
- * @param {number} drawOffsetX 描画する範囲をずらします
- * @param {number} drawOffsetY 描画する範囲をずらします
- * @param {number} drawWidth 描画する範囲をずらします
- * @param {number} drawHeight 描画する範囲をずらします
- */
-function draw_font(text, textx, texty, font = "", drawOffsetX = 0, drawOffsetY = 0, drawWidth = 8, drawHeight = 8) {
-    text = String(text);//型変換
-
-    let codeP = zeroPadding(text.charCodeAt(0).toString(16), 4)
+function draw_font(text, textx, texty, font = "") {
+    let codeP = ("0000" + text.charCodeAt(0).toString(16)).slice(-4);
     let fontimg = img.font["uni_" + NumberofIndex(codeP, 0, 16) + NumberofIndex(codeP, 1, 16) + font]
 
     if (fontimg == undefined) return;
 
-    drawImg(fontimg, parseInt(NumberofIndex(codeP, 3, 16), 16) * 8 + drawOffsetX, parseInt(NumberofIndex(codeP, 2, 16), 16) * 8 + drawOffsetY, drawWidth, drawHeight, textx, texty);
+    ctx.drawImage(fontimg, parseInt(NumberofIndex(codeP, 3, 16), 16) * 8, parseInt(NumberofIndex(codeP, 2, 16), 16) * 8, 8, 8, textx * zoom, texty * zoom, 8 * zoom, 8 * zoom);
 
 }
 
@@ -3143,8 +2438,9 @@ function draw_texts(text, x, y) {
 }
 
 function draw_icon(i, x, y) {
-    let [id = 1023] = [loadedjson.icons[i]];
-    ctx.drawImage(img.gui_icons, (id % 32) * 8, Math.floor(id / 32) * 8, 8, 8, x * zoom, y * zoom, 8 * zoom, 8 * zoom);
+    let id = loadedjson.icons[i]
+    ctx.drawImage(img.gui_icons, id % 8 * 8, Math.floor(id / 8) * 8, 8, 8, x * zoom, y * zoom, 8 * zoom, 8 * zoom);
+
 }
 
 function draw_prompt(dx, dy, dw, dh, img) {
@@ -3179,14 +2475,16 @@ function draw_hp(p, x, y) {
 
 
 function game_draw() {
-    let DrawObject = new Array();
 
     //タイル描画
     draw_tiles("map1");
 
     //アニメーション
     player_animation();
-    for (let i in npc) npc_animation(i);
+
+    //一応残してる　できるだけ使わないこと
+    player.drawx = player.x - player.scrollx;
+    player.drawy = player.y - player.scrolly;
 
     //プレイヤー描画
     draw_player()
@@ -3212,24 +2510,10 @@ function draw(i, x, y) {
     let t = loadedjson.atlas[i];
     ctx.drawImage(img[t.img], t.atlas[0], t.atlas[1], t.atlas[2], t.atlas[3], Math.round(x) * zoom, Math.round(y) * zoom, t.atlas[2] * zoom, t.atlas[3] * zoom);
 }
-function AtlasDrawImage(i, x, y, ox = 0, oy = 0, ow = 0, oh = 0) {
-    let Get = e => loadedjson.atlas[i].atlas[e];
-    drawImg(img[loadedjson.atlas[i].img], Get(0) + ox, Get(1) + oy, Get(2) + ow, Get(3) + oh, Math.round(x), Math.round(y));
-}
-/**
- * 描画します　ctx.drawImageに似ていますかzoomはいりません　sWidth,sHeightとdWidth,dHeightは同じになります
- * @param  {number} image
- * @param  {number} sx
- * @param  {number} sy
- * @param  {number} sWidth
- * @param  {number} sHeight
- * @param  {number} dx
- * @param  {number} dy
- * 
- */
-function drawImg(...img) {
-    let get = i => Math.floor(img[i])
-    ctx.drawImage(img[0], get(1), get(2), get(3), get(4), get(5) * zoom, get(6) * zoom, get(3) * zoom, get(4) * zoom)
+
+function drawImg(img) {
+    let it = i => Math.floor(arguments[i])
+    ctx.drawImage(img, it(1), it(2), it(3), it(4), it(5) * zoom, it(6) * zoom, it(3) * zoom, it(4) * zoom)
 }
 
 function draw_player() {
@@ -3240,6 +2524,13 @@ function draw_player() {
     }
 }
 
+function draw_npc() {
+
+    //プレイヤー描画
+    for (const i in npc) {
+        ctx.drawImage(img.players, 0, 0, 16, 24, (npc[i].x - player.scrollx) * zoom, (npc[i].y - player.scrolly - 8) * zoom, 16 * zoom, 24 * zoom);
+    }
+}
 
 function draw_weapons() {
 
@@ -3252,9 +2543,9 @@ function draw_weapons() {
             draw_weapon(0, subplayerdrawx(i) + Math.floor(make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * 16), subplayerdrawy(i) + make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * Math.floor(Math.sin(-players[i].weapon.timer / 50) * 8 - 32));
         } else {
 
-            //                                                          v#アニメーション速度# 
-            //                                                               v#フレーム数#
-            let weapon_rotation = Math.floor((players[i].weapon.timer / 1) % 8)
+            //                                        v#アニメーション速度# 
+            //                                             v#フレーム数#
+            let weapon_rotation = Math.floor((timer / 1) % 8)
 
             draw_weapon(weapon_rotation, players[i].weapon.x - player.scrollx, players[i].weapon.y - player.scrolly);
             draw_sweep(weapon_rotation, players[i].weapon.x - player.scrollx, players[i].weapon.y - player.scrolly);
@@ -3274,7 +2565,7 @@ function draw_weapon(rotate, x, y) {
 function draw_sweep(rotate, x, y) {
 
     let weapon_offset = {
-        //<$調整$    斜めの時の位置調整                    #斜め検知# ><$調整$>< エフェクトの円周の大きさ調整          $大きさ$>
+        //<$調整$    斜めの時の位置調整                    #斜め検知# ><$調整$>< エフェクトの円周の大きさ調整       $大きさ$>
         "x": (4 * Math.sign(game.rotate_pos[rotate][0]) * (rotate % 2)) - 8 + (Math.sign(game.rotate_pos[rotate][0]) * 1),
         "y": (4 * Math.sign(game.rotate_pos[rotate][1]) * (rotate % 2)) - 8 + (Math.sign(game.rotate_pos[rotate][1]) * 1)
     };
@@ -3291,57 +2582,13 @@ function player_animation() {
         player.anim = 2;
     }
     else {
-        switch (Math.floor(player.moveTimer % 4)) {
-            case 0:
-                player.anim = 0;
-                break;
-            case 1:
-                player.anim = 2;
-                break;
-            case 2:
-                player.anim = 1;
-                break;
-            case 3:
-                player.anim = 2;
-                break;
-        }
+        if (Math.floor(player.moveTimer % 4) == 0) player.anim = 0;
+        if (Math.floor(player.moveTimer % 4) == 1) player.anim = 2;
+        if (Math.floor(player.moveTimer % 4) == 2) player.anim = 1;
+        if (Math.floor(player.moveTimer % 4) == 3) player.anim = 2;
     }
 
 }
-
-function draw_npc() {
-
-    //プレイヤー描画
-    for (const i in npc) {
-        ctx.drawImage(img.players, npc[i].anim * 16, npc[i].facing * 32, 16, 24, (npc[i].x - player.scrollx) * zoom, (npc[i].y - player.scrolly - 8) * zoom, 16 * zoom, 24 * zoom);
-    }
-}
-
-function npc_animation(i) {
-
-    //プレイヤー画像指定
-    if (!npc[i].moving) {
-        npc[i].anim = 2;
-    }
-    else {
-        switch (Math.floor(npc[i].moveTimer % 4)) {
-            case 0:
-                npc[i].anim = 0;
-                break;
-            case 1:
-                npc[i].anim = 2;
-                break;
-            case 2:
-                npc[i].anim = 1;
-                break;
-            case 3:
-                npc[i].anim = 2;
-                break;
-        }
-    }
-
-}
-
 
 function draw_tiles(maplayer) {
 
@@ -3350,10 +2597,9 @@ function draw_tiles(maplayer) {
 
     for (let y = 0; y < 13; y++) {
         for (let x = 0; x < 21; x++) {
-            let tileID = game.getTileID(maplayer, x + plx, y + ply);
+            let tileID = getTileID(maplayer, x + plx, y + ply);
 
-            //軽量化
-            if (!game.DontDrawTIle.includes(tileID)) ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), 16, 16, (x * 16 + (16 - player.scrollx % 16) - 16) * zoom, (y * 16 + (16 - player.scrolly % 16) - 16) * zoom, 16 * zoom, 16 * zoom);
+            ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), 16, 16, (x * 16 + (16 - player.scrollx % 16) - 16) * zoom, (y * 16 + (16 - player.scrolly % 16) - 16) * zoom, 16 * zoom, 16 * zoom);
 
         }
     }
@@ -3366,9 +2612,8 @@ function draw_enemy() {
 
         let anim = Math.sin(enemy[i].attack_anim.tick / 20 * game.PI);
 
-        if (t.id == 1) drawImg(img.enemy, slime_animation(i).x, slime_animation(i).y, 16, 16, t.x - player.scrollx, t.y - player.scrolly - anim * 16);
-        if (t.id == 2) drawImg(img.enemy, 0, 16, 16, 32, t.x - player.scrollx, t.y - player.scrolly);
-        if (t.id == 3) drawImg(img.enemy, gorilla_animation(i).x, gorilla_animation(i).y, 32, 32, t.x - player.scrollx, t.y - player.scrolly);
+        if (t.id == 1) ctx.drawImage(img.enemy, slime_animation(i)[0], slime_animation(i)[1], 16, 16, (t.x - player.scrollx) * zoom, (t.y - player.scrolly - anim * 16) * zoom, 16 * zoom, 16 * zoom);
+        if (t.id == 2) ctx.drawImage(img.enemy, 0, 16, 16, 32, (t.x - player.scrollx) * zoom, (t.y - player.scrolly) * zoom, 16 * zoom, 32 * zoom);
 
         if (enemy[i].damage_effect.Last_damage_timer > 0) draw_hp(t.hp / loadedjson.enemy[t.id].hp, getEnemyCenter(i).x - player.scrollx - 5, t.y - player.scrolly);
         if (enemy[i].damage_effect.view_time != 0) draw_text(enemy[i].damage_effect.damage + "", enemy[i].x - player.scrollx, enemy[i].y - 16 - Math.log10(-8 * (enemy[i].damage_effect.view_time / 100 - 1)) * 8 - player.scrolly);
@@ -3384,19 +2629,9 @@ function slime_animation(i) {
     if (enemy[i].anim.animing) x = Math.floor(enemy[i].anim.tick / 20 * 3);
     if (enemy[i].attack_anim.animing) x = Math.floor(enemy[i].attack_anim.tick / 20 * 3);
 
-    return new Vec2(x * 16, y * 16);
+    return [x * 16, y * 16]
 }
 
-function gorilla_animation(i) {
-
-    let x = 0;
-    let y = 0;
-
-    if (enemy[i].anim.animing) x = Math.floor(enemy[i].anim.tick / 20 * 3);
-    //if (enemy[i].attack_anim.animing) x = Math.floor(enemy[i].attack_anim.tick / 20 * 3);
-
-    return new Vec2(x * 32 + 32, y * 32 + 16);
-}
 function draw_particle() {
 
     for (const i in particle) {
@@ -3432,16 +2667,14 @@ function gui_draw() {
         let x = 0;
         if (0 <= MapNameText.time < 60) x += easeOutExpo((MapNameText.time - 0) / 60);
         if (180 <= MapNameText.time < 240) x += easeInExpo((MapNameText.time - 180) / 60);
-        x *= ScreenWidth / 2;
-        draw_text(MapNameText.text, x, 64, Infinity, Infinity, "", 0);
+        x *= 320 / 2;
+        draw_text(MapNameText.text, x, 64, u, u, u, 0);
     }
 
     //メッセージ描画
-    if (gui.message.visible) {
+    if (message.visible) {
         draw_prompt(5 * 8, 13 * 8, 32 * 8, 8 * 8, img.gui_message);
-        draw_text(typeof gui.message.text === "string" ? gui.message.text : gui.message.text[gui.message.index].text, 40, 104, 31);
-
-        if (debug.visible) draw_text(gui.message.index, 40, 104 - 16);
+        draw_text(message.text, 40, 104, 31);
     }
 
     //メニュー描画
@@ -3462,8 +2695,8 @@ function gui_draw() {
         draw_text(get_text("menu.tab.items"), 14 * 8, 3 * 8);
         draw_icon("equip", 21 * 8, 3 * 8);
         draw_text(get_text("menu.tab.equip"), 22 * 8, 3 * 8);
-        draw_icon("system", 29 * 8, 3 * 8);
-        draw_text(get_text("menu.tab.system"), 30 * 8, 3 * 8);
+        draw_icon("config", 29 * 8, 3 * 8);
+        draw_text(get_text("menu.tab.config"), 30 * 8, 3 * 8);
 
         let cursorX = [40];
 
@@ -3472,16 +2705,15 @@ function gui_draw() {
             ctx.drawImage(img.players, 0, 0, 16, 16, 5 * 8 * zoom, 5 * 8 * zoom, 16 * zoom, 16 * zoom);
             draw("hp", 5 * 8, 8 * 8);
             draw_text(players[0].hp + "", 7 * 8, 8 * 8);
-
         }
 
         //items
         if (menu.tab === 1) {
-            cursorX = [40 - 8];
-            for (let i in player.items.slice(menu.scroll[0], menu.scroll[0] + 8)) {
-                draw_gui_item(40, 5 * 8 + i * 16, Number(i) + menu.scroll[0]);
+            cursorX = [40];
+            for (let i in player.items.slice(menu.scroll, menu.scroll + 8)) {
+                draw_gui_item(40, 5 * 8 + i * 16, Number(i) + menu.scroll);
             }
-            draw_scroll_bar(18 * 16, 6 * 8, menu.scroll[0] / Math.max(menu.scroll[0], player.items.length - 8), 128 - 16);
+            draw_scroll_bar(18 * 16, 6 * 8, menu.scroll / Math.max(menu.scroll, player.items.length - 8), 128 - 16);
         }
 
         //equip
@@ -3489,59 +2721,33 @@ function gui_draw() {
 
         }
 
-        //system
+        //config
         if (menu.tab === 3) {
-            cursorX = [4 * 8, 12 * 8, 14 * 8, 33 * 8];
+            cursorX = [5 * 8, 13 * 8];
             //右のリスト
             //config
             if (menu.item_select[0] === 0) {
-                let itemselect = 0;
-                if (menu.item_select[1] != undefined) itemselect = menu.item_select[1];
-                let configs = loadedjson.configs[game.config_name[itemselect]];
+                let configs = loadedjson.configs.configs;
 
-                //縦線
-                draw_gui_vertical_line(14, 5, true);
-                drawImg(img.gui_prompt, 8, 8, 8, 8, 14 * 8, itemselect * 16 + 5 * 8)
-
-
-                let func = (i, dx) => {
-                    if (configs[i].default == config[configs[i].variable]) draw_font("D", 36 * 8, dx * 16 + 5 * 8);
-
-                    if (configs[i].type === "bool") draw(config[configs[i].variable] ? "switch_on" : "switch_off", 34 * 8, dx * 16 + 5 * 8);
-
-                    if (configs[i].type === "number") draw_text(config[configs[i].variable], 36 * 8, dx * 16 + 5 * 8, Infinity, Infinity, "", 1);
-                }
-                draw_gui_items(configs, "name", 15 * 8, 5 * 8, 25, 8, 16, 8, menu.scroll[2], func);
-
-                //数値編集の矢印
-                if (menu.config_num.mode != -1 || menu.config_num.timer >= 50) {
-                    let ofsY = 0;
-                    if (menu.config_num.mode == 1) ofsY = easeOutExpo(limit(menu.config_num.timer / 100, 0, 1)) * 4;
-                    if (menu.config_num.mode == -1) ofsY = easeInExpo(limit(menu.config_num.timer / 100, 0, 1)) * 4;
-                    draw("config_num_up", 34 * 8 + 4, (menu.item_select[2] - menu.scroll[menu.select_length - 1]) * 16 + 5 * 8 - ofsY);
-                    draw("config_num_down", 34 * 8 + 4, (menu.item_select[2] - menu.scroll[menu.select_length - 1]) * 16 + 5 * 8 + ofsY);
-                }
-
-                //中央のリスト
-                for (let x in game.config_icons) {
-                    draw_icon(game.config_icons[x], 13 * 8, (2.5 + Number(x)) * 16)
-                }
-
-                draw_text("test", 14 * 8, 20 * 8)
-
+                let func = (
+                    function (i) {
+                        if (config[configs[i].variable]) draw("switch_on", 33 * 8, i * 16 + 5 * 8);
+                        if (!config[configs[i].variable]) draw("switch_off", 33 * 8, i * 16 + 5 * 8);
+                        if (configs[i].default == config[configs[i].variable]) draw_font("D", 35 * 8, i * 16 + 5 * 8);
+                    }
+                )
+                draw_gui_items(loadedjson.configs.configs, "name", 14 * 8, 5 * 8, 25, 8, 16, func)
             }
 
             //data
             if (menu.item_select[0] === 1) {
                 draw_gui_items(game.gui_system_data_items, false, 14 * 8, 5 * 8, 25, 2, 16);
 
-                let [savepath, savename, SavedTime, FileSize] = ["???", "???", "???", "???"];
+                let [savepath, savename, SavedTime] = ["???", "???", "???"];
                 if (typeof LastSavedFileData !== "undefined") savename = LastSavedFileData.name;
 
-                if (typeof LastSavedFileData !== "undefined") FileSize = floor(LastSavedFileData.size / 1000, -1) + "KB";
-
                 if (typeof dirHandle !== "undefined" && typeof LastSavedFileData !== "undefined")
-                    savepath = slice(dirHandle.name, 5, "…") + "/" + LastSavedFileData.name;
+                    savepath = slice(dirHandle.name, 5) + "/" + LastSavedFileData.name;
 
                 if (typeof fileHandle !== "undefined")
                     savepath = fileHandle.name;
@@ -3550,50 +2756,22 @@ function gui_draw() {
 
 
                 if (game.saveloadfaliedtime + game.PopUpDelay > timer)
-                    draw_text(get_text("menu.loadfailed.type" + game.saveloadfaliedtype), 14 * 8, 16 * 8);
+                    draw_text(get_text("menu.loadfailed.type" + game.saveloadfaliedtype), 14 * 8, 18 * 8);
                 if (game.saveloadsuccesstime + game.PopUpDelay > timer)
-                    draw_text(get_text("menu.loadsuccess.type" + game.saveloadsuccesstype), 14 * 8, 16 * 8);
-
-                draw_text(get_text("menu.FileSize") + FileSize, 14 * 8, 18 * 8);
+                    draw_text(get_text("menu.loadsuccess.type" + game.saveloadsuccesstype), 14 * 8, 18 * 8);
 
                 draw_text(get_text("menu.LastSavedTime") + SavedTime, 14 * 8, 19 * 8);
 
                 draw_text(get_text("menu.saved") + savepath, 14 * 8, 20 * 8, 22);
-
-                //playtime
-                {//playtime
-                    draw_icon("clock", 31 * 8, 6 * 8)
-                    draw_text(get_text("menu.playtimeS"), 31 * 8, 5 * 8)
-                    draw_text(`${zeroPadding(milsecToTime(playTime).hour, 2)}:${zeroPadding(milsecToTime(playTime).min, 2)}`, 32 * 8, 6 * 8);
-                }
-                {//savedataplaytime
-                    draw_icon("save", 31 * 8, 8 * 8)
-                    draw_text(get_text("menu.savedataplaytimeS"), 31 * 8, 7 * 8)
-                    draw_text(typeof LastSavedFileData !== "undefined" ? `${zeroPadding(milsecToTime(SaveDataPlayTime).hour, 2)}:${zeroPadding(milsecToTime(SaveDataPlayTime).min, 2)}` : "??:??", 32 * 8, 8 * 8);
-                }
-                if (debug.visible) {
-                    draw_text("PlayTime", 23 * 8, 10 * 8);
-                    draw_text(playTime, 23 * 8, 11 * 8);
-                    draw_text("SavedPlayTime", 23 * 8, 12 * 8);
-                    draw_text(SavedPlayTime, 23 * 8, 13 * 8);
-                    draw_text("SaveDataPlayTime", 23 * 8, 14 * 8);
-                    draw_text(SaveDataPlayTime, 23 * 8, 15 * 8);
-                }
-            }
-
-
-            //about
-            if (menu.item_select[0] === 2) {
-                draw_text(get_text("menu.playtime"), 13 * 8, 5 * 8)
-                draw_text(`${zeroPadding(milsecToTime(playTime).hour, 2)}:${zeroPadding(milsecToTime(playTime).min, 2)}`, 13 * 8, 6 * 8);
             }
 
             //左のリスト
             draw_gui_items(game.gui_system_items, false, 6 * 8, 5 * 8, 25, 2, 16);
 
-
             //縦線
-            draw_gui_vertical_line(12, 5);
+            ctx.drawImage(img.gui_prompt_more, 0, 0, 8, 8, 12 * 8 * zoom, 4 * 8 * zoom, 8 * zoom, 8 * zoom);
+            ctx.drawImage(img.gui_prompt, 0, 8, 8, 8, 12 * 8 * zoom, 5 * 8 * zoom, 8 * zoom, 16 * 8 * zoom);
+            ctx.drawImage(img.gui_prompt_more, 0, 8, 8, 8, 12 * 8 * zoom, 21 * 8 * zoom, 8 * zoom, 8 * zoom);
 
         }
 
@@ -3603,13 +2781,13 @@ function gui_draw() {
         //カーソル//
         let select_y_size = game.select_y_size[menu.tab];
         //タブ
-        cursor.push(new Vec2(menu.tab * 64 + 4 * 8, 3 * 8));
+        cursor.push(new XY(menu.tab * 64 + 4 * 8, 3 * 8));
 
         if (!menu.tab_select)
             for (let l in menu.item_select)
-                cursor.push(new Vec2(cursorX[l], (menu.item_select[l] - menu.scroll[l]) * select_y_size + 5 * 8));
+                cursor.push(new XY(cursorX[l], (menu.item_select[l] - menu.scroll) * select_y_size + 5 * 8));
 
-        if (menu.mode === "ConfigNumEdit") cursor.push(new Vec2(32 * 8, (menu.item_select[2] - menu.scroll[2]) * select_y_size + 5 * 8));
+
 
 
     }
@@ -3625,19 +2803,42 @@ function gui_draw() {
             drawImg(img.gui_menu, 0, 32, 16, 8, 11 * 8, (11 * 8 + i * 8));
             draw_text(String(players[i].hp), 13 * 8, (11 * 8 + i * 8));
         }
-        cursor.push(new Vec2(9 * 8, 11 * 8));
+        cursor.push(new XY(9 * 8, 11 * 8));
     }
 
     //メッセージ描画
-    if (gui.confirm.visible) {
-        let it = gui.confirm;
+    if (window_confirm.visible) {
+        let it = window_confirm;
         draw_prompt(it.pos.x, it.pos.y, 8 * 8, 8 * 8, img.gui_prompt);
         draw_text(it.text, it.pos.x, it.pos.y, 7);
-        cursor.push(new Vec2(it.pos.x + 32 - it.selected * 32, it.pos.y + 64 - 16));
+        cursor.push(new XY(it.pos.x + 32 - it.selected * 32, it.pos.y + 64 - 16));
     }
 
+
     //カーソル描画//
-    cursor_draw(cursor);
+    {
+        let cursorOfseX = 0;
+        cursorOfseX += easeOutExpo(timer % 100 / 100) * 5;
+        cursorOfseX += easeOutExpo(1 - timer % 100 / 100) * 5;
+        cursorOfseX -= 8;
+
+        if (menu.CursorNeedUpdate) {
+            menu.CursorNeedUpdate = false;
+            menu.CursorOldPos.x = cursor[cursor.length - 1].x;
+            menu.CursorOldPos.y = cursor[cursor.length - 1].y;
+        }
+
+        if (cursor.length !== 0) {
+            menu.CursorOldPos.x += (cursor[cursor.length - 1].x - menu.CursorOldPos.x) / 2;
+            menu.CursorOldPos.y += (cursor[cursor.length - 1].y - menu.CursorOldPos.y) / 2;
+        }
+
+        for (let i in cursor) {
+            if (i != cursor.length - 1) draw("cursor_uns", cursor[i].x, cursor[i].y);
+
+            if (i == cursor.length - 1) draw("cursor", menu.CursorOldPos.x + cursorOfseX, menu.CursorOldPos.y);
+        }
+    }
 
     //ロード画面
     if (IsLoading) draw_loading();
@@ -3647,69 +2848,6 @@ function gui_draw() {
 
 }
 
-function cursor_draw(cursor) {
-
-    //カーソル描画//
-
-    let cursorOfseX = 0;
-    cursorOfseX += easeOutExpo(timer % 100 / 100) * 5;
-    cursorOfseX += easeOutExpo(1 - timer % 100 / 100) * 5;
-    cursorOfseX -= 8;
-
-    if (IsBusy()) cursorOfseX = 0;
-
-    let busyCorsor = `cursor_busy_${timer / 8 % 8 >= 6 ? 0 : 1}`;
-
-    if (menu.CursorNeedUpdate) {
-        menu.CursorNeedUpdate = false;
-        menu.CursorOldPos.x = cursor[cursor.length - 1].x;
-        menu.CursorOldPos.y = cursor[cursor.length - 1].y;
-    }
-
-    if (cursor.length !== 0) {
-        menu.CursorOldPos.x += (cursor[cursor.length - 1].x - menu.CursorOldPos.x) / 2;
-        menu.CursorOldPos.y += (cursor[cursor.length - 1].y - menu.CursorOldPos.y) / 2;
-    }
-
-    for (let i in cursor) {
-        if (i != cursor.length - 1) draw("cursor_uns", cursor[i].x, cursor[i].y);
-
-        if (i == cursor.length - 1) draw(IsBusy() ? busyCorsor : "cursor", menu.CursorOldPos.x + cursorOfseX, menu.CursorOldPos.y);
-    }
-
-}
-function title_gui_draw(dx = 64, dy = 64) {
-    let cursor = new Array();
-
-    draw_gui_items(game.title_items, undefined, dx, dy, 100, 0, 16, 100);
-    cursor.push(new Vec2(dx - 16, title_gui.item_select * 16 + dy));
-
-    cursor_draw(cursor);
-
-    draw_text("title", 0, 0)
-}
-
-/**
- * 縦線を描画します　てきとうです
- * @param {number} x 
- * @param {number} y 
- * @param {boolean} right 
- */
-function draw_gui_vertical_line(x, y, right = false) {
-    //縦線
-    switch (right) {
-        case false:
-            ctx.drawImage(img.gui_prompt_more, 0, 0, 8, 8, x * 8 * zoom, (y - 1) * 8 * zoom, 8 * zoom, 8 * zoom);
-            ctx.drawImage(img.gui_prompt, 0, 8, 8, 8, x * 8 * zoom, y * 8 * zoom, 8 * zoom, 16 * 8 * zoom);
-            ctx.drawImage(img.gui_prompt_more, 0, 8, 8, 8, x * 8 * zoom, (y + 21 - 5) * 8 * zoom, 8 * zoom, 8 * zoom);
-            break;
-        case true:
-            ctx.drawImage(img.gui_prompt_more, 8, 0, 8, 8, x * 8 * zoom, (y - 1) * 8 * zoom, 8 * zoom, 8 * zoom);
-            ctx.drawImage(img.gui_prompt, 16, 8, 8, 8, x * 8 * zoom, y * 8 * zoom, 8 * zoom, 16 * 8 * zoom);
-            ctx.drawImage(img.gui_prompt_more, 8, 8, 8, 8, x * 8 * zoom, (y + 21 - 5) * 8 * zoom, 8 * zoom, 8 * zoom);
-            break;
-    }
-}
 
 function draw_gui_item(x, y, i) {
     //console.log(i)
@@ -3738,33 +2876,28 @@ function draw_scroll_bar(x, y, p = 0, height = 64, id = null) {
     draw("scroll_bar", x, y + (height - 8) * p)
 
     //デバッグ
-    if (debug.visible) draw_text("p:" + p, 128, 32);
+    if (debug.text_visible) draw_text("p:" + p, 128, 32);
 }
-/**
- * 
- * @param {string[]} array テキストの配列
- * @param {string|undefined} objname さらに参照するオブジェクト
- * @param {number} x 描画するx
- * @param {number} y 描画するy
- * @param {number} w テキストの幅
- * @param {number} h テキストの縦幅
- * @param {number} s 行間
- * @param {number} lines 描画するの行数 
- * @param {number} scroll スクロールのY
- * @param {object} func 実行する関数(引数に行の数が入る)
- */
-function draw_gui_items(array, objname = false, x, y, w = Infinity, h = Infinity, s = 8, lines = Infinity, scroll = 0, func = () => { }) {
-    /**
-     * @param {number} i 参照する配列のindex
-     * @param {number} dx 描画する行
-     */
-    for (let i = scroll, dx = 0; dx < lines; i++, dx++) {
-        //console.log(array.length,i,array[i])
-        if (array.length <= i) return;//範囲ごえ検知
 
-        if (!objname) draw_text(get_text(array[i]), x, dx * s + y, w, h);
-        if (objname) draw_text(get_text(array[i][objname]), x, dx * s + y, w, h);
-        func(i, dx);
+function draw_gui_config() {
+    let configs = loadedjson.configs.configs;
+
+    let func = (
+        function (i) {
+            if (config[configs[i].variable]) draw("switch_on", 33 * 8, i * 16 + 5 * 8);
+            if (!config[configs[i].variable]) draw("switch_off", 33 * 8, i * 16 + 5 * 8);
+            if (configs[i].default == config[configs[i].variable]) draw_font("D", 35 * 8, i * 16 + 5 * 8);
+        }
+    )
+    draw_gui_items(loadedjson.configs.configs, "name", 14 * 8, 5 * 8, 25, 8, 16, func);
+
+}
+
+function draw_gui_items(array, a = false, x, y, w, h, s = 8, func = () => { }) {
+    for (const i in array) {
+        if (!a) draw_text(get_text(array[i]), x, i * s + y, w, h);
+        if (a) draw_text(get_text(array[i][a]), x, i * s + y, w, h);
+        func(i);
     }
 }
 
@@ -3788,8 +2921,7 @@ function gui_proc() {
     }
 
     //メッセージ消す
-    if (key_groups_down.confirm && gui.message.cool_down < 0) gui.message.next();
-    gui.message.cool_down--;
+    if (key_groups_down.confirm) gui_close("message");
 
     //メニュー表示 非表示
     if (key_groups_down.menu) {
@@ -3801,18 +2933,18 @@ function gui_proc() {
     }
 
     //承認ウィンドウ
-    if (gui.confirm.visible) {
-        if (key_groups_down.right) gui.confirm.selected = false;
-        if (key_groups_down.left) gui.confirm.selected = true;
+    if (window_confirm.visible) {
+        if (key_groups_down.right) window_confirm.selected = false;
+        if (key_groups_down.left) window_confirm.selected = true;
 
         if (key_groups_down.down || key_groups_down.confirm) {
-            if (gui.confirm.selected) gui.confirm.func_ok();
-            if (!gui.confirm.selected) gui.confirm.func_cancel();
+            if (window_confirm.selected) window_confirm.func_ok();
+            if (!window_confirm.selected) window_confirm.func_cancel();
             gui_close("confirm");
             return;
         }
         if (key_groups_down.cancel || key_groups_down.menu) {
-            gui.confirm.func_cancel();
+            window_confirm.func_cancel();
             gui_close("confirm");
             return;
         }
@@ -3840,97 +2972,37 @@ function gui_proc() {
     }
     //config
     if (menu.tab === 3) {
-        scroll_limit = Infinity;
+        scroll_limit = 0;
 
-        let itemselect = 0;
-        if (menu.item_select[1] != undefined) itemselect = menu.item_select[1];
-        let configs = loadedjson.configs[game.config_name[itemselect]];
+        if (menu.item_select_length != 2) select_limit = 7;
 
-        if (menu.select_length == 1) select_limit = 7;
-        if (menu.select_length == 2) select_limit = game.config_icons.length - 1;
+        if (menu.item_select_length == 2 && menu.item_select[0] == 0) select_limit = game.gui_system_items.length - 1;
+        if (menu.item_select_length == 2 && menu.item_select[0] == 1) select_limit = game.gui_system_data_items.length - 1;
 
-        if (menu.select_length == 3 && menu.item_select[0] == 0) select_limit = configs.length - 1;
-        if (menu.select_length == 3 && menu.item_select[0] == 1) select_limit = game.gui_system_data_items.length - 1;
-
-        //数値編集の矢印
-        menu.config_num.timer += menu.config_num.mode;
-        //↓閉じるときは速さが２倍
-        if (menu.config_num.mode == -1) menu.config_num.timer += menu.config_num.mode;
 
         //コンフィグ変更
-        //　メニュー表示     カーソル下選択        systemタブ選択　　　　タブ右選択　　　　　　　　　　　　　configタブ選択
-        if (menu.visible && !menu.tab_select && menu.tab == 3 && menu.select_length == 3 && menu.item_select[0] == 0) {//configタブ
-            if (menu.item_select[2] <= configs.length - 1) {//範囲内選択
-
-                let conf = configs[menu.item_select[2]];
-
-                if (key_groups_down.confirm || key_groups_down.right) {//選択キー処理
-                    if (conf.type === "bool") {
-                        config[conf.variable] = !config[conf.variable];//切り替え
-                        if (config[conf.variable]) Function(conf.ONfunc)();//関数実行
-                        if (!config[conf.variable]) Function(conf.OFFfunc)();//関数実行
-                    }
-
-                    if (conf.type === "number") {
-                        menu.mode = "ConfigNumEdit"
-                        {
-                            menu.config_num.mode = 1;
-                            menu.config_num.timer = 0;
-                        }
-                        return;
-                    }
-                }
-                if (key_groups_down.cancel || key_groups_down.left) {//キャンセルキー処理
-                    if (menu.mode === "ConfigNumEdit") {
-                        menu.mode = "Default"
-                        {
-                            menu.config_num.mode = -1;
-                            menu.config_num.timer = 100;
-                        }
-                        return;
-                    }
-                }
-                if (menu.mode === "ConfigNumEdit") {//数値編集
-                    let range = { "min": -Infinity, "max": Infinity };
-                    if (conf.range != undefined) range = { "min": conf.range[0], "max": conf.range[1] };
-
-                    if (key_groups_hold.up && config[conf.variable] < range.max) config[conf.variable]++;
-                    if (key_groups_hold.down && config[conf.variable] > range.min) config[conf.variable]--;
-                }
-                //console.log(conf)
+        if (menu.item_select_length == 2 && menu.item_select[0] == 0) {
+            if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.item_select[1] <= loadedjson.configs.configs.length - 1 && menu.tab == 3) {
+                let configvar = loadedjson.configs.configs[menu.item_select[1]].variable;
+                config[configvar] = !config[configvar];
+                //console.log(configvar)
             }
         }
         //データ
-        if (menu.select_length == 2 && menu.item_select[0] == 1) save_load_proc();
+        if (menu.item_select_length == 2 && menu.item_select[0] == 1) save_load_proc();
 
-        //system左右カーソル移動
-        if ((key_groups_down.left || key_groups_down.cancel /*|| (key_groups_down.up && menu.item_select[menu.select_length - 1] == 0)*/) && !menu.tab_select) {
-            if (menu.select_length === 3 && menu.item_select[0] == 0) {//config限定
 
-                menu.select_length = 2;
+        if (menu.item_select_length === 2) {
+            if ((key_groups_down.left || key_groups_down.cancel || (key_groups_down.up && menu.item_select[1] == 0)) && !menu.tab_select) {
+                menu.item_select_length = 1;
 
-                PlaySound("select", "gui");
-                return;
-            }
-            if (menu.select_length === 2) {
-
-                menu.select_length = 1;
-
-                PlaySound("select", "gui");
                 return;
             }
         }
-        if ((key_groups_down.right || key_groups_down.confirm) && !menu.tab_select) {
-            if (menu.select_length === 1) {
-                menu.select_length = 2;
+        if (menu.item_select_length === 1) {
+            if ((key_groups_down.right || key_groups_down.confirm) && !menu.tab_select) {
+                menu.item_select_length = 2;
 
-                PlaySound("select", "gui");
-                return;
-            }
-            if (menu.select_length === 2 && menu.item_select[0] == 0) {//config限定
-                menu.select_length = 3;
-
-                PlaySound("select", "gui");
                 return;
             }
         }
@@ -3938,73 +3010,47 @@ function gui_proc() {
     }
 
     //メニュー動作
-    if (menu.visible && !menu.role_select && menu.mode === "Default") {
+    if (menu.visible && !menu.role_select) {
         let count = game.gui_item_count[menu.tab];
 
         //アイテムセレクト
-        let l = menu.select_length - 1;
-        while (menu.select_length > menu.item_select.length) menu.item_select.push(0);
-        menu.item_select.splice(menu.select_length, Infinity);
-        while (menu.select_length > menu.scroll.length) menu.scroll.push(0);
-        menu.scroll.splice(menu.select_length, Infinity);
+        let l = menu.item_select_length - 1;
+        while (menu.item_select_length > menu.item_select.length) menu.item_select.push(0);
+        menu.item_select.splice(menu.item_select_length, Infinity);
 
         if (menu.tab_select) {//カーソル上
             //タブの動き
-            if (key_groups_down.right && menu.tab < 3) {//タブ右に動かす
-                menu.tab++;
-                PlaySound("select", "gui");
-            }
-            if (key_groups_down.left && menu.tab > 0) {//タブ左に動かす
-                menu.tab--;
-                PlaySound("select", "gui");
-            }
+            if (key_groups_down.right && menu.tab < 3) menu.tab++;
+            if (key_groups_down.left && menu.tab > 0) menu.tab--;
 
-            //　　　　　　　　　　　　　　　　　　　　　　　　　      　　　アイテムタブ　　設定タブ　　　　
-            if ((key_groups_down.confirm || key_groups_down.down) && (menu.tab == 1 || menu.tab == 3)) {
-                menu.tab_select = false;//カーソルを下(タブじゃない)にずらす
-                PlaySound("select", "gui");
-            }
+            //　　　　　　　　　　　　　　　　　　　　　　　　　      　　　アイテムタブ　　設定タブ　　　　カーソルを下にずらす
+            if ((key_groups_down.confirm || key_groups_down.down) && (menu.tab == 1 || menu.tab == 3)) menu.tab_select = false
 
             //メニュー閉じる
             if (key_groups_down.cancel) {
-                menu.visible = false;//Xキーで閉じる
-                PlaySound("select", "gui");
+                menu.visible = false;
             }
             return;
 
         } else {//カーソル下
             //カーソルを上にずらす
-            if (key_groups_down.up && menu.item_select[l] == 0 && menu.select_length == 1) {
-                menu.tab_select = true;//カーソルを上(タブ)にずらす
-                PlaySound("select", "gui");
-            }
-            //if (key_groups_down.up && menu.item_select[l] == 0 && menu.select_length==2) menu.select_length==2=false;
+            if (key_groups_down.up && menu.item_select[l] == 0 && menu.item_select_length != 2) menu.tab_select = true;
+            //if (key_groups_down.up && menu.item_select[l] == 0 && menu.item_select_length==2) menu.item_select_length==2=false;
 
             //アイテムセレクト上下
-            if (key_groups_hold.down/* && menu.scroll[l] <= count*/ && menu.item_select[l] < select_limit) menu.item_select[l]++;
-            if (key_groups_hold.up && menu.scroll[l] >= 0) menu.item_select[l]--;
+            if (key_groups_hold.down && menu.scroll <= count && menu.item_select[l] < select_limit) menu.item_select[l]++;
+            if (key_groups_hold.up && menu.scroll >= 0) menu.item_select[l]--;
 
-            //サウンド
-            if (key_groups_hold.down /*&& menu.scroll[l] <= count*/) PlaySound("select", "gui");
-            if (key_groups_hold.up && menu.scroll[l] >= 0) PlaySound("select", "gui");
+            if (menu.item_select[l] - menu.scroll > count && menu.scroll < scroll_limit) menu.scroll++;
+            if (menu.item_select[l] - menu.scroll < 0 && menu.scroll > 0) menu.scroll--;
 
-            //スクロール
-            if (menu.item_select[l] - menu.scroll[l] > count && menu.scroll[l] < scroll_limit) menu.scroll[l]++;
-
-            if (menu.item_select[l] - menu.scroll[l] < 0 && menu.scroll[l] > 0) menu.scroll[l]--;
-
-            //範囲ごえ検知&修正
-            if (menu.item_select[l] - menu.scroll[l] > count) menu.item_select[l]--;
-
-            if (menu.item_select[l] - menu.scroll[l] < 0) menu.item_select[l]++;
-
+            if (menu.item_select[l] - menu.scroll > count) menu.item_select[l]--;
+            if (menu.item_select[l] - menu.scroll < 0) menu.item_select[l]++;
 
             //カーソルを上にずらす(閉じる)
             if (key_groups_down.cancel) {
                 menu.item_select[l] = 0;
-                menu.tab_select = true;
-
-                PlaySound("select", "gui");
+                menu.tab_select = true
             }
             return;
         }
@@ -4013,405 +3059,88 @@ function gui_proc() {
     if (menu.role_select) {
         //誰が使うか閉じる
         if (key_groups_down.cancel || key_groups_down.left) {
-            menu.role_select = false;
-
+            gui_close("whouse")
             return;
         }
     }
 
 }
 
-function title_gui_proc() {
-    if (key_groups_down.up && title_gui.item_select > 0) title_gui.item_select--;
-    if (key_groups_down.down && title_gui.item_select < game.title_items.length - 1) title_gui.item_select++;
+function gui_close(input) {
+    if (!Array.isArray(input)) input = [input];//配列にする
+    let all = false;
+    if (typeof input === "undefined") all = true;//undefinedならall
 
-    if (key_groups_down.confirm || key_groups_down.right) {
-        if (title_gui.item_select == 0) game.NewGame();
+    if (input.includes("menu") || all) {
+        menu.visible = false;
+        //誰が使いますか画面も閉じる
+        menu.role_select = false;
 
-        if (title_gui.item_select == 1) game.LoadGame();
+        menu.item_select.fill(0);
+        menu.item_select_length = 1;
+        menu.role_select = 0;
+        menu.tab_select = true;
+    }
+    if (input.includes("message") || all) {
+        message.visible = false;
+    }
+    if (input.includes("confirm") || all) {
+        window_confirm.visible = false;
     }
 }
 
-class JsonUIDraw {
-    constructor(UIContent, UIIndex) {
-        for (const key of Object.keys(UIContent)) {
-            this[key] = UIContent[key];
-        }
+function gui_open(input) {
+    if (!Array.isArray(input)) input = [input];//配列にする
 
-        const offset = new Vec2(...UIContent.offset);
-        const offset_type = UIContent.offset_type !== undefined ? new Vec2() : new Vec2(...UIContent.offset_type);
-        let dx = offset.x + GetOffsetScreen(offset_type.x, offset_type.y).x + JsonUIOpen[UIIndex].pos.x
-        let dy = offset.y + GetOffsetScreen(offset_type.x, offset_type.y).y + JsonUIOpen[UIIndex].pos.y
-        this.Offset = new Vec2(dx, dy);
-        this.CursorOffset = UIContent.CursorOffset !== undefined ? new Vec2(...UIContent.CursorOffset) : new Vec2(-8, 0);
-        this.size = new Vec2(...UIContent.size);
-
-
-
-        if (UIContent.animIn !== undefined && (JsonUIOpen[UIIndex].state === 1 || JsonUIOpen[UIIndex].opened)) {
-            let anim = -UIContent.animIn.size;
-            if (UIContent.animIn.ease === "easeOutExpo") anim += easeOutExpo((JsonUIOpen[UIIndex].openTime - UIContent.animIn.offset) / UIContent.animIn.length) * UIContent.animIn.size;
-            if (UIContent.animIn.ease === "easeInExpo") anim += easeInExpo((JsonUIOpen[UIIndex].openTime - UIContent.animIn.offset) / UIContent.animIn.length) * UIContent.animIn.size;
-
-            if (UIContent.animOut.type === "offsetx") this.Offset.x += Math.round(anim);
-            if (UIContent.animOut.type === "offsety") this.Offset.y += Math.round(anim);
-        }
-        if (UIContent.animOut !== undefined && (JsonUIOpen[UIIndex].state === -1 || JsonUIOpen[UIIndex].closed)) {
-            let anim = 0;
-            if (UIContent.animOut.ease === "easeOutExpo") anim += easeOutExpo((JsonUIOpen[UIIndex].closeTime - UIContent.animOut.offset) / UIContent.animOut.length) * UIContent.animOut.size;
-            if (UIContent.animOut.ease === "easeInExpo") anim += easeInExpo((JsonUIOpen[UIIndex].closeTime - UIContent.animOut.offset) / UIContent.animOut.length) * UIContent.animOut.size;
-
-            if (UIContent.animOut.type === "offsetx") this.Offset.x += Math.round(anim);
-            if (UIContent.animOut.type === "offsety") this.Offset.y += Math.round(anim);
-        }
+    if (input.includes("menu")) {
+        menu.visible = true;
+        menu.CursorOldPos.x = 0;
+        menu.CursorOldPos.y = 24;
+    }
+    if (input.includes("message")) {
+        message.visible = true;
+        message.text = "text";
+        console.log('gui_open("message")is not recommended')
+    }
+    if (input.includes("confirm")) {
+        let conf = window_confirm;
+        conf.visible = true;
     }
 }
 
-function GetOffsetScreen(tx, ty) {
-    let x, y;
-    switch (tx) {
-        case "left":
-            x = 0;
-            break;
-        case "right":
-            x = ScreenWidth;
-            break;
-        default:
-            x = 0;
-            break;
-    }
-    switch (ty) {
-        case "top":
-            y = 0;
-            break;
-        case "bottom":
-            y = ScreenHeight;
-            break;
-        default:
-            y = 0;
-            break;
-    }
-    return new Vec2(x, y);
-}
-
-function jsonui_default_proc(...objs) {
-
-    for (let obj of objs) {
-        if (obj !== undefined) {
-            if (obj.default !== undefined) {
-                obj = Object.assign(obj, loadedjson.jsonui._default[obj.default]);
-                delete obj.default;
-            }
-        }
-    }
-}
-
-function jsonui_cursor(UIID, UIIndex) {
-
-    let UIGroup = loadedjson.jsonui[UIID];
-    let UIContent = UIGroup[JsonUIOpen[UIIndex].select];
-    let Draw = new JsonUIDraw(UIContent, UIIndex);
-    let data = JsonUIOpen[UIIndex].data[Draw.id];
-    //console.log(Draw.Offset);
-    if (!Draw.ShowCursor) return;
-
-    switch (Draw.type) {
-        case "custom":
-            switch (Draw.renderer) {
-                case "items":
-                case "roles":
-                case "UIOpen":
-                    JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y + data.select * 16 - data.scroll));
-                    break;
-            }
-            break;
-        default:
-            JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y));
-            break;
-    }
-}
-
-function jsonui_draw(UIID, UIIndex) {
-    for (const UIContent of loadedjson.jsonui[UIID]) {
-        jsonui_default_proc(UIContent, UIContent.animIn, UIContent.animOut, UIContent.trans);
-
-        let Draw = new JsonUIDraw(UIContent, UIIndex);
-
-
-        //if (key_groups_down.attack) console.log(Draw);
-
-        if (Draw.type === "tab") {
-            draw_prompt(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt);
-            draw_text(Draw.text, Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y)
-        };
-        if (Draw.type === "rectangle") draw_prompt(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt);
-        if (Draw.type === "custom") jsonui_custom_renderer(UIID, UIIndex, Draw);
-    }
-}
-
-function jsonui_proc() {
-    for (let UIIndex in JsonUIOpen) {
-        let UiData = JsonUIOpen[UIIndex];
-        if (UiData.closed) JsonUIOpen.splice(UIIndex, 1)
-    }
-    if (JsonUIOpen.length !== 0) jsonui_select(JsonUIOpen[JsonUIOpen.length - 1].type, JsonUIOpen.length - 1);
-
-
-    let cursor = new Array();
-    for (let UIIndex in JsonUIOpen) {
-        let UiData = JsonUIOpen[UIIndex];
-
-        jsonui_draw(UiData.type, UIIndex);
-        jsonui_cursor(UiData.type, UIIndex, cursor);
-
-
-        if (UiData.state == 1) UiData.openTime++;
-        if (UiData.state == -1) UiData.closeTime++;
-
-        if (UiData.openTime >= UiData.openDelay) UiData.opened = true;
-        if (UiData.closeTime >= UiData.closeDelay) UiData.closed = true;
-    }
-    //console.log(cursor);
-    //cursor_draw(cursor);
-
-    //console.log(JsonUICursor);
-    JsonUICursor.draw();
+//メッセージを表示する
+function messageView(text) {
+    //console.log(text);
+    message.visible = true;
+    message.text = text;
 
 }
 
-function jsonui_select(UIID, UIIndex) {
-    let UIGroup = loadedjson.jsonui[UIID];
-    let UIContent = UIGroup[JsonUIOpen[UIIndex].select];
-    let data = JsonUIOpen[UIIndex].data[UIContent.id];
+//ウィンドウを表示する
+function confirmView(text = "text", title = "title", x = 0, y = 0, func_ok = () => { }, func_cancel = () => { }) {
+    //console.log(text);
+    window_confirm.visible = true;
+    window_confirm.text = text;
+    window_confirm.title = title;
+    window_confirm.pos.x = x;
+    window_confirm.pos.y = y;
+    window_confirm.func_ok = func_ok;
+    window_confirm.func_cancel = func_cancel;
 
-    let trigger = (array) => {
-        for (const trans of array) {
-            transition(...trans);
-        }
-    }
-
-    let transition = (mode, ...param) => {
-        for (let i in param) {
-            switch (param[i]) {
-                case "$TabSelectID":
-                    param[i] = MenuTabSelect;
-                    break;
-                case "$SelectID":
-                    param[i] = JsonUIOpen[UIIndex].select;
-                    break;
-                case "$SelectScrollID":
-                    param[i] = data.select;
-                    break;
-                case "$selectUI":
-                    param[i] = Object.keys(loadedjson["jsonui"])[data.select];
-                    break;
-                case "$itemIndex":
-                    param[i] = data.itemIndex;
-                    break;
-            }
-        }
-
-        switch (mode) {
-            case "select_abs":
-                JsonUIOpen[UIIndex].select = param[0];
-                break;
-            case "select_rel":
-                JsonUIOpen[UIIndex].select += param[0];
-                break;
-            case "open":
-                jsonui_open(...param);
-                break;
-            case "close":
-                JsonUIOpen[UIIndex].close();
-                break;
-            case "UseItem":
-                item_use_proc(...param);
-                break;
-        }
-    }
-
-    if (UIContent.trans !== undefined) {
-        for (let transkey of Object.keys(key_groups).filter((key) => key in UIContent.trans)) {
-            if (key_groups_hold[transkey]) trigger(UIContent.trans[transkey]);
-        }
-    }
-    if (UIContent.type === "custom" ? game.JSONUIScrollable.includes(UIContent.renderer) : false) {
-        let data = JsonUIOpen[UIIndex].data[UIContent.id];
-        if (true) {
-            if (key_groups_hold.down && data.select < player.items.length - 1) data.select++
-            if (key_groups_hold.up && data.select > 0) data.select--
-            if (key_groups_hold.down||key_groups_hold.up ) PlaySound("select", "gui");
-
-            if (data.select * 16 - data.scroll <= 0)
-                data.scroll += Math.floor((data.select * 16 - data.scroll) / 2);
-            if (data.select * 16 - data.scroll + 16 > new Vec2(...UIContent.size).y)
-                data.scroll += Math.ceil((data.select * 16 - data.scroll + 16 - new Vec2(...UIContent.size).y) / 2);
-        } else {
-            if (key_groups_hold.down) data.scroll++;
-            if (key_groups_hold.up) data.scroll--;
-        }
-    }
-
-    if (UIID === "menu") MenuTabSelect = JsonUIOpen[UIIndex].select;
 }
 
-function jsonui_open(type, DefaultX, DefaultY, DefaultSelectID, param) {
-    JsonUIOpen.push(new JsonUI(type, DefaultX, DefaultY, DefaultSelectID, param));
-}
-
-function jsonui_custom_renderer(UIID, UIIndex, Draw) {
-    let items;
-    // items代入
-    switch (Draw.renderer) {
-        case "items":
-            items = player.items;
-            break;
-        case "roles":
-        case "hud_hp":
-            items = players;
-            break;
-        case "UIOpen":
-            items = Object.keys(loadedjson["jsonui"]);
-            break;
-    }
-    // 描画いろいろ
-    switch (Draw.renderer) {
-        case "items":
-        case "roles":
-        case "hud_hp":
-        case "UIOpen":
-            let scroll = JsonUIOpen[UIIndex].data[Draw.id].scroll
-            for (let i in items.slice(Math.floor(scroll / 16), Math.floor(scroll / 16) + Math.ceil(Draw.size.y / 16 + 1))) {
-                let DrawOffset = i * 16 - scroll % 16;
-                let itemIndex = Number(i) + Math.floor(scroll / 16);
-                let item = items[itemIndex];
-
-                for (const key of Object.keys(Draw.items)) {
-                    let itemOffset = new Vec2(...Draw.items[key].offset);
-                    let itemSize = new Vec2(...Draw.items[key].size);
-
-                    let ObjOut = new Object();
-                    ObjOut.top = Math.min(DrawOffset + itemOffset.y, 0);
-                    ObjOut.bottom = Math.min(DrawOffset + itemOffset.y + itemSize.y, Draw.size.y) - DrawOffset - itemOffset.y;
-
-                    if (-ObjOut.top >= itemSize.y) continue;
-                    if (-ObjOut.bottom > 0) continue;
-
-                    let draw_text_templ = (text, font = "", AddX = 0, AddY = 0) => draw_text(text, Math.min(itemOffset.x + AddX, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset + AddY, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, undefined, undefined, font, -1, 0, -ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top);
-
-                    switch (Draw.items[key].tag) {
-                        case "atlas_img":
-                            drawImg(img.items, getTileAtlasXY(item.id, 0), getTileAtlasXY(item.id, 1) - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
-                            break;
-                        case "text":
-                            draw_text_templ(get_text(Draw.items[key].text));
-                            break;
-                        case "ItemRender":
-                            drawImg(img.items, getTileAtlasXY(get_item_data(itemIndex, "icon"), 0), getTileAtlasXY(get_item_data(itemIndex, "icon"), 1) - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
-                            break;
-                        case "ItemName":
-                            draw_text_templ(get_text("item." + get_item_data(itemIndex, "name") + ".name"));
-                            break;
-                        case "ItemCount":
-                            draw_text_templ(item.count, "_purple");
-                            break;
-                        case "ItemEfficacy":
-                            if (get_item_data(itemIndex, "efficacy") == "health") {
-                                AtlasDrawImage("gui_item_text_health", Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, 0, -ObjOut.top, 0, ObjOut.bottom + ObjOut.top - itemSize.y);
-                                draw_text_templ(get_item_data(itemIndex, "heal_power") + "", "", 32, 0);
-                            }
-                            break;
-                        case "debugtest":
-                            draw_text_templ(`${ObjOut.top},${ObjOut.bottom}`, "_purple");
-                            break;
-                        case "role_icon":
-                            drawImg(img.gui_menu, players[itemIndex].id * 8, 48 - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
-                            break;
-                        case "role_hp":
-                            draw_text_templ(players[itemIndex].hp);
-                            break;
-                        case "img":
-                        case "image":
-                            AtlasDrawImage(Draw.items[key].img, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, 0, -ObjOut.top, 0, ObjOut.bottom + ObjOut.top - itemSize.y);
-                            break;
-                        case "uilist":
-                            draw_text_templ(item, "_purple");
-                            break;
-                    }
-                }
-            }
-            break;
-    }
-}
-
-function gui_close(...input) {
-    for (let name of input) {
-        switch (name) {
-            case "menu":
-                menu.visible = false;
-                //誰が使いますか画面も閉じる
-                menu.role_select = false;
-
-                menu.item_select.fill(0);
-                menu.select_length = 1;
-                menu.role_select = 0;
-                menu.mode = "Default";
-                menu.tab_select = true;
-                break;
-            case "message":
-                gui.message.visible = false;
-                break;
-            case "confirm":
-                gui.confirm.visible = false;
-                break;
-            case "whouse":
-                menu.role_select = false;
-                break;
-
-        }
-    }
-}
-
-function gui_open(...input) {
-    for (let name of input) {
-        switch (name) {
-            case "menu":
-                menu.visible = true;
-                menu.CursorOldPos.x = 0;
-                menu.CursorOldPos.y = 24;
-                break;
-            case "message":
-                gui.message.visible = true;
-                gui.message.text = "text";
-                break;
-            case "confirm":
-                gui.confirm.visible = true;
-                break;
-            case "whouse":
-                menu.role_select = true;
-                break;
-
-        }
-    }
-}
-
-
-function MapNameTextActive(text = "DefaultText") {
+function MapNameTextActive(text) {
     MapNameText.text = text;
     MapNameText.active = true;
     MapNameText.time = 0;
 }
 
 function canPlayerMoveForOpenGui() {
-    /*
-    if (gui.message.visible) return false;
+    if (message.visible) return false;
     if (menu.visible) return false;
-    if (gui.confirm.visible) return false;
+    if (window_confirm.visible) return false;
 
     return true;
-    */
-
-    return JsonUIOpen.length === 0 ? true : JsonUIOpen[JsonUIOpen.length - 1].CanMovePlayer;
 }
 
 function item_use_proc() {
@@ -4419,7 +3148,7 @@ function item_use_proc() {
 
         //誰が使いますか画面を出す
         if (get_item_data(menu.item_select[0], "role_select") && !menu.role_select) {
-            menu.role_select = true;
+            gui_open("whouse")
             return;
         }
 
@@ -4438,57 +3167,16 @@ function item_use_proc() {
     }
 }
 
-function item_use_proc(i, isRoleSelect, windowPos) {
-    if (i > player.items.length - 1) return false;
-
-    //誰が使いますか画面を出す
-    if (get_item_data(i, "role_select") && !isRoleSelect) {
-        jsonui_open("item_role_select", 128, 64, undefined, i)
-        return;
-    }
-
-    //アイテム使用
-    if (!get_item_data(i, "role_select") || isRoleSelect) {
-        if (!get_item_data(i, "role_select")) menu.who_use = 0;
-
-        item_use(i);
-    }
-    //menu.role_select = false;
-
-    //アイテムの数を減らす
-    player.items[i].count--;
-    //アイテムの数が0だったら消す
-    if (player.items[i].count == 0) player.items.splice(i, 1);
-
-    return true;
-
-}
-
 async function save_load_proc() {
-    if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.tab == 3 && menu.select_length == 2) {
+    if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.tab == 3 && menu.item_select_length == 2) {
         game.saveloadingnow = true;
         let result;
-        /*
+
         if (menu.item_select[1] === 0) result = await savedatawrite(true);
         if (menu.item_select[1] === 1) result = await savedataload(true)
         if (menu.item_select[1] === 2) result = await savepathreset(true);
         if (menu.item_select[1] === 3) result = await savedatawrite(false)
-        if (menu.item_select[1] === 4) result = await savedataload(false);*/
-
-        switch (menu.item_select[1]) {
-            case 0:
-                await savepathreset();
-                result = await savepathselect();
-                break;
-            case 1:
-                result = await savedatawrite();
-                break;
-            case 2:
-                result = await savedataload();
-                break;
-
-        }
-
+        if (menu.item_select[1] === 4) result = await savedataload(false);
         //failed
         if (result == undefined && menu.item_select[1] !== 2) {
             game.saveloadfaliedtime = timer;
@@ -4501,26 +3189,10 @@ async function save_load_proc() {
 
         game.saveloadingnow = false;
     }
+
 }
 
 function item_use(i) {//i = itemselectINDEX
 
     if (get_item_data(i, "efficacy") == "health") player_heal(menu.who_use, get_item_data(i, "heal_power"));
-}
-
-function configReset() {
-
-    //コンフィグ初期化
-    for (const j in loadedjson.configs) {
-        let configs = loadedjson.configs[j];
-        for (const i in configs) {
-            config[configs[i].variable] = configs[i].default;
-        }
-    }
-}
-
-
-//あざす https://www.w3schools.com/graphics/game_sound.asp
-function PlaySound(src = "select", group = "other", DoNotStop = false) {
-    if (config[game.soundGroupsConfig[group]]) sounds[src].play(DoNotStop)
 }

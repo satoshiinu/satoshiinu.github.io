@@ -4,25 +4,12 @@
 		{
 			"x": 99,
 			"y": 25,
-			"to": {
-				"mapID": "VillageAround",
-				"x":6,"y":25
-			}
-		},
-		{
-			"x": 99,
-			"y": 26,
-			"to": {
-				"mapID": "VillageAround",
-				"x":6,"y":26
-			}
-		},
-		{
-			"x": 99,
-			"y": 27,
-			"to": {
-				"mapID": "VillageAround",
-				"x":6,"y":27
+			"w":1,
+			"h":3,
+			"to": "VillageAround",
+			"relpos":{
+				"x":-93,
+				"y":0
 			}
 		}
 	]
