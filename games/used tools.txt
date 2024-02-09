@@ -1,0 +1,5 @@
+VSCode
+PythonServer
+Edge
+FontForge
+BitFontMaker2

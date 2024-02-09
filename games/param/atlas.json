@@ -1,7 +1,7 @@
 {
   "hp": {
-    "img": "gui_menu",
-    "atlas": [ 0, 32, 16, 8 ]
+    "img": "gui",
+    "atlas": [ 48,0, 16, 8 ]
   },
   "switch_on": {
     "img": "gui",
@@ -28,8 +28,8 @@
     "atlas": [ 8, 16, 8, 8]
   },
   "gui_item_text_health": {
-    "img": "gui_texts",
-    "atlas": [ 0, 0, 32, 8 ]
+    "img": "gui",
+    "atlas": [ 224,0, 32, 8 ]
   },
   "blank": {
     "img": "gui",

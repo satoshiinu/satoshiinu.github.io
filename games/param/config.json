@@ -21,8 +21,8 @@
 			"variable": "beforeunload",
 			"default": false,
 			"type": "bool",
-			"ONfunc":"beforeUnloadConfigON()",
-			"OFFfunc":"beforeUnloadConfigOFF()"
+			"ONfunc": "beforeUnloadConfigON()",
+			"OFFfunc": "beforeUnloadConfigOFF()"
 		}
 	],
 	"control": [
@@ -72,146 +72,204 @@
 		}
 	],
 	"other": [],
-	"debug":[
-	{
-		"name": "config.test",
-		"variable": "test",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.functest",
-		"variable": "funct",
-		"default": false,
-		"type": "bool",
-		"ONfunc":"alert('on')",
-		"OFFfunc":"alert('off')"
-	},
-	{
-		"name": "config.test0",
-		"variable": "test0",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test1",
-		"variable": "test1",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test2",
-		"variable": "test2",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test3",
-		"variable": "test3",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test4",
-		"variable": "test4",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test5",
-		"variable": "test5",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test6",
-		"variable": "test6",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test7",
-		"variable": "test7",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test8",
-		"variable": "test8",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test9",
-		"variable": "test9",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test",
-		"variable": "test",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
-	{
-		"name": "config.test",
-		"variable": "test",
-		"default": 0,
-		"type": "number",
-		"range":[0,10]
-	},
+	"debug": [
 		{
 			"name": "config.test",
 			"variable": "test",
 			"default": 0,
 			"type": "number",
-			"range":[0,10]
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.functest",
+			"variable": "funct",
+			"default": false,
+			"type": "bool",
+			"ONfunc": "alert('on')",
+			"OFFfunc": "alert('off')"
+		},
+		{
+			"name": "config.test0",
+			"variable": "test0",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test1",
+			"variable": "test1",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test2",
+			"variable": "test2",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test3",
+			"variable": "test3",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test4",
+			"variable": "test4",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test5",
+			"variable": "test5",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test6",
+			"variable": "test6",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test7",
+			"variable": "test7",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test8",
+			"variable": "test8",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test9",
+			"variable": "test9",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
 		},
 		{
 			"name": "config.test",
 			"variable": "test",
 			"default": 0,
 			"type": "number",
-			"range":[0,10]
+			"range": [
+				0,
+				10
+			]
 		},
 		{
 			"name": "config.test",
 			"variable": "test",
 			"default": 0,
 			"type": "number",
-			"range":[0,10]
+			"range": [
+				0,
+				10
+			]
 		},
 		{
 			"name": "config.test",
 			"variable": "test",
 			"default": 0,
 			"type": "number",
-			"range":[0,10]
+			"range": [
+				0,
+				10
+			]
 		},
 		{
 			"name": "config.test",
 			"variable": "test",
 			"default": 0,
 			"type": "number",
-			"range":[0,10]
+			"range": [
+				0,
+				10
+			]
 		},
 		{
 			"name": "config.test",
 			"variable": "test",
 			"default": 0,
 			"type": "number",
-			"range":[0,10]
-		}]
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test",
+			"variable": "test",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test",
+			"variable": "test",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		},
+		{
+			"name": "config.test",
+			"variable": "test",
+			"default": 0,
+			"type": "number",
+			"range": [
+				0,
+				10
+			]
+		}
+	]
 }

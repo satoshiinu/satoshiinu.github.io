@@ -7,13 +7,13 @@
             "length": 0,
             "type": "offsetx"
         },
-        "menu_animIn": {
+        "tab_animIn": {
             "ease": "easeOutExpo",
             "size": 64,
             "length": 10,
             "type": "offsetx"
         },
-        "menu_animOut": {
+        "tab_animOut": {
             "ease": "easeInExpo",
             "size": -64,
             "length": 5,
@@ -27,8 +27,8 @@
         },
         "hud_animOut": {
             "ease": "easeOutExpo",
-            "size": 0,
-            "length": 0,
+            "size": 64,
+            "length": 10,
             "type": "offsety"
         },
         "trans_close": {
@@ -37,28 +37,7 @@
                     "close"
                 ]
             ]
-        },
-        "trans_close_menu": {
-            "left": [
-                [
-                    "close"
-                ]
-            ],
-            "cancel": [
-                [
-                    "close"
-                ]
-            ],
-            "menu": [
-                [
-                    "closeAll",
-                    1
-                ]
-            ]
         }
-    },
-    "variable": {
-        "$menu_config_index": 8
     },
     "hud": [
         {
@@ -89,14 +68,6 @@
             "animOut": {
                 "default": "hud_animOut",
                 "offset": 0
-            },
-            "trans": {
-                "menu": [
-                    [
-                        "open",
-                        "menu"
-                    ]
-                ]
             }
         },
         {
@@ -161,7 +132,7 @@
             },
             "ShowCursor": true,
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "right": [
                     [
                         "UseItem",
@@ -173,28 +144,11 @@
                     ]
                 ]
             }
-        },
-        {
-            "type": "text",
-            "id": "fps",
-            "offset": [
-                -20,
-                8
-            ],
-            "size": [
-                32,
-                8
-            ],
-            "offset_type": [
-                "right",
-                "bottom"
-            ],
-            "text": "$fps"
         }
     ],
     "menu": [
         {
-            "type": "button",
+            "type": "tab",
             "id": "menu_tab_party",
             "offset": [
                 16,
@@ -211,11 +165,11 @@
             "ShowCursor": true,
             "text": "party",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "openDelay": 0,
@@ -223,7 +177,7 @@
             "default_select": 0,
             "CanMovePlayer": false,
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "down": [
                     [
                         "select_abs",
@@ -233,7 +187,7 @@
             }
         },
         {
-            "type": "button",
+            "type": "tab",
             "id": "menu_tab_items",
             "offset": [
                 16,
@@ -250,15 +204,15 @@
             "ShowCursor": true,
             "text": "items",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 1
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 1
             },
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "down": [
                     [
                         "select_abs",
@@ -273,11 +227,9 @@
                 ],
                 "right": [
                     [
-                        "open",
-                        "menu_tab_items"
-                    ]
-                ],
-                "confirm": [
+                        "close",
+                        -1
+                    ],
                     [
                         "open",
                         "menu_tab_items"
@@ -286,7 +238,7 @@
             }
         },
         {
-            "type": "button",
+            "type": "tab",
             "id": "menu_tab_equip",
             "offset": [
                 16,
@@ -303,15 +255,15 @@
             "ShowCursor": true,
             "text": "equip",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 2
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 2
             },
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "down": [
                     [
                         "select_abs",
@@ -327,7 +279,7 @@
             }
         },
         {
-            "type": "button",
+            "type": "tab",
             "id": "menu_tab_config",
             "offset": [
                 16,
@@ -344,15 +296,15 @@
             "ShowCursor": true,
             "text": "config",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 3
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 3
             },
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "down": [
                     [
                         "select_abs",
@@ -364,23 +316,11 @@
                         "select_abs",
                         2
                     ]
-                ],
-                "right": [
-                    [
-                        "open",
-                        "menu_tab_config"
-                    ]
-                ],
-                "confirm": [
-                    [
-                        "open",
-                        "menu_tab_config"
-                    ]
                 ]
             }
         },
         {
-            "type": "button",
+            "type": "tab",
             "id": "menu_tab_save",
             "offset": [
                 16,
@@ -397,15 +337,15 @@
             "ShowCursor": true,
             "text": "save",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 4
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 4
             },
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "up": [
                     [
                         "select_abs",
@@ -432,11 +372,11 @@
                 "top"
             ],
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "default_select": 1,
@@ -521,15 +461,28 @@
             ],
             "ShowCursor": true,
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "trans": {
-                "default": "trans_close_menu",
+                "left": [
+                    [
+                        "close",
+                        -1
+                    ],
+                    [
+                        "open",
+                        "menu",
+                        0,
+                        0,
+                        "$TabSelectID",
+                        "$SelectScrollID"
+                    ]
+                ],
                 "right": [
                     [
                         "UseItem",
@@ -557,11 +510,11 @@
                 "top"
             ],
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "default_select": 1,
@@ -623,16 +576,16 @@
                 "top"
             ],
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "ShowCursor": true,
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "right": [
                     [
                         "UseItem",
@@ -663,11 +616,11 @@
                 "top"
             ],
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "default_select": 1,
@@ -694,11 +647,11 @@
             "ShowCursor": true,
             "text": "player",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "openDelay": 0,
@@ -706,42 +659,18 @@
             "default_select": 0,
             "CanMovePlayer": false,
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "down": [
                     [
                         "select_rel",
                         1
-                    ]
-                ],
-                "right": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "confirm": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "tickBefore": [
-                    [
-                        "data",
-                        "tab",
-                        "player"
-                    ],
-                    [
-                        "data",
-                        "previous",
-                        "$SelectID"
                     ]
                 ]
             }
         },
         {
             "type": "tab",
-            "id": "config_tab_weapon",
+            "id": "config_tab_player",
             "offset": [
                 32,
                 48
@@ -755,13 +684,13 @@
                 "top"
             ],
             "ShowCursor": true,
-            "text": "weapon",
+            "text": "player",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "openDelay": 0,
@@ -769,7 +698,7 @@
             "default_select": 0,
             "CanMovePlayer": false,
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "down": [
                     [
                         "select_rel",
@@ -781,36 +710,12 @@
                         "select_rel",
                         -1
                     ]
-                ],
-                "right": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "confirm": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "tickBefore": [
-                    [
-                        "data",
-                        "tab",
-                        "weapon"
-                    ],
-                    [
-                        "data",
-                        "previous",
-                        "$SelectID"
-                    ]
                 ]
             }
         },
         {
             "type": "tab",
-            "id": "config_tab_data",
+            "id": "config_tab_player",
             "offset": [
                 32,
                 64
@@ -824,13 +729,13 @@
                 "top"
             ],
             "ShowCursor": true,
-            "text": "data",
+            "text": "player",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "openDelay": 0,
@@ -838,7 +743,7 @@
             "default_select": 0,
             "CanMovePlayer": false,
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "down": [
                     [
                         "select_rel",
@@ -850,36 +755,12 @@
                         "select_rel",
                         -1
                     ]
-                ],
-                "right": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "confirm": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "tickBefore": [
-                    [
-                        "data",
-                        "tab",
-                        "data"
-                    ],
-                    [
-                        "data",
-                        "previous",
-                        "$SelectID"
-                    ]
                 ]
             }
         },
         {
             "type": "tab",
-            "id": "config_tab_control",
+            "id": "config_tab_player",
             "offset": [
                 32,
                 80
@@ -893,13 +774,13 @@
                 "top"
             ],
             "ShowCursor": true,
-            "text": "control",
+            "text": "player",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "openDelay": 0,
@@ -907,7 +788,7 @@
             "default_select": 0,
             "CanMovePlayer": false,
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "down": [
                     [
                         "select_rel",
@@ -918,231 +799,6 @@
                     [
                         "select_rel",
                         -1
-                    ]
-                ],
-                "right": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "confirm": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "tickBefore": [
-                    [
-                        "data",
-                        "tab",
-                        "control"
-                    ],
-                    [
-                        "data",
-                        "previous",
-                        "$SelectID"
-                    ]
-                ]
-            }
-        },
-        {
-            "type": "tab",
-            "id": "config_tab_sound",
-            "offset": [
-                32,
-                96
-            ],
-            "size": [
-                48,
-                8
-            ],
-            "offset_type": [
-                "left",
-                "top"
-            ],
-            "ShowCursor": true,
-            "text": "sound",
-            "animIn": {
-                "default": "menu_animIn",
-                "offset": 0
-            },
-            "animOut": {
-                "default": "menu_animOut",
-                "offset": 0
-            },
-            "openDelay": 0,
-            "closeDelay": 10,
-            "default_select": 0,
-            "CanMovePlayer": false,
-            "trans": {
-                "default": "trans_close_menu",
-                "down": [
-                    [
-                        "select_rel",
-                        1
-                    ]
-                ],
-                "up": [
-                    [
-                        "select_rel",
-                        -1
-                    ]
-                ],
-                "right": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "confirm": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "tickBefore": [
-                    [
-                        "data",
-                        "tab",
-                        "sound"
-                    ],
-                    [
-                        "data",
-                        "previous",
-                        "$SelectID"
-                    ]
-                ]
-            }
-        },
-        {
-            "type": "tab",
-            "id": "config_tab_other",
-            "offset": [
-                32,
-                112
-            ],
-            "size": [
-                48,
-                8
-            ],
-            "offset_type": [
-                "left",
-                "top"
-            ],
-            "ShowCursor": true,
-            "text": "other",
-            "animIn": {
-                "default": "menu_animIn",
-                "offset": 0
-            },
-            "animOut": {
-                "default": "menu_animOut",
-                "offset": 0
-            },
-            "openDelay": 0,
-            "closeDelay": 10,
-            "default_select": 0,
-            "CanMovePlayer": false,
-            "trans": {
-                "default": "trans_close_menu",
-                "down": [
-                    [
-                        "select_rel",
-                        1
-                    ]
-                ],
-                "up": [
-                    [
-                        "select_rel",
-                        -1
-                    ]
-                ],
-                "right": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "confirm": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "tickBefore": [
-                    [
-                        "data",
-                        "tab",
-                        "other"
-                    ],
-                    [
-                        "data",
-                        "previous",
-                        "$SelectID"
-                    ]
-                ]
-            }
-        },
-        {
-            "type": "tab",
-            "id": "config_tab_debug",
-            "offset": [
-                32,
-                128
-            ],
-            "size": [
-                48,
-                8
-            ],
-            "offset_type": [
-                "left",
-                "top"
-            ],
-            "ShowCursor": true,
-            "text": "debug",
-            "animIn": {
-                "default": "menu_animIn",
-                "offset": 0
-            },
-            "animOut": {
-                "default": "menu_animOut",
-                "offset": 0
-            },
-            "openDelay": 0,
-            "closeDelay": 10,
-            "default_select": 0,
-            "CanMovePlayer": false,
-            "trans": {
-                "default": "trans_close_menu",
-                "up": [
-                    [
-                        "select_rel",
-                        -1
-                    ]
-                ],
-                "right": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "confirm": [
-                    [
-                        "select_abs",
-                        "$menu_config_index"
-                    ]
-                ],
-                "tickBefore": [
-                    [
-                        "data",
-                        "tab",
-                        "debug"
-                    ],
-                    [
-                        "data",
-                        "previous",
-                        "$SelectID"
                     ]
                 ]
             }
@@ -1178,31 +834,33 @@
             ],
             "ShowCursor": true,
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "trans": {
+                "left": [
+                    [
+                        "close",
+                        -1
+                    ],
+                    [
+                        "open",
+                        "menu",
+                        0,
+                        0,
+                        "$TabSelectID",
+                        "$SelectScrollID"
+                    ]
+                ],
                 "right": [
                     [
                         "ChangeConfig",
                         "$SelectScrollID",
                         false
-                    ]
-                ],
-                "left": [
-                    [
-                        "select_abs",
-                        "$getData,previous"
-                    ]
-                ],
-                "cancel": [
-                    [
-                        "select_abs",
-                        "$getData,previous"
                     ]
                 ]
             }
@@ -1261,7 +919,7 @@
             ],
             "ShowCursor": true,
             "trans": {
-                "default": "trans_close_menu",
+                "default": "trans_close",
                 "right": [
                     [
                         "open",
@@ -1293,11 +951,11 @@
             "ShowCursor": true,
             "text": "party",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 0
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 0
             },
             "openDelay": 0,
@@ -1323,11 +981,11 @@
             "ShowCursor": true,
             "text": "debug.jaText",
             "animIn": {
-                "default": "menu_animIn",
+                "default": "tab_animIn",
                 "offset": 1
             },
             "animOut": {
-                "default": "menu_animOut",
+                "default": "tab_animOut",
                 "offset": 1
             }
         }

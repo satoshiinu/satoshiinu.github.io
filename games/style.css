@@ -2,38 +2,54 @@
     padding-left: 77px;
     line-height: 77px;
     background: url(icon/arrowUp.png) no-repeat;
-    background-size : 77px 77px;
+    background-size: 77px 77px;
 }
+
 .buttonLeft {
     padding-left: 77px;
     line-height: 77px;
     background: url(icon/arrowLeft.png) no-repeat;
-    background-size : 77px 77px;
+    background-size: 77px 77px;
 }
+
 .buttonRight {
     padding-left: 77px;
     line-height: 77px;
     background: url(icon/arrowRight.png) no-repeat;
-    background-size : 77px 77px;
+    background-size: 77px 77px;
 }
+
 .buttonDown {
     padding-left: 77px;
     line-height: 77px;
     background: url(icon/arrowDown.png) no-repeat;
-    background-size : 77px 77px;
+    background-size: 77px 77px;
 }
+
 html {
     touch-action: manipulation;
 }
 
 /*あざすhttps://www-creators.com/archives/1420 */
-*{
-    -webkit-touch-callout: none; /* iOS Safari */
-      -webkit-user-select: none; /* Safari */
-       -khtml-user-select: none; /* Konqueror HTML */
-         -moz-user-select: none; /* Firefox */
-          -ms-user-select: none; /* Internet Explorer/Edge */
-              user-select: none; /* Non-prefixed version, currently
+* {
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Safari */
+    -khtml-user-select: none;
+    /* Konqueror HTML */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
                                     supported by Chrome and Opera */
 }
 
+@font-face {
+    font-family: 'Proj23Fon';
+    /* フォント名（任意） */
+    src: url('/Proj23Fon.ttf') format('truetype');
+    /* フォントファイルへのパスと形式 */
+}

@@ -2,6 +2,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <script src="script.js" defer></script>
     <link href="style.css" rel="stylesheet">
     <title>
         project 2023
@@ -9,8 +10,7 @@
 </head>
 
 <body>
-    <canvas id="canvas"></canvas>
-    <script src="script.js"></script><br />
+    <canvas id="canvas"></canvas><br>
 
     <input id="msg" type="button" value="msg" onclick="gui.message.view('Z to close this prompt');" />
     <input id="msg2" type="button" value="custmsg" onclick="gui.message.view(prompt('input text'));" />
@@ -20,12 +20,24 @@
     <div>
         jsonui<br>
 
-        <input type="button" value="close"onclick="JsonUIOpen[String(document.getElementById('DebugJsonUITestNum').value)].close();" />
-        <input type="number" value="0" size="10" id="DebugJsonUITestNum" ><br>
+        <input type="button" value="close"
+            onclick="JsonUIOpen[String(document.getElementById('DebugJsonUITestNum').value)].close();" />
+        <input type="number" value="0" size="10" id="DebugJsonUITestNum"><br>
 
-        <input type="button" value="open"onclick="jsonui_open(String(document.getElementById('DebugJsonUIOpenID').value));" />
-        <input type="text" value="DebugUIOpener" size="10" id="DebugJsonUIOpenID" ><br>
+        <input type="button" value="open"
+            onclick="jsonui_open(String(document.getElementById('DebugJsonUIOpenID').value));" />
+        <input type="text" value="menu" size="10" id="DebugJsonUIOpenID"><br>//DebugUIOpener
     </div>
+    <div>
+        loadcount<br>
+
+        img<span id="imgLoadCount"></span>
+        json<span id="jsonLoadCount"></span>
+        sound<span id="soundLoadCount"></span>
+    </div>
+
+    <h1 style="font-family: 'Proj23Fon';">abc</h1>
+
 
 </body>
 
