@@ -50,6 +50,6 @@ html {
 @font-face {
     font-family: 'Proj23Fon';
     /* フォント名（任意） */
-    src: url('Proj23Fon.ttf') format('truetype');
+    src: url('../Proj23Fon.ttf') format('truetype');
     /* フォントファイルへのパスと形式 */
 }
