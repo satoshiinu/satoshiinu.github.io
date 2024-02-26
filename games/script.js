@@ -78,6 +78,7 @@ let willLoadImg = [
 	["img/gui/message.png", "gui_message", true],
 	["img/gui/prompt.png", "gui_prompt", true],
 	["img/gui/prompt2.png", "gui_prompt_more", true],
+	["img/gui/tab_select.png", "gui_tab_select", true],
 	["img/gui/scroll_bar.png", "gui_scroll_bar", true],
 	["img/gui/touch.png", "touch_button", false]
 ]
@@ -123,185 +124,6 @@ willLoadSounds = willLoadSounds.map(x => new willLoadContent(...x));
 
 let JsonUIContent = new Array();
 
-class Item {
-	constructor(ID, count = 99) {
-		this.id = ID;
-		this.count = count;
-	}
-}
-
-class Players {
-	constructor(ID = 0) {
-
-		this.weapon = {
-			"startx": 0,
-			"starty": 0,
-			"drawx": 0,
-			"drawy": 0,
-			"timer": 0,
-			"rotatex": 0,
-			"rotatey": 0,
-			"autoAimx": 0,
-			"autoAimy": 0,
-			"speed": 0,
-			"lock": 0,
-			"breakingTile": false,
-			"attack": 5
-		}
-		this.hp = 500
-		this.hp_max = 500
-		this.damage_cooldown = 0,
-			this.id = ID
-		this.exp = {
-			exp: 0,
-			lv: 0
-		}
-		this.alive = true;
-
-	}
-}
-
-class Player {
-	constructor() {
-		this.x = 0;
-		this.y = 0;
-		this.xknb = 0;
-		this.yknb = 0;
-		this.mapID = "";
-		this.effect = new Array();
-		this.boat = false;
-		this.items = [
-			{
-				"id": 0,
-				"count": 10
-			},
-			{
-				"id": 0,
-				"count": 99
-			},
-			{
-				"id": 1,
-				"count": 2
-			},
-			{
-				"id": 2,
-				"count": 2
-			},
-			{
-				"id": 3,
-				"count": 2
-			},
-			{
-				"id": 1,
-				"count": 2
-			},
-			{
-				"id": 1,
-				"count": 2
-			},
-			{
-				"id": 1,
-				"count": 2
-			},
-			{
-				"id": 1,
-				"count": 2
-			},
-			{
-				"id": 1,
-				"count": 2
-			},
-			{
-				"id": 1,
-				"count": 2
-			},
-			{
-				"id": 2,
-				"count": 2
-			}
-		]
-
-		this.xspd = 0, this.yspd = 0;
-		this.scrollx = this.x + 160, this.scrolly = this.y + 24;
-		this.scroll_offsetx = 0, this.scroll_offsety = 0;
-
-		this.drawx = 0, this.drawy = 0;
-		this.anim = 0;
-		this.rotate = 0, this.facing = 0;
-		this.canRotate = true;
-		this.up = false, this.down = false, this.right, this.left = false;
-		this.moved = false, this.moving = false;
-		this.moveTimer = 0;
-		this.movelog = new Array();
-
-		this.alive = true;
-	}
-}
-
-class Effect {
-	constructor(time, power) {
-		this.time = time;
-		this.power = power;
-	}
-}
-
-class Enemy {
-	constructor(spx, spy, id) {
-		this.x = spx * 16;
-		this.y = spy * 16;
-		this.sp = [spx, spy];
-		this.id = id;
-		this.xspd = 0;
-		this.yspd = 0;
-		this.xknb = 0;
-		this.yknb = 0;
-		this.move = [false, false, false, false, 0];
-		this.attack = {
-			"hostility": false,
-			"timer": 0,
-			"cool_down": 0
-		}
-		this.hp = loadedjson.enemy[id].hp;
-		this.damage_cooldown = 0;
-		this.damage_effect = {
-			"damage": 0,
-			"view_time": 0,
-			"Last_damage_timer": 0
-		}
-		this.attack_anim = {
-			"tick": 0,
-			"animing": false
-		}
-		this.anim = {
-			"tick": 0,
-			"animing": false
-		}
-		this.moving = false;
-	}
-}
-
-class NPC {
-	constructor(x, y, id, dialogueID) {
-		this.x = x * 16;
-		this.y = y * 16;
-		this.sp = [x, y];
-		this.id = id;
-		this.xspd = 0;
-		this.yspd = 0;
-		this.dialogueID = dialogueID;
-		this.moving = false;
-		this.move = [false, false, false, false, 0];
-		this.moved = false;
-		this.moveTimer = 0;
-		this.facing = 0;
-		this.rotate = 0;
-		this.up = false;
-		this.down = false;
-		this.left = false;
-		this.right = false;
-	}
-
-}
 
 class Keys {
 	constructor() {
@@ -317,9 +139,16 @@ class Keys {
 }
 
 class Vec2 {
-	constructor(x, y) {
+	constructor(x = 0, y = 0) {
 		this.x = x;
 		this.y = y;
+	}
+}
+
+class Size {
+	constructor(width = 0, height = 0) {
+		this.w = width;
+		this.h = height;
 	}
 }
 
@@ -329,6 +158,924 @@ class Rect {
 		this.y = y;
 		this.w = w;
 		this.h = h;
+	}
+}
+
+class Range {
+	constructor(min = -Infinity, max = Infinity) {
+		this.min = min;
+		this.max = max;
+	}
+}
+
+//config変数の作成
+let config = new Array();
+
+class Config {
+	constructor(name, group, defaultValue = this.getDefaultValue(type)) {
+		if (name === undefined) throw new Error("name is undefined");
+		//if (type === undefined) throw new Error("type is undefined");
+		if (group === undefined) throw new Error("group is undefined");
+
+
+		this.name = name;
+		//this.type = type;
+		this.group = group;
+		this.value = defaultValue;
+
+		config.push(this);
+	}
+	change() {
+		switch (this.type) {
+			case "bool":
+				this.value = !this.value;
+				break;
+		}
+	}
+	set(value) {
+		switch (this.type) {
+			case "bool":
+				this.value = value;
+				break;
+		}
+
+	}
+	getDefaultValue(type) {
+		switch (type) {
+			case "bool":
+				return false;
+			case "number":
+				return 0;
+		}
+	}
+}
+
+class ConfigBool extends Config {
+	type = "bool";
+}
+class ConfigNum extends Config {
+	type = "number";
+}
+
+function getConfigsGroup(group) {
+	return config.filter(value => value.group === group);
+}
+function getConfig(name) {
+	return config.filter(value => value.name === name)[0];
+}
+function hasConfig(name) {
+	return !!getConfig(name);
+}
+function getConfigValue(name) {
+	return getConfig(name).value;
+}
+function isConfigValue(name, value) {
+	return getConfigValue(name) === value;
+}
+new ConfigBool("AttackRotateRock", "player", true);
+
+new ConfigBool("AutoAim", "weapon", true);
+
+
+class Item {
+	constructor(ID, count = 99) {
+		this.id = ID;
+		this.count = count;
+	}
+	use(isRoleSelect, playerIndex = 0) {
+		const index = PlayerControl.items.indexOf(this);
+		if (index > PlayerControl.items.length - 1) return false;
+
+		//誰が使いますか画面を出す
+		if (get_item_data(index, "role_select") && !isRoleSelect) {
+			jsonui_open("item_role_select", 128, 64, undefined, index)
+			return;
+		}
+
+		//アイテム使用
+		if (!get_item_data(index, "role_select") || isRoleSelect) {
+
+			item_use(index, players[playerIndex]);
+		}
+		//menu.role_select = false;
+
+		//アイテムの数を減らす
+		this.count--;
+		//アイテムの数が0だったら消す
+		if (this.count == 0) PlayerControl.items.splice(index, 1);
+
+		return true;
+
+	}
+}
+function item_use(i, player) {//i = itemselectINDEX
+
+	if (get_item_data(i, "efficacy") == "health") player.heal(menu.who_use, get_item_data(i, "heal_power"));
+}
+
+class Cam {
+	static x = 0;
+	static y = 0;
+	static offset = {
+		x: 0,
+		y: 0
+	};
+	static tick() {
+
+		this.x = PlayerControl.pos.x - 160 + this.offset.x + debug.camx;
+		this.y = PlayerControl.pos.y - 80 + this.offset.y + debug.camy;
+		if (this.x < 0) this.x = 0;
+		if (this.y < 0) this.y = 0;
+		if (this.x > 1280) this.x = 1280;
+		if (this.y > 1420) this.y = 1420;
+	}
+}
+
+class Players {
+	constructor(ID = 0) {
+
+		this.weapon = new Weapon();
+		this.maxHealth = 500;
+		this.health = this.maxHealth;
+		this.damage_cooldown = 0;
+		this.id = ID;
+		this.exp = {
+			exp: 0,
+			lv: 0
+		}
+		this.alive = true;
+
+	}
+	tick() {
+		this.weaponTick();
+		this.deathCheck();
+
+		this.damage_cooldown--;
+	}
+	weaponTick() {
+		if (canPlayerMoveForOpenGui()) {
+			if (key_groups_down.attack && this.weapon.time > 0)
+				this.weapon.speed++;
+
+			if (key_groups.attack && (this.weapon.time <= 0 || this.weapon.time >= 20))
+				this.weapon.attack();
+		}
+
+		//剣の動作
+		this.weapon.tick();
+	}
+	deathCheck() {
+		if (this.health <= 0) {
+			this.alive = false
+		}
+	}
+	damage(damage, rx = 0, ry = 0) {
+
+		//クールダウン判定
+		if (this.damage_cooldown > 0) return false;
+
+		//ノックバック処理
+		if (typeof rx != "undefined" && typeof ry != "undefined") {
+			this.knockback(rx, ry);
+		}
+
+		//ダメージ処理
+		this.health -= damage;
+		//クールダウン処理
+		this.damage_cooldown = 5;
+
+	}
+	heal(heal) {
+		this.health += heal;
+		if (this.maxHealth <= this.health) this.health = this.maxHealth;
+	}
+	get getIndex() {
+		return players.indexOf(this);
+	}
+	get getPosX() {
+		return subplayerx(this.getIndex);
+	}
+	get getPosY() {
+		return subplayery(this.getIndex);
+	}
+	draw() {
+		ctx.drawImage(img.players, PlayerControl.getAnimFlame() * 16, PlayerControl.facing * 32, 16, 24, getDrawPosX(this.getPosX), getDrawPosY(this.getPosY) - 8, 16, 24);
+	}
+	knockback(x, y) {
+		PlayerControl.speed.x += x;
+		PlayerControl.speed.y += y;
+	}
+}
+
+class PlayerControl {
+	static pos = new Vec2();
+	static speed = new Vec2();
+	static mapID = "";
+	static effect = new Array();
+	static boat = false;
+	static items = [
+		new Item(0, 10),
+		new Item(1, 10),
+		new Item(2, 10),
+		new Item(3, 10),
+		new Item(1, 10)
+	]
+	static key = {
+		up: false,
+		down: false,
+		right: false,
+		left: false
+	}
+
+	static drawx = 0
+	static drawy = 0;
+	static anim = 0;
+	static rotate = 0
+	static facing = 0;
+	static canRotate = true;
+	static isMoveing = false
+	static wasMoved = false;
+	static moveTimer = 0;
+	static movelog = new Array();
+
+	static alive = true;
+	static tick() {
+
+		if (canPlayerMoveForOpenGui()) {
+			this.moveTick();
+			this.NpcTalkTick();
+		}
+		this.getAnimFlame()
+		this.mapChangeCheck();
+	}
+	static moveTick() {
+
+		//移動キー判定
+		this.key.up = key_groups.up;
+		this.key.down = key_groups.down;
+		this.key.right = key_groups.right;
+		this.key.left = key_groups.left;
+
+
+		if (this.canRotate && (!key_groups.attack || !getConfigValue("AttackRotateRock"))) {
+			this.facing = getFacing(this.key.up, this.key.down, this.key.right, this.key.left) ?? this.facing;
+			this.rotate = getRotate(this.key.up, this.key.down, this.key.right, this.key.left) ?? this.rotate;
+		}
+
+		//移動判定
+		if (this.key.up || this.key.down || this.key.right || this.key.left) {
+			this.isMoveing = true;
+		} else {
+			this.isMoveing = false;
+		}
+		if (Math.abs(this.speed.x + this.speed.y) >= 1) {
+			this.wasMoved = true;
+		} else {
+			this.wasMoved = false;
+		}
+
+		//アニメーションに使用(値を変更すると速度が変わる)
+		if (this.wasMoved) this.moveTimer += 0.12;
+
+
+		//上限(64)を超えたら削除
+		this.movelog.splice(64, Infinity);
+
+
+		//速度調整
+		if (this.speed.x > 0) {
+			this.speed.x = Math.floor(this.speed.x * 0.85 * 1000) / 1000;
+		} else {
+			this.speed.x = Math.ceil(this.speed.x * 0.85 * 1000) / 1000;
+		}
+		if (this.speed.y > 0) {
+			this.speed.y = Math.floor(this.speed.y * 0.85 * 1000) / 1000;
+		} else {
+			this.speed.y = Math.ceil(this.speed.y * 0.85 * 1000) / 1000;
+		}
+
+		//速度移動
+		if (this.key.up) this.speed.y -= 0.5;
+		if (this.key.down) this.speed.y += 0.5;
+		if (this.key.right) this.speed.x += 0.5;
+		if (this.key.left) this.speed.x -= 0.5;
+
+		//プレイヤー移動
+		this.move(this.speed.x, this.speed.y, true);
+	}
+	static move(mvx, mvy, checkhitbox) {
+		for (let i = 0; i < Math.round(Math.abs(mvx)); i++) {
+			this.pos.x += Math.sign(mvx);
+
+			if (hitbox(this.pos.x, this.pos.y) && checkhitbox) this.pos.x -= Math.sign(mvx);
+
+
+			if (i > game.move_limit) break;
+		}
+		for (let i = 0; i < Math.round(Math.abs(mvy)); i++) {
+			this.pos.y += Math.sign(mvy);
+
+			if (hitbox(this.pos.x, this.pos.y) && checkhitbox) this.pos.y -= Math.sign(mvy);
+
+			if (i > game.move_limit) break;
+		}
+	}
+	static mapChangeCheck() {
+		for (const i in game.map.warp) {
+			let [x, y, w, h] = [game.map.warp[i].x * 16, game.map.warp[i].y * 16, game.map.warp[i].w * 16, game.map.warp[i].h * 16];
+			if (isNaN(w)) w = 16; if (isNaN(h)) h = 16;
+
+			if (hitbox_rect(x, y, w, h, this.pos.x, this.pos.y, 16, 16)) {
+				let [x, y] = [this.pos.x, this.pos.y];
+				if (game.map.warp[i].relpos != undefined) {
+					[x, y] = [game.map.warp[i].relpos?.x * 16 + x, game.map.warp[i].relpos.y * 16 + y];
+					mapchange(game.map.warp[i].to, x, y);
+					return;
+				}
+				if (game.map.warp[i].abspos != undefined) {
+					[x, y] = [game.map.warp[i].abspos?.x * 16, game.map.warp[i].abspos.y * 16];
+					mapchange(game.map.warp[i].to, x, y);
+					return;
+				}
+				{
+					mapchange(game.map.warp[i].to);
+					return;
+				}
+			}
+
+		}
+	}
+	static NpcTalkTick() {
+		return;//後で直す
+
+		for (let i in npc) {
+			let it = npc[i];
+			let facing = new Vec2(game.facing_pos[player.facing][0], game.facing_pos[player.facing][1]);
+
+			if (key_groups_down.confirm) {
+				if (hitbox_rect(it.x, it.y, 16, 16, player.x + 4 + facing.x * 16, player.y + 4 + facing.y * 16, 8, 8)) {
+					talk_npc(i); return;
+				}
+			}
+		}
+	}
+	static getAnimFlame() {
+		if (this.wasMoved) {
+			switch (Math.floor(this.moveTimer % 4)) {
+				case 0:
+					return 0;
+				case 1:
+					return 2;
+				case 2:
+					return 1;
+				case 3:
+					return 2;
+			}
+		}
+		else {
+			return 2;
+		}
+	}
+}
+class Weapon {
+	constructor() {
+		this.reset();
+	}
+	reset() {
+		this.time = 0;
+		this.pos = new Vec2();
+		this.start = new Vec2();
+		this.autoAim = new Vec2();
+		this.rotate = new Vec2();
+		this.speed = 1;
+	}
+	get getPlayer() {
+		for (const player of players) {
+			if (player.weapon == this) return player;
+		}
+	}
+	attack() {
+		this.time = 1;
+		this.pos = new Vec2();
+		this.start = new Vec2(this.getPlayer.getPosX, this.getPlayer.getPosY);
+		this.autoAim = new Vec2();
+		this.rotate = new Vec2(...game.rotate_pos[PlayerControl.rotate]);
+		this.speed = 1;
+	}
+	tick() {
+		if (this.time > 0) {
+
+			//攻撃
+			let hit_enemy = new Array();
+			hit_enemy = hitbox_entity_rect(this.pos.x - 8, this.pos.y - 8, 32, 32, "Enemy");
+			for (const entity of hit_enemy) {
+				const facing = new Vec2(...game.facing_pos[PlayerControl.facing]);
+				const knockbackPower = 2.5;
+				const attackPower = 10;
+				entity.damage(attackPower, facing.x * knockbackPower, facing.y * knockbackPower, true);
+			}
+
+			//岩壊す
+			const layer = "map1";
+			let breakTiles = hitbox_rema(this.pos.x - 8, this.pos.y - 8, 32, 32, "red", game.breakableTile, layer);
+			for (const breakTile of breakTiles) {
+				//console.log(breaks[0])
+				if (game.breakableTileAbout[breakTile.id].breakProbability > Math.random()) {
+					replaceTile(game.breakableTileAbout[breakTile.id].becomeTile, layer, breakTile.x, breakTile.y);
+					replaceHitboxTile(false, breakTile.x, breakTile.y);
+					splinterParticle.RockBreak.create(breakTile.x * 16 + 8, breakTile.y * 16 + 8, 8);
+					PlaySound("break", "tile");
+				}
+
+				splinterParticle.RockBreak.create(breakTile.x * 16 + 8, breakTile.y * 16 + 8, 0.2);
+				PlaySound("breakbit", "tile", true);
+			}
+
+			//オートエイム
+			if (this.time <= 12 && (hit_enemy.length == 0 || !game.weapon_canlock) && config.weapon_auto_aiming) {
+				let x = this.start.x;
+				let y = this.start.y;
+				if (getNearestEntityDistance(x, y, "Enemy") < 100) {
+					let entity = getNearestEntity(x, y, "Enemy");
+					let width = entity.size.w;
+					let height = entity.size.h;
+					this.autoAim.x += Math.sign((entity.pos.x + width / 2 - this.pos.x + 16) / 32) * 2;
+					this.autoAim.y += Math.sign((entity.pos.y + height / 2 - this.pos.y + 16) / 32) * 2;
+				}
+			}
+			if (this.time > 12) {
+				this.autoAim.x *= 0.25;
+				this.autoAim.y *= 0.25;
+			}
+
+			//剣の座標の計算
+			this.pos.x = Math.floor(this.rotate.x * (Math.sin(Math.PI / 2 * this.time / 12) * 64) + this.autoAim.x + this.getPlayer.getPosX);
+			this.pos.y = Math.floor(this.rotate.y * (Math.sin(Math.PI / 2 * this.time / 12) * 64) + this.autoAim.y + this.getPlayer.getPosY);
+
+			//カウントアップ
+			if (hit_enemy.length == 0 || !game.weapon_canlock) this.time += this.speed;
+
+			//リセット
+			if (this.time >= 24) this.reset()
+
+		} else {
+			this.time--;
+		}
+	}
+	draw() {
+
+		if (this.time <= 0) {
+			let temptime = limit(this.time, -20, Infinity);
+
+			draw_weapon(0, this.getPlayer.getPosX + Math.floor(make_slip_animation(Math.asin(-temptime / 10 / Math.PI)) * 16) - Cam.x, this.getPlayer.getPosY + make_slip_animation(Math.asin(-temptime / 10 / Math.PI)) * Math.floor(Math.sin(-this.time / 50) * 8 - 32) - Cam.y);
+		} else {
+			const animationSpeed = 1;
+			const frameCount = 8;
+			let weapon_rotation = Math.floor((this.time / animationSpeed) % frameCount);
+
+			draw_weapon(weapon_rotation, this.pos.x - Cam.x, this.pos.y - Cam.y);
+			draw_sweep(weapon_rotation, this.pos.x - Cam.x, this.pos.y - Cam.y);
+
+		}
+	}
+}
+
+class Entity {
+	pos = new Vec2();
+	speed = new Vec2();
+	spawn = new Vec2();
+	family = new Array();
+	wasMoved = false;
+
+	customType = null;
+	moveSpeed = 0.25;
+	size = new Size(16, 16);
+	maxHealth = 20;
+	health = 20;
+	constructor(spawnX, spawnY) {
+		this.spawn.x = spawnX;
+		this.pos.x = spawnX;
+		this.spawn.y = spawnY;
+		this.pos.y = spawnY;
+
+		this.spawnScript();
+
+		entities.push(this);
+	}
+	tick() {
+		this.move();
+
+	}
+	move() {
+
+		//スピード調整
+		if (this.speed.x > 0) {
+			this.speed.x = Math.floor(this.speed.x * 0.85 * 1000) / 1000;
+		} else {
+			this.speed.x = Math.ceil(this.speed.x * 0.85 * 1000) / 1000;
+		}
+		if (this.speed.y > 0) {
+			this.speed.y = Math.floor(this.speed.y * 0.85 * 1000) / 1000;
+		} else {
+			this.speed.y = Math.ceil(this.speed.y * 0.85 * 1000) / 1000;
+		}
+
+		//動き替える
+		this.moveScript();
+
+		//移動 当たり判定
+		for (let i = 0; i < Math.round(Math.abs(this.speed.x)); i++) {
+			this.pos.x += Math.sign(this.speed.x);
+			if (hitbox(this.pos.x, this.pos.y)) this.pos.x -= Math.sign(this.speed.x);
+			if (i > game.move_limit) break;
+		}
+		for (let i = 0; i < Math.round(Math.abs(this.speed.y)); i++) {
+			this.pos.y += Math.sign(this.speed.y);
+			if (hitbox(this.pos.x, this.pos.y)) this.pos.y -= Math.sign(this.speed.y);
+			if (i > game.move_limit) break;
+		}
+	}
+	moveScript() {
+
+	}
+	spawnScript() {
+		this.addFamily("Default");
+	}
+	draw() {
+		drawImg(img.enemy, 0, 0, 16, 16, this.pos.x - Cam.x, this.pos.y - Cam.y);
+	}
+	damage(damage, rx = 0, ry = 0, byPlayer = false) {
+		return false;
+	}
+	despawn() {
+		const index = entities.indexOf(this);
+		entities.splice(index, 1);
+	}
+	get getCenterX() {
+		return this.pos.x + this.size.w / 2;
+	}
+	get getCenterY() {
+		return this.pos.y + this.size.h / 2;
+	}
+	hasFamily(value) {
+		return this.family.includes(value);
+	}
+	addFamily(value) {
+		this.family.push(value);
+	}
+
+}
+
+class EntityEnemy extends Entity {
+	damageEffect = {
+		Damage: 0,
+		ViewTime: 0,
+		HealthTime: 0
+	}
+	#damageCooldown = 0;
+	attack = {
+		coolDown: 0,
+		animTime: 0,
+		animFlag: 0
+	}
+	get attackCondition() { return true };
+
+	attackPower = 10;
+	tick() {
+		super.tick(...arguments);
+
+		this.attackTick();
+
+		this.#damageCooldown--;
+		this.damageEffect.ViewTime--;
+		this.damageEffect.HealthTime--;
+
+		if (this.damageEffect.ViewTime <= 0) this.damageEffect.Damage = 0;
+
+		if (this.health <= 0) {
+			smokeParticle.create(this.pos.x, this.pos.y, 1);
+			this.despawn();
+		}
+
+	}
+	attackTick() {
+
+		this.attack.coolDown--;
+		if (this.attackCondition) return;
+
+		//playerid
+		let i = 0;
+
+		if (hitbox_rect(this.pos.x, this.pos.y, this.size.w, this.size.h, subplayerx(i), subplayery(i), 16, 16)) {
+			if (this.attack.coolDown <= 0) {
+				this.attack.coolDown = 50
+				this.attack.animFlag = true;
+			}
+
+			if (this.attack.animTime == 10)
+				players[i].damage(this.attackPower, -Math.sign(this.getCenterX - (subplayerx(i) + 8)), -Math.sign(this.getCenterY - (subplayery(i) + 8)));
+		}
+	}
+	damage(damage, rx = 0, ry = 0, byPlayer = false) {
+		super.damage(...arguments);
+
+		const knockbackResistance = 1.0;
+		//クールダウン判定
+		if (this.#damageCooldown > 0) return false;
+
+		//効果音
+		PlaySound("damage", "enemy", true);
+
+		//ノックバック処理
+		this.speed.x += rx / knockbackResistance;
+		this.speed.y += ry / knockbackResistance;
+
+		//ダメージ処理
+		this.health -= damage;
+		//クールダウン処理
+		this.#damageCooldown = 5;
+
+		//エフェクト処理
+		this.damageEffect.Damage += damage;
+		this.damageEffect.ViewTime = 100;
+		this.damageEffect.HealthTime = 250;
+		splinterParticle.BlueSlime.create(this.pos.x, this.pos.y, 1);
+
+		return true;
+	}
+	drawDamageEffect() {
+		if (this.damageEffect.HealthTime > 0)
+			draw_hp(this.health / this.maxHealth, this.getCenterX - Cam.x - 5, this.pos.y - Cam.y);
+
+		if (this.damageEffect.ViewTime > 0)
+			drawTextFont(this.damageEffect.Damage.toString(), this.pos.x - Cam.x, this.pos.y - 16 - Math.log10(-8 * (this.damageEffect.ViewTime / 100 - 1)) * 8 - Cam.y, {});
+
+	}
+	spawnScript() {
+		super.spawnScript(...arguments);
+		this.addFamily("Enemy");
+	}
+}
+
+class EntityEnemyNeutralBasic extends EntityEnemy {
+	hostilityDelay = 0;
+	get hostility() { return this.hostilityDelay > 0; };
+	#movetemp = {
+		xp: false,
+		xn: false,
+		yp: false,
+		yn: false,
+		movingTime: 0,
+		get Moving() {
+			return this.movingTime > 0
+		}
+	}
+	get attackCondition() { return !this.hostility };
+
+
+	tick() {
+		super.tick(...arguments);
+
+		const becomeNotHostilityDistance = 256;
+		if (this.hostility && getDistance(subplayerx(0), subplayery(0), this.pos.x, this.pos.y) > becomeNotHostilityDistance)
+			this.hostilityDelay--;
+
+	}
+	moveScript() {
+		if (this.hostility) {
+
+			let dis = getDistance(this.pos.x, this.pos.y, subplayerx(0), subplayery(0));
+			if (dis < 16) {
+				this.wasMoved = false;
+				return;
+			}
+
+			let r = calcAngleDegrees(subplayerx(0) + game.facing_pos[PlayerControl.facing][0] - this.pos.x, subplayery(0) + game.facing_pos[PlayerControl.facing][1] - this.pos.y);
+			this.speed.x += this.moveSpeed * Math.cos(r);
+			this.speed.y += this.moveSpeed * Math.sin(r);
+
+			this.wasMoved = true;
+			return;
+
+		} else {
+			//move random (normal)
+
+			if (this.#movetemp.yn) this.speed.y -= this.moveSpeed;
+			if (this.#movetemp.yp) this.speed.y += this.moveSpeed;
+			if (this.#movetemp.xp) this.speed.x += this.moveSpeed;
+			if (this.#movetemp.xn) this.speed.x -= this.moveSpeed;
+			if (this.#movetemp.movingTime > 0) this.#movetemp.movingTime -= 1;
+
+			if (this.#movetemp.movingTime <= 0) {
+				this.#movetemp.yn = false;
+				this.#movetemp.yp = false;
+				this.#movetemp.xp = false;
+				this.#movetemp.xn = false;
+
+				if (Math.random() > 0.95) {
+					if (Math.random() > 0.9) this.#movetemp.yn = true;
+					if (Math.random() > 0.9) this.#movetemp.yp = true;
+					if (Math.random() > 0.9) this.#movetemp.xp = true;
+					if (Math.random() > 0.9) this.#movetemp.xn = true;
+					if (this.#movetemp.yn || this.#movetemp.yp || this.#movetemp.xn || this.#movetemp.yp)
+						this.#movetemp.movingTime = Math.floor(Math.random() * 5 + 5);
+				}
+			}
+
+			if (this.#movetemp.movingTime > 0) {
+				this.wasMoved = true;
+			} else {
+				this.wasMoved = false;
+			}
+		}
+	}
+	damage(damage, rx = 0, ry = 0, byPlayer = false) {
+		super.damage(...arguments);
+
+		const becomeNotHostilityDelay = 100;
+		this.hostilityDelay = becomeNotHostilityDelay;
+
+	}
+	spawnScript() {
+		super.spawnScript(...arguments);
+		this.addFamily("Neutral");
+	}
+}
+
+class SlimeEntity extends EntityEnemyNeutralBasic {
+	anim = {
+		time: 0,
+		flag: false
+	}
+
+	size = new Size(16, 16);
+	maxHealth = 200;
+	health = 200;
+	tick() {
+		this.animationTick();
+
+		super.tick();
+	}
+	draw() {
+		let DrawOffset = new Vec2(0, 0);
+
+		const drawPos = this.getAnimationFlame();
+		drawImg(img.enemy, DrawOffset.x + drawPos.x, DrawOffset.y + drawPos.y, 16, 16, this.pos.x - Cam.x, this.pos.y - Cam.y - make_jump_animation(this.attack.animTime / 20) * 5);
+		this.drawDamageEffect();
+	}
+	spawnScript() {
+		super.spawnScript(...arguments);
+		this.addFamily("Slime");
+	}
+	animationTick() {
+
+		if (this.wasMoved) this.anim.flag = true;
+		if (this.anim.flag) this.anim.time++;
+		if (this.anim.time >= 20) {
+			this.anim.time = 0;
+			this.anim.flag = false;
+		}
+
+		if (this.anim.time == 8) splinterParticle.BlueSlime.create(this.getCenterX, this.getCenterY, 1, 2);
+
+
+		if (this.attack.animFlag) this.attack.animTime++;
+		if (this.attack.animTime >= 20) {
+			this.attack.animTime = 0;
+			this.attack.animFlag = false;
+		}
+	}
+	getAnimationFlame() {
+		let x = 0;
+		let y = 0;
+
+		if (this.anim.time > 0) x = Math.floor(this.anim.time / 20 * 3);
+		if (this.attack.animTime > 0) x = Math.floor(this.attack.animTime / 20 * 3);
+
+		return new Vec2(x * 16, y * 16);
+	}
+	static Blue =
+		class extends SlimeEntity {
+			customType = "blue"
+		}
+
+}
+
+class EntityNpcBasic extends Entity {
+
+	#movetemp = {
+		xp: false,
+		xn: false,
+		yp: false,
+		yn: false,
+		movingTime: 0,
+		get Moving() {
+			return this.movingTime > 0
+		}
+	}
+	moveScript() {
+
+		if (this.#movetemp.yn) this.speed.y -= this.moveSpeed
+		if (this.#movetemp.yp) this.speed.y += this.moveSpeed
+		if (this.#movetemp.xp) this.speed.x += this.moveSpeed
+		if (this.#movetemp.xn) this.speed.x -= this.moveSpeed
+		if (this.#movetemp.movingTime > 0) enemy[i].move[4] -= 1;
+
+		if (this.#movetemp.movingTime > 0) {
+			this.#movetemp.yn = false;
+			this.#movetemp.yp = false;
+			this.#movetemp.xp = false;
+			this.#movetemp.xn = false;
+
+			if (Math.random() > 0.95) {
+				if (Math.random() > 0.9) this.#movetemp.yn = true;
+				if (Math.random() > 0.9) this.#movetemp.yp = true;
+				if (Math.random() > 0.9) this.#movetemp.xp = true;
+				if (Math.random() > 0.9) this.#movetemp.xn = true;
+				if (this.#movetemp.yn || this.#movetemp.yp || this.#movetemp.xn || this.#movetemp.yp)
+					this.#movetemp.movingTime = Math.floor(Math.random() * 5 + 5);
+			}
+		}
+
+		if (this.#movetemp.movingTime > 0) {
+			this.wasMoved = true;
+		} else {
+			this.wasMoved = false;
+		}
+	}
+}
+const entityClasses = {
+	1: SlimeEntity.Blue
+}
+
+function entityClass(Class, Type) {
+	return {
+		class: Class,
+		type: Type
+	}
+}
+
+let particles = new Array();
+
+class Particle {
+	pos = new Vec2();
+	time = 0;
+	lifetime = 0;
+	random = new Array();
+
+	constructor(spawnX, spawnY, count) {
+
+		this.pos = new Vec2(spawnX, spawnY);
+		this.random = [Random(-1, 1), Random(-1, 1)];
+
+	}
+	static create(spawnX = 0, spawnY = 0, count = 1) {
+		if (count < 1.0) if (Math.random() > count) return;
+
+		for (let i = 0; i < count; i++) {
+			particles.push(new this(...arguments));
+		}
+		return count;
+	}
+	draw() {
+
+	}
+	tick() {
+		this.time++;
+
+		if (this.lifetime <= this.time) this.despawn();
+	}
+	despawn() {
+		const index = particles.indexOf(this);
+		particles.splice(index, 1);
+	}
+}
+
+class splinterParticle extends Particle {
+
+	DrawOffset = new Vec2(0, 0);
+	lifetime = Random(25, 50, true);
+
+	draw() {
+		drawImg(img.particle, this.DrawOffset.x, this.DrawOffset.y, 16, 16, getDrawPosX(this.pos.x + this.random[0] * 16 * make_scatter_animation(this.time / this.lifetime)), getDrawPosY(this.pos.y - make_jump_animation(this.time / this.lifetime * 2) * 4));
+	}
+	static RockBreak =
+		class extends splinterParticle {
+			DrawOffset = new Vec2(16, 16);
+		}
+	static BlueSlime =
+		class extends splinterParticle {
+			DrawOffset = new Vec2(0, 16);
+		}
+}
+
+class smokeParticle extends Particle {
+
+	DrawOffset = new Vec2(0, 0);
+	lifetime = Random(50, 100, true);
+
+	draw() {
+		drawImg(img.particle, this.DrawOffset.x + Math.floor(this.time / this.lifetime * 8) * 16, this.DrawOffset.y, 16, 16, getDrawPosX(this.pos.x), getDrawPosY(this.pos.y + this.time * this.random[0] / 10, -this.time / 5 - this.random[1] * 4));
 	}
 }
 
@@ -496,9 +1243,6 @@ class Game {
 			"config"
 		]
 
-		this.configList = new Object();
-
-		this.config = new Object();
 
 	}
 	getTileID(maplayer = "map1", x, y) {
@@ -613,6 +1357,8 @@ class Cursor {
 			let cursor = this.cursors[this.cursors.length - 1];
 			this.CursorOldPos.x += (cursor.x - this.CursorOldPos.x) / 2;
 			this.CursorOldPos.y += (cursor.y - this.CursorOldPos.y) / 2;
+			this.CursorOldPos.x = limit(this.CursorOldPos.x, 0, Infinity);
+			this.CursorOldPos.y = limit(this.CursorOldPos.y, 0, Infinity);
 		}
 
 		for (let i in this.cursors) {
@@ -684,7 +1430,9 @@ async function loadAudio(url, volume = 1) {
 		audio.src = url;
 
 		// エラー処理を追加
-		audio.onerror = () => reject(audio.error);
+		audio.onerror = () => {
+			reject(audio.error)
+		};
 
 		// 'canplaythrough'イベントが発火したら、Promiseを解決する
 		audio.addEventListener('canplaythrough', () => {
@@ -718,15 +1466,6 @@ document.oncontextmenu = () => {
 
 //フォント
 ctx.font = '20px sans-serif';
-
-
-//config変数の作成
-let config = {
-	"canrotateonattacking": false,
-	"weapon_auto_aiming": true
-}
-let configs = new Object();
-
 
 //デバッグ用の変数の作成
 let debug = new Object();
@@ -793,7 +1532,7 @@ let MainProcTime = 0;
 
 
 //プレイヤーの変数の作成
-let player = new Player();
+//let player = new PlayerControl();
 let players = new Array();
 
 players[0] = new Players(0);
@@ -806,6 +1545,9 @@ player_movelog_reset();
 let enemy_speed = 0.25
 
 let enemy = new Array();
+//敵の変数の作成
+
+let entities = new Array();
 
 //NPCの変数の作成
 let npc = new Array();
@@ -1021,6 +1763,8 @@ class JsonUI {
 		this.dataGroval = new Object();
 		this.CanMovePlayer = UIGroup[0].CanMovePlayer ?? false;
 
+		//uidata = this;
+		this.UIGroup = loadedjson.jsonui[this.type];
 
 		for (const UIContentKey of Object.keys(UIGroup)) {
 			let UIContent = UIGroup[UIContentKey]
@@ -1039,26 +1783,32 @@ class JsonUI {
 		this.state = 1;
 		this.openTime = 0;
 		this.activeTime = 0;
+		return true;
 	}
 	close() {
+		if (this.state === -1) return false;
+
 		this.state = -1;
 		this.closeTime = 0;
 		this.inactiveTime = 0;
+		return true;
 	}
 	GetSelectID() {
 		let UIGroup = loadedjson.jsonui[this.type];
 		return UIGroup[this.select].id;
 	}
-	ShouldOpenAnim(UIIndex) {
-		return this.state == 1 && jsonui_active(UIIndex);
+	get index() {
+		return JsonUIOpen.indexOf(this);
 	}
-	ShouldCloseAnim(UIIndex) {
-		return this.state == -1 || !jsonui_active(UIIndex);
+	ShouldOpenAnim(UIIndex, UIContent) {
+		return this.state === 1 && jsonui_active(this.index);
+	}
+	ShouldCloseAnim(UIIndex, UIContent) {
+		return this.state === -1 || !jsonui_active(this.index);
 	}
 	ActiveChangeDetect(UIIndex) {
 		this.#ActiveChange.active = !this.#ActiveChange.TickAgo && jsonui_active(UIIndex) && this.#ActiveChange.TickAgo !== undefined;
 		this.#ActiveChange.inactive = this.#ActiveChange.TickAgo && !jsonui_active(UIIndex) && this.#ActiveChange.TickAgo !== undefined;
-
 		this.#ActiveChange.TickAgo = jsonui_active(UIIndex);
 
 
@@ -1070,6 +1820,491 @@ class JsonUI {
 		inactive: false,
 		TickAgo: undefined
 	}
+	getUIContent(index) {
+		return this.UIGroup[index];
+	}
+	defaultProc(...objs) {
+
+		for (let obj of objs) {
+			if (obj?.default !== undefined) {
+				obj = Object.assign(obj, loadedjson.jsonui._default[obj.default]);
+				delete obj.default;
+			}
+
+		}
+	}
+	closeCheck() {
+		if (this.closed) JsonUIOpen.splice(this.index, 1);
+	}
+	tick() {
+		this.ActiveChangeDetect(this.index)
+		if (this.state === 1) this.openTime++;
+		if (this.state === -1) this.closeTime++;
+		if (this.ShouldOpenAnim(this.index)) this.activeTime++;
+		if (this.ShouldCloseAnim(this.index)) this.inactiveTime++;
+		if (this.openTime >= this.openDelay) this.opened = true;
+		if (this.closeTime >= this.closeDelay) this.closed = true;
+
+		this.draw();
+	}
+	draw() {
+
+		for (const UIContent of this.UIGroup) {
+
+			this.defaultProc(UIContent, ...ConvertArray(UIContent.animIn), ...ConvertArray(UIContent.animOut), UIContent.trans);
+
+
+			let Draw = new JsonUIDraw(UIContent, this, false);
+			let UIData = JsonUIOpen[this.index];
+			if (UIContent.drawLog === "OffsetX") JsonUIOpen[this.index].data[UIContent.id] = Draw.Offset.x;
+
+			switch (UIContent.type) {
+				case "text":
+					drawTextFont(translate(jsonui_variable(UIContent.text), undefined, UIContent, undefined, this.index), Draw.Offset.x, Draw.Offset.y, { color: game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
+					break;
+				case "button":
+					draw_rectangle(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt);
+					drawTextFont(translate(UIContent.text), Draw.Offset.x, Draw.Offset.y, { color: game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
+					break;
+				case "tabConfig":
+					let sizeOverride = new JsonUIDraw(loadedjson.jsonui[UIID][0], this.index).Offset.x - Draw.Offset.x;
+				//console.log(sizeOverride)
+				case "tab":
+					draw_tab(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt, img.gui_tab_select, UIContent.tabType, UIData.data.selectid === UIContent.id);
+					drawTextFont(translate(UIContent.text), Draw.Offset.x, Draw.Offset.y, { color: game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
+					break;
+				case "rectangle":
+					draw_rectangle(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt);
+					break;
+				case "custom":
+					this.customRenderer(UIContent, Draw);
+					break;
+			}
+		}
+	}
+	customRenderer(UIContent, Draw) {
+		let drawItems;
+		// items代入
+		switch (UIContent.renderer) {
+			case "items":
+				drawItems = PlayerControl.items;
+				break;
+			case "roles":
+			case "hud_hp":
+				drawItems = players;
+				break;
+			case "UIOpen":
+				drawItems = Object.keys(loadedjson.jsonui);
+				break;
+			case "config":
+				drawItems = getConfigsGroup(this.data.tab);
+				break;
+		}
+		// 描画いろいろ
+		switch (UIContent.renderer) {
+			case "items":
+			case "roles":
+			case "hud_hp":
+			case "UIOpen":
+			case "config":
+				let scroll = JsonUIOpen[this.index].data[UIContent.id].scroll
+				for (let i in drawItems.slice(Math.floor(scroll / 16), Math.floor(scroll / 16) + Math.ceil(Draw.size.y / 16 + 1))) {
+					let DrawOffset = i * 16 - scroll % 16;
+					let itemIndex = Number(i) + Math.floor(scroll / 16);
+					let drawItem = drawItems[itemIndex];
+
+					for (const key of Object.keys(UIContent.items)) {
+						let itemOffset = new Vec2(...UIContent.items[key].offset);
+						let itemSize = new Vec2(...UIContent.items[key].size);
+
+						let ObjOut = new Object();
+						ObjOut.top = Math.min(DrawOffset + itemOffset.y, 0);
+						ObjOut.bottom = Math.min(DrawOffset + itemOffset.y + itemSize.y, Draw.size.y) - DrawOffset - itemOffset.y;
+
+						if (-ObjOut.top >= itemSize.y) continue;
+						if (-ObjOut.bottom > 0) continue;
+
+						//let draw_text_templ = (text, font = "", AddX = 0, AddY = 0) => draw_text(text, Math.min(itemOffset.x + AddX, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset + AddY, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, undefined, undefined, font, -1, 0, -ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top);
+						let draw_text_templ = (text, color = game.colorPallet.black, align = "start", AddX = 0, AddY = 0) => {
+							const TextX = itemOffset.x + Draw.Offset.x + AddX;
+							const TextY = itemOffset.y + Draw.Offset.y + AddY + DrawOffset;
+							const StartX = 0
+							const StartY = -DrawOffset - itemOffset.y
+							const EndX = Draw.size.x - itemOffset.x - AddX;
+							const EndY = Draw.size.y - itemOffset.y - AddY - DrawOffset;
+
+							drawTextFont(text, TextX, TextY, { color: color, align: align, startX: StartX, startY: StartY, endX: EndX, endY: EndY });
+							//if (key_groups_down.attack && text == "egg") console.table([text, TextX, TextY, StartX, StartY, EndX, EndY])
+						}
+
+						switch (UIContent.items[key].tag) {
+							case "atlas_img":
+								drawImg(img.items, getTileAtlasXY(drawItem.id, 0), getTileAtlasXY(drawItem.id, 1) - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
+								break;
+							case "text":
+								draw_text_templ(translate(UIContent.items[key].text));
+								break;
+							case "ttftext":
+								draw_text_ttf(translate(UIContent.items[key].text));
+								break;
+							case "ItemRender":
+								drawImg(img.items, getTileAtlasXY(get_item_data(itemIndex, "icon"), 0), getTileAtlasXY(get_item_data(itemIndex, "icon"), 1) - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
+								break;
+							case "ItemName":
+								draw_text_templ(translate("item." + get_item_data(itemIndex, "name") + ".name"));
+								break;
+							case "ConfigName":
+								draw_text_templ(translate(drawItem.name));
+								break;
+							case "ConfigValue":
+								draw_text_templ(translate(drawItem.value));
+								break;
+							case "ItemCount":
+								draw_text_templ(drawItem.count, game.colorPallet.magenta, "start");
+								break;
+							case "ItemEfficacy":
+								if (get_item_data(itemIndex, "efficacy") == "health") {
+									AtlasDrawImage("gui_item_text_health", Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, 0, -ObjOut.top, 0, ObjOut.bottom + ObjOut.top - itemSize.y);
+									draw_text_templ(String(get_item_data(itemIndex, "heal_power")), "start", "black", 32, 0);
+								}
+								break;
+							case "debugtest":
+								draw_text_templ(`${ObjOut.top},${ObjOut.bottom}`, "_purple");
+								break;
+							case "role_icon":
+								drawImg(img.gui, players[itemIndex].id * 8, 48 - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
+								break;
+							case "role_hp":
+								draw_text_templ(players[itemIndex].health);
+								break;
+							case "img":
+							case "image":
+								AtlasDrawImage(UIContent.items[key].img, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, 0, -ObjOut.top, 0, ObjOut.bottom + ObjOut.top - itemSize.y);
+								break;
+							case "uilist":
+								draw_text_templ(drawItem, "_purple");
+								break;
+						}
+					}
+				}
+				break;
+		}
+	}
+	control() {
+		let UIContent = this.getUIContent(this.select);
+
+		let trigger = (array) => {
+			for (const trans of array) {
+				transition(...trans);
+			}
+		}
+
+		let transition = (mode, ...param) => {
+			for (let i in param) {
+				param[i] = jsonui_variable(param[i], this.UIGroup, UIContent, this, this.index);
+			}
+
+			switch (mode) {
+				case "select_abs":
+					JsonUIOpen[this.index].select = param[0];
+					break;
+				case "select_rel":
+					JsonUIOpen[this.index].select += param[0];
+					break;
+				case "open":
+					jsonui_open(...param);
+					break;
+				case "close":
+					JsonUIOpen[this.index].close();
+					break;
+				case "closeAll":
+					JsonUIOpen.forEach((element, index) => {
+						if (index >= param[0]) element.close();
+					});
+					break;
+				case "UseItem":
+					PlayerControl.items[param[0]].use(param[1]);
+					break;
+				case "data":
+					JsonUIOpen[this.index].data[param[0]] = param[1];
+					break;
+				case "ChangeConfig":
+					let configData = loadedjson.configs[this.data.tab][this.data.configRender.select];
+					let configState = config[configData.variable];
+					switch (configData.type) {
+						case "bool":
+							configState = !configState;
+							break;
+					}
+					break;
+			}
+		}
+
+		if (UIContent.trans !== undefined) {
+			if (UIContent.trans.tickBefore !== undefined) trigger(UIContent.trans.tickBefore);
+			for (let transkey of Object.keys(key_groups).filter((key) => key in UIContent.trans)) {
+				if (key_groups_hold[transkey]) trigger(UIContent.trans[transkey]);
+			}
+			if (UIContent.trans.tickAfter !== undefined) trigger(UIContent.trans.tickAfter);
+
+		}
+		if (UIContent.type === "custom" ? game.UICustomScrollable.includes(UIContent?.renderer) : false) {
+			let data = this.data[UIContent.id];
+			if (true) {
+				if (key_groups_hold.down && data.select < PlayerControl.items.length - 1) data.select++
+				if (key_groups_hold.up && data.select > 0) data.select--
+				if (key_groups_hold.down || key_groups_hold.up) PlaySound("select", "gui");
+
+				if (data.select * 16 - data.scroll <= 0)
+					data.scroll += Math.floor((data.select * 16 - data.scroll) / 2);
+				if (data.select * 16 - data.scroll + 16 > new Vec2(...UIContent.size).y)
+					data.scroll += Math.ceil((data.select * 16 - data.scroll + 16 - new Vec2(...UIContent.size).y) / 2);
+			} else {
+				if (key_groups_hold.down) data.scroll++;
+				if (key_groups_hold.up) data.scroll--;
+			}
+		}
+
+		//if (UIID === "menu") MenuTabSelect = JsonUIOpen[UIIndex].select;
+	}
+	cursorTick() {
+
+		let UIContent = this.getUIContent(this.select);
+		let Draw = new JsonUIDraw(UIContent, this, true);
+		let UIData = JsonUIOpen[this.index];
+		let data = UIData.data[UIContent.id];
+
+		if (this.index != jsonuiSelectIdNoClosing()) return;
+		if (!UIContent.ShowCursor) return;
+
+		switch (UIContent.type) {
+			case "custom":
+				switch (UIContent.renderer) {
+					case "items":
+					case "roles":
+					case "UIOpen":
+					case "config":
+						JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y + data.select * 16 - data.scroll));
+						break;
+					default:
+						JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y));
+						break;
+				}
+				break;
+			default:
+				JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y));
+				break;
+		}
+	}
+}
+
+class JsonUIDraw {
+	constructor(UIContent, UIData, NoAnimation = false) {
+		/*for (const key of Object.keys(UIContent)) {
+			this[key] = UIContent[key];
+		}*/
+		let variableFunc = value => jsonui_variable(valur, undefined, UIContent, JsonUIOpen[UIIndex], UIIndex);
+
+
+		const offset = new Vec2(...UIContent.offset);
+		const offset_type = new Vec2(...UIContent.offset_type ?? []);
+		let dx = offset.x + GetOffsetScreen(offset_type.x, offset_type.y).x + UIData.pos.x
+		let dy = offset.y + GetOffsetScreen(offset_type.x, offset_type.y).y + UIData.pos.y
+		this.Offset = new Vec2(dx, dy);
+		this.CursorOffset = new Vec2(...UIContent.CursorOffset ?? [-8, 0]);
+		this.size = new Vec2(...UIContent.size);
+
+		// ここから下にはアニメーション以外のプログラムを書かないで下さい //
+		if (NoAnimation) return;
+
+		const easingFunc = (func, value, size) => {
+			switch (func) {
+				case "easeOutExpo":
+					return easeOutExpo(value) * size;
+					break;
+				case "easeInExpo":
+					return easeInExpo(value) * size;
+					break;
+			}
+		}
+		const animationTypeFunc = (func, anim) => {
+			switch (func) {
+				case "offsetx":
+					this.Offset.x += Math.round(anim);
+					break;
+				case "offsety":
+					this.Offset.y += Math.round(anim);
+					break;
+				case "sizex":
+					this.size.x += Math.round(anim);
+					break;
+				case "sizey":
+					this.size.y += Math.round(anim);
+					break;
+			}
+		}
+
+		if (UIContent.animIn !== undefined && (UIData.ShouldOpenAnim(this.index, UIContent) || UIData.opened)) {
+
+			new Array().concat(UIContent.animIn).forEach(animData => {
+				let defaultValue = -animData.size;
+				let anim = defaultValue + easingFunc(animData.ease, (UIData.activeTime - animData.offset) / animData.length, animData.size);
+				animationTypeFunc(animData.type, anim);
+			})
+		}
+		if (UIContent.animOut !== undefined && (UIData.ShouldCloseAnim(this.index, UIContent) || UIData.closed)) {
+
+			new Array().concat(UIContent.animOut).forEach(animData => {
+				let defaultValue = 0;
+				let anim = defaultValue + easingFunc(animData.ease, (UIData.inactiveTime - animData.offset) / animData.length, animData.size);
+				animationTypeFunc(animData.type, anim);
+			})
+		}
+	}
+	get index() {
+		JsonUIOpen.indexOf(this);
+	}
+}
+
+function GetOffsetScreen(textx, texty) {
+	let x, y;
+	switch (textx) {
+		case "left":
+			x = 0;
+			break;
+		case "right":
+			x = ScreenWidth;
+			break;
+		default:
+			x = 0;
+			break;
+	}
+	switch (texty) {
+		case "top":
+			y = 0;
+			break;
+		case "bottom":
+			y = ScreenHeight;
+			break;
+		default:
+			y = 0;
+			break;
+	}
+	return new Vec2(x, y);
+}
+
+function jsonui_default_proc(...objs) {
+
+	for (let obj of objs) {
+		if (obj?.default !== undefined) {
+			obj = Object.assign(obj, loadedjson.jsonui._default[obj.default]);
+			delete obj.default;
+		}
+
+	}
+}
+
+function jsonui_main() {
+	for (let UIIndex in JsonUIOpen) {
+		let UIData = JsonUIOpen[UIIndex];
+		if (UIData.closed) JsonUIOpen.splice(UIIndex, 1)
+	}
+	if (JsonUIOpen.length !== 0) jsonui_select(JsonUIOpen[JsonUIOpen.length - 1].type, JsonUIOpen.length - 1);
+
+
+	let cursor = new Array();
+	for (let UIIndex in JsonUIOpen) {
+		let UIData = JsonUIOpen[UIIndex];
+
+		UIData.ActiveChangeDetect(UIIndex);
+		if (UIData.state == 1) UIData.openTime++;
+		if (UIData.state == -1) UIData.closeTime++;
+		if (UIData.ShouldOpenAnim(UIIndex, loadedjson.jsonui[UIData.type][0])) UIData.activeTime++;
+		if (UIData.ShouldCloseAnim(UIIndex)) UIData.inactiveTime++;
+
+		jsonui_draw(UIData.type, UIIndex);
+		jsonui_cursor(UIData.type, UIIndex, cursor);
+
+		//if(UIIndex == 1 )console.table([UIData.state == 1 && jsonui_active(UIIndex),UIData.state == -1 || !jsonui_active(UIIndex)])
+
+		if (UIData.openTime >= UIData.openDelay) UIData.opened = true;
+		if (UIData.closeTime >= UIData.closeDelay) UIData.closed = true;
+	}
+	JsonUICursor.draw();
+
+}
+function jsonui_main() {
+	for (let UIData of JsonUIOpen) {
+		UIData.tick();
+	}
+	for (let UIData of JsonUIOpen) {
+		UIData.closeCheck();
+	}
+	JsonUIOpen[JsonUIOpen.length - 1].control();
+	JsonUIOpen[JsonUIOpen.length - 1].cursorTick();
+
+	JsonUICursor.draw();
+
+}
+
+function jsonui_active(UIIndex) {
+	//必要かわからん
+	//let UIGroup = loadedjson.jsonui[UIID];
+	//let UIContent = UIGroup[JsonUIOpen[UIIndex].select];
+	//let UIData = JsonUIOpen[UIIndex].data[UIContent.id];
+
+	return JsonUIOpen.length - 1 == UIIndex;
+}
+
+function jsonuiSelectIdNoClosing() {
+
+	for (let index = JsonUIOpen.length - 1; index >= 0; index--) {
+		const element = JsonUIOpen[index];
+		if (element.state === 1) return index;
+	}
+}
+
+function jsonui_variable(rawvalue, UIGroup, UIContent, UIData, UIIndex) {
+	if (typeof rawvalue !== "string") return rawvalue;
+	let values = rawvalue.split(",");
+	let value = values[0];
+
+	//console.log(values)
+
+	for (let key of Object.keys(loadedjson.jsonui?.variable ?? {})) {
+		let variable = loadedjson.jsonui.variable[key];
+		if (value === key) return variable;
+	}
+
+	switch (value) {
+		case "$TabSelectID":
+			return MenuTabSelect;
+		case "$SelectID":
+			return JsonUIOpen[UIIndex].select;
+		case "$UIContentID":
+			return UIContent.id;
+		case "$selectUI":
+			return Object.keys(loadedjson.jsonui)[UIData.select];
+		case "$fps":
+			return fps;
+		case "$getData":
+			return UIData.data[values[1]];
+		case "$getDataLocal":
+			return UIData.data[UIContent.id][values[1]];
+		default:
+			return value;
+
+	}
+}
+
+
+function getJsonuiSelect(UIIndex = JsonUIOpen.length - 1) {
+	return JsonUIOpen[UIIndex].select;
+}
+
+
+function jsonui_open(type, DefaultX, DefaultY, DefaultSelectID, param) {
+	JsonUIOpen.push(new JsonUI(type, DefaultX, DefaultY, DefaultSelectID, param));
 }
 
 let JsonUIOpen = new Array();
@@ -1078,7 +2313,7 @@ let JsonUICursor = new Cursor();
 
 //言語設定
 game.lang = loadedjson.en_us;
-let lang = "en_us"
+let lang = "en_us";
 
 //json読み込み
 document.addEventListener("readystatechange", loadingassets)
@@ -1135,7 +2370,7 @@ async function game_start_proc() {
 	jsonui_open("hud")
 
 	//アンロード時に確認メッセージを表示する
-	if (game.config.beforeunload) beforeUnloadEnventID = setTimeout(beforeUnloadOn, 1000 * 10);
+	if (config.beforeunload) beforeUnloadEnventID = setTimeout(beforeUnloadOn, 1000 * 10);
 
 
 	gamestarted = true;
@@ -1147,40 +2382,20 @@ function GAMEMAIN() {
 	if (!IsLoading) game.map = Object.assign(loadedjson.Map, loadedjson.MapMeta);
 	playTime = SavedPlayTime + (new Date() - GameStartedTime);
 
-	//プレイヤーの動作
-	player_proc();
+	player_tick();
 
-	//敵の動作
-	enemy_proc();
+	entity_tick();
 
-	//NPCの動作
-	npc_proc();
-
-	//パーティクルの動作
 	particle_proc();
 
-	//敵スポーン
 	enemy_spawn_event();
 
 
-	//スクロール座標を取得
-	player.scrollx = player.x - 160 + player.scroll_offsetx + debug.camx;
-	player.scrolly = player.y - 80 + player.scroll_offsety + debug.camy;
-	if (player.scrollx < 0) player.scrollx = 0;
-	if (player.scrolly < 0) player.scrolly = 0;
-	if (player.scrollx > 1280) player.scrollx = 1280;
-	if (player.scrolly > 1420) player.scrolly = 1420;
+	Cam.tick();
 
 
-	//GUIの処理
-	//gui_proc()
-
-
-	//描画メイン
 	game_draw();
 
-	//GUI描画
-	//gui_draw();
 
 
 	jsonui_main();
@@ -1433,8 +2648,7 @@ function RandomArray(input) {
 }
 
 function ConvertArray(input) {
-	if (!Array.isArray(input)) return [input];
-	return input;
+	return new Array().concat(input);
 }
 
 /**
@@ -1696,16 +2910,11 @@ async function getJson(filename, name, useReviver) {
 	let startTime = new Date().getTime();
 
 	//取得ここから
-	const response = await fetch(
-		filename  // jsonファイルの場所
-	);
-	const text = await response.text();
-	const jsonObject = JSON.parse(text);
+	const response = await fetch(filename);
+	const jsonObject = await response.json();
 	//取得ここまで
 
 	let endTime = new Date().getTime();
-	//jsonObject.loadTime = endTime - startTime; //ばぐるからやめよーー！！ほんまに
-	//　↑公開処刑　
 	debug.jsonLoadTime[name] = endTime - startTime;
 
 	document.getElementById("jsonLoadCount").innerText = String(++load.jsoncount);
@@ -1942,7 +3151,7 @@ async function savedatawrite(dir = true) {
 
 	//アンロード時に確認メッセージを表示する
 	beforeUnloadOff();
-	if (game.config.beforeunload) beforeUnloadEnventID = setTimeout(beforeUnloadOn, 1000 * 60);
+	if (config.beforeunload) beforeUnloadEnventID = setTimeout(beforeUnloadOn, 1000 * 60);
 	return LastSavedFileData;
 }
 
@@ -2016,44 +3225,26 @@ function calcAngleDegrees(x, y) {
 	return Math.atan2(y, x) * 180 / Math.PI;
 }
 
-
-function getNearestEnemy(x, y, d = false) {
-	//if (typeof d == "undefined") d = false;
+function getNearestEntityDistance(x, y, family) {
 	let distance = new Array();
-	for (const i in enemy) {
-		distance.push(getDistance(x, y, enemy[i].x, enemy[i].y));
-	}
-	if (d) return [distance.indexOf(Math.min.apply(null, distance)), Math.min.apply(null, distance)];
-	if (d == "distanceOnly") return Math.min.apply(null, distance);
-	return distance.indexOf(Math.min.apply(null, distance));
-
-}
-
-function getNearestEnemyDistance(x, y) {
-	let distance = new Array();
-	for (const i in enemy) {
-		distance.push(getDistance(x, y, enemy[i].x, enemy[i].y));
+	for (const entity of entities.filter(value => value.hasFamily(family))) {
+		distance.push(getDistance(x, y, entity.pos.x, entity.pos.y));
 	}
 	return Math.min.apply(null, distance);
 
 }
+function getNearestEntity(x, y, family) {
+	//if (typeof d == "undefined") d = false;
+	let distance = new Array();
+	for (const entity of entities.filter(value => value.hasFamily(family))) {
+		distance.push(getDistance(x, y, entity.pos.x, entity.pos.y));
+	}
+	return distance.indexOf(Math.min.apply(null, distance));
+
+}
+
 function getDistance(ax, ay, bx, by) {
 	return Math.abs(Math.sqrt(Math.pow(bx - ax, 2) + Math.pow(by - ay, 2)));
-}
-
-function getEnemyCenterx(i) {
-	return enemy[i].x + loadedjson.enemy[enemy[i].id].width / 2;
-}
-
-function getEnemyCentery(i) {
-	return enemy[i].y + loadedjson.enemy[enemy[i].id].height / 2;
-}
-
-function getEnemyCenter(i) {
-	return {
-		"x": getEnemyCenterx(i),
-		"y": getEnemyCentery(i)
-	}
 }
 
 //数字のindex番目取得
@@ -2101,6 +3292,10 @@ function changeHitbox(bool, x, y) {
 	game.map["hitbox"][y][x] = bool;
 	return bool;
 }
+function replaceHitboxTile(bool, x, y) {
+	game.map["hitbox"][y][x] = bool;
+	return bool;
+}
 
 function allElemDefined(...elem) {
 	if (elem == undefined) return false;
@@ -2111,7 +3306,7 @@ function allElemDefined(...elem) {
 //当たり判定
 function hitbox(x, y) {
 
-	let gethitBox = (x, y) => game.getTileID("hitbox", x, y) || (game.getTileID("map1", x, y) == 7 && !player.boat)
+	let gethitBox = (x, y) => game.getTileID("hitbox", x, y) || (game.getTileID("map1", x, y) == 7)
 
 	if (gethitBox(Math.floor(x / 16 + 0), Math.floor(y / 16 + 0))) return true;
 	if (gethitBox(Math.floor(x / 16 + 0.95), Math.floor(y / 16 + 0))) return true;
@@ -2192,6 +3387,18 @@ function hitbox_enemy_rect(ax, ay, aw, ah, color = "black") {
 	return hit;
 }
 
+function hitbox_entity_rect(ax, ay, aw, ah, family, color = "black") {
+
+	let hit = new Array();
+
+	for (const entity of entities.filter(value => value.hasFamily(family))) {
+		if (hitbox_rect(entity.pos.x, entity.pos.y, entity.size.w, entity.size.h, ax, ay, aw, ah, color))
+			hit.push(entity);
+	}
+
+	return hit;
+}
+
 function hitbox_rema(ax, ay, aw, ah, color = "black", checktile, maplayer) {
 
 	let x = Math.round(ax / 16);
@@ -2206,335 +3413,74 @@ function hitbox_rema(ax, ay, aw, ah, color = "black", checktile, maplayer) {
 
 			let TileID = game.getTileID(maplayer, x + ix, y + iy)
 
-			if (typeof checktile == "undefined") hit.push([(x + ix), (y + iy), TileID]);
-			if (typeof checktile != "undefined" && !Array.isArray(checktile)) if (checktile == TileID) hit.push([(x + ix), (y + iy), TileID]);
-			if (typeof checktile != "undefined" && Array.isArray(checktile)) if (checktile.includes(TileID)) hit.push([(x + ix), (y + iy), TileID]);
+			let result = {
+				x: x + ix,
+				y: y + iy,
+				id: TileID
+			}
+
+			if (typeof checktile == "undefined") hit.push(result);
+			if (typeof checktile != "undefined" && !Array.isArray(checktile)) if (checktile == TileID) hit.push(result);
+			if (typeof checktile != "undefined" && Array.isArray(checktile)) if (checktile.includes(TileID)) hit.push(result);
 		}
 	}
 	return hit;
 }
-
-function player_proc() {
+function player_tick() {
 
 	if (IsLoading) return;
-	if (canPlayerMoveForOpenGui()) {
-		player_move_proc();
-		player_npc_talk();
-	}
-	player_attack();
-	player_effect_proc();
-	player_death_check()
+	PlayerControl.tick();
 
-	mapchange_proc();
-
-	for (const i in players) {
-
-		//ダメージクールダウンの処理
-		players[i].damage_cooldown--;
-
-		player_knockback_move(i);
-
+	for (const player of players) {
+		player.tick();
 	}
 
-	if (player.x != player.movelog[0][0] || player.y != player.movelog[0][1]) player.movelog.unshift([player.x, player.y]);
-}
-
-function player_move_proc() {
-
-	if (player.canRotate && (!key_groups.attack || !game.config.rotatelockonattacking)) player_rotate();
-
-	//移動キー判定
-	player.up = key_groups.up;
-	player.down = key_groups.down;
-	player.right = key_groups.right;
-	player.left = key_groups.left;
-
-	//移動判定
-	if (key_groups.up || key_groups.down || key_groups.right || key_groups.left) {
-		player.moving = true;
-	} else {
-		player.moving = false;
-	}
-	if (Math.abs(player.xspd) != 0 || Math.abs(player.yspd) != 0) {
-		player.moved = true;
-	} else {
-		player.moved = false;
-	}
-
-	//アニメーションに使用(値を変更すると速度が変わる)
-	if (player.moved) player.moveTimer += 0.12;
-
-
-	//上限(64)を超えたら削除
-	player.movelog.splice(64, Infinity);
-
-
-	//速度調整
-	if (player.xspd > 0) {
-		player.xspd = Math.floor(player.xspd * 0.85 * 1000) / 1000;
-	} else {
-		player.xspd = Math.ceil(player.xspd * 0.85 * 1000) / 1000;
-	}
-	if (player.yspd > 0) {
-		player.yspd = Math.floor(player.yspd * 0.85 * 1000) / 1000;
-	} else {
-		player.yspd = Math.ceil(player.yspd * 0.85 * 1000) / 1000;
-	}
-
-	//速度移動
-	if (key_groups.up) player.yspd -= 0.5;
-	if (key_groups.down) player.yspd += 0.5;
-	if (key_groups.right) player.xspd += 0.5;
-	if (key_groups.left) player.xspd -= 0.5;
-
-	//プレイヤー移動
-	player_move(player.xspd, player.yspd, true);
-
+	if (PlayerControl.pos.x != PlayerControl.movelog[0].x || PlayerControl.pos.y != PlayerControl.movelog[0].y)
+		PlayerControl.movelog.unshift(new Vec2(PlayerControl.pos.x, PlayerControl.pos.y));
 }
 
 function player_movelog_reset() {
-	player.movelog.splice(0, Infinity);
-	for (let i = 0; i < 64; i++) player.movelog.push([player.x, player.y]);
+	PlayerControl.movelog.splice(0, Infinity);
+	for (let i = 0; i < 64; i++) PlayerControl.movelog.push(new Vec2(PlayerControl.pos.x, PlayerControl.pos.y));
 }
+function getFacing(up, down, right, left) {
+	if (up && !down && !right && !left) return 2;
+	if (!up && down && !right && !left) return 0;
+	if (!up && !down && right && !left) return 3;
+	if (!up && !down && !right && left) return 1;
+	if (up && !down && right && !left) return 3;
+	if (up && !down && !right && left) return 1;
+	if (!up && down && right && !left) return 3;
+	if (!up && down && !right && left) return 1;
+	//if (!up && !down && right && left) return 0;
+	//if (up && down && !right && !left) return 0;
+	if (up && !down && right && left) return 2;
+	if (!up && down && right && left) return 0;
+	if (up && down && right && !left) return 3;
+	if (up && down && !right && left) return 1;
+	//if (up && down && right && left) return 0;
 
-//プレイヤーの動き
-function player_move(mvx, mvy, checkhitbox) {
-	for (let i = 0; i < Math.round(Math.abs(mvx)); i++) {
-		player.x += Math.sign(mvx);
-
-		if (hitbox(player.x, player.y) && checkhitbox) player.x -= Math.sign(mvx);
-
-
-		if (i > game.move_limit) break;
-	}
-	for (let i = 0; i < Math.round(Math.abs(mvy)); i++) {
-		player.y += Math.sign(mvy);
-
-		if (hitbox(player.x, player.y) && checkhitbox) player.y -= Math.sign(mvy);
-
-		if (i > game.move_limit) break;
-	}
+	return null;
 
 }
+function getRotate(up, down, right, left) {
+	if (up && !down && !right && !left) return 4;
+	if (!up && down && !right && !left) return 0;
+	if (!up && !down && right && !left) return 6;
+	if (!up && !down && !right && left) return 2;
+	if (up && !down && right && !left) return 5;
+	if (up && !down && !right && left) return 3;
+	if (!up && down && right && !left) return 7;
+	if (!up && down && !right && left) return 1;
+	//if (!up && !down && right && left) return 0;
+	//if (up && down && !right && !left) return 0;
+	if (up && !down && right && left) return 4;
+	if (!up && down && right && left) return 0;
+	if (up && down && right && !left) return 6;
+	if (up && down && !right && left) return 2;
+	//if (up && down && right && left) return 0;
 
-//回復処理
-function player_heal(i, x) {
-	players[i].hp += x;
-	if (players[i].hp_max <= players[i].hp) players[i].hp = players[i].hp_max;
-}
-
-//ダメージ処理
-function player_damage(damage, rx, ry) {
-	//クールダウン判定
-	if (players[0].damage_cooldown > 0) return false;
-
-	//ノックバック処理
-	if (typeof rx != "undefined" && typeof ry != "undefined") {
-		player_knockback(rx, ry);
-	}
-
-	//ダメージ処理
-	players[0].hp -= damage;
-	//クールダウン処理
-	players[0].damage_cooldown += 5;
-
-
-	return true;
-}
-
-function player_death_check() {
-	let alive = false;
-	for (let player of players) {
-		player.alive = player.hp > 0;
-		if (player.hp > 0) {
-			alive = true
-		}
-	}
-	player.alive = alive;
-}
-
-function player_knockback(x, y) {
-	//if (x == Infinity || y == Infinity) alert("infinity")
-	player.xknb += x;
-	player.yknb += y;
-}
-
-function player_knockback_move(i) {
-	//移動
-	player_move(player.xknb, player.yknb, true);
-
-	player.xknb -= player.xknb * 0.2;
-	player.yknb -= player.yknb * 0.2;
-}
-
-function player_attack() {
-
-	if (canPlayerMoveForOpenGui()) {
-		if (key_groups_down.attack && players[0].weapon.timer > 0) players[0].weapon.speed++;
-		if (key_groups.attack && (players[0].weapon.timer <= 0 || players[0].weapon.timer >= 20)) weapon_attack(0);
-	}
-
-	//剣の動作
-	weapon_proc();
-}
-
-/**
- * 
- * @param {number} id 効果のID
- * @param {number} time 効果の秒数
- * @param {number} power 効果の強さ
- * @returns 
- */
-function player_effect_add(id, time = 30, power = 0) {
-	time *= 60;
-
-	//if (player.effect[id] != undefined)
-	//    if (player.effect[id].timetime) return;
-
-	if (player.effect[id]?.timetime) return;
-
-	player.effect[id] = new Effect(time, power)
-}
-
-function player_effect_proc() {
-	for (const effect of player.effect) {
-		if (effect == undefined) continue;
-		effect.time--;
-	}
-}
-
-function weapon_attack(i) {
-
-	players[i].weapon.timer = 1;
-	players[i].weapon.rotatex = game.rotate_pos[player.rotate][0];
-	players[i].weapon.rotatey = game.rotate_pos[player.rotate][1];
-	players[i].weapon.x = 0;
-	players[i].weapon.y = 0;
-	players[i].weapon.startx = subplayerx(i);
-	players[i].weapon.starty = subplayery(i);
-	players[i].weapon.autoAimx = 0;
-	players[i].weapon.autoAimy = 0;
-	players[i].weapon.speed = 1;
-	players[i].weapon.lock = -1;
-}
-
-function weapon_proc() {
-	for (const i in players) {
-		if (players[i].weapon.timer > 0) {
-
-			//攻撃
-			let hit_enemy = new Array();
-			hit_enemy = hitbox_enemy_rect(players[i].weapon.x - 8, players[i].weapon.y - 8, 32, 32);
-			for (const j in hit_enemy) {
-				enemy_damage(hit_enemy[j], players[i].weapon.attack, players[i].rotatex, players[i].rotatey, true);
-			}
-
-			//岩壊す
-			let breaks = hitbox_rema(players[i].weapon.x - 8, players[i].weapon.y - 8, 32, 32, "red", game.breakableTile, "map1");
-			for (const b in breaks) {
-				//console.log(breaks[0])
-				if (game.breakableTileAbout[breaks[i][2]].breakProbability > Math.random()) {
-					replaceTile(game.breakableTileAbout[breaks[i][2]].becomeTile, "map1", breaks[i][0], breaks[i][1]);
-					changeHitbox(false, breaks[i][0], breaks[i][1]);
-					createParticle(breaks[i][0] * 16 + 8, breaks[i][1] * 16 + 8, 2, 8);
-					PlaySound("break", "tile")
-				}
-
-				createParticle(breaks[i][0] * 16 + 8, breaks[i][1] * 16 + 8, 2, 0.2);
-				PlaySound("breakbit", "tile", true);
-			}
-
-			//オートエイム
-			if (players[i].weapon.timer <= 12 && (hit_enemy.length == 0 || !game.weapon_canlock) && game.config.weapon_auto_aiming) {
-				let x = players[i].weapon.startx;
-				let y = players[i].weapon.starty;
-				if (getNearestEnemyDistance(x, y) < 100 && typeof getNearestEnemyDistance(x, y) == "number") {
-					let enemyid = getNearestEnemy(x, y);
-					let width = loadedjson.enemy[enemy[enemyid].id].width;
-					let height = loadedjson.enemy[enemy[enemyid].id].height;
-					players[i].weapon.autoAimx += Math.sign((enemy[enemyid].x + width / 2 - players[i].weapon.x + 16) / 32) * 2;
-					players[i].weapon.autoAimy += Math.sign((enemy[enemyid].y + height / 2 - players[i].weapon.y + 16) / 32) * 2;
-				}
-			}
-			if (players[i].weapon.timer > 12) {
-				players[i].weapon.autoAimx = players[i].weapon.autoAimx * 0.25;
-				players[i].weapon.autoAimy = players[i].weapon.autoAimy * 0.25;
-			}
-
-			//剣の座標の計算
-			players[i].weapon.x = Math.floor(players[i].weapon.rotatex * (Math.sin(Math.PI / 2 * players[i].weapon.timer / 12) * 64) + players[i].weapon.autoAimx + subplayerx(i));
-			players[i].weapon.y = Math.floor(players[i].weapon.rotatey * (Math.sin(Math.PI / 2 * players[i].weapon.timer / 12) * 64) + players[i].weapon.autoAimy + subplayery(i));
-
-			//カウントアップ
-			if (hit_enemy.length == 0 || !game.weapon_canlock) players[i].weapon.timer += players[i].weapon.speed;
-
-			//リセット
-			if (players[i].weapon.timer >= 24) {
-				players[i].weapon.timer = 0;
-				players[i].weapon.x = 0;
-				players[i].weapon.y = 0;
-				players[i].weapon.startx = 0;
-				players[i].weapon.starty = 0;
-				players[i].weapon.autoAimx = 0;
-				players[i].weapon.autoAimy = 0;
-				players[i].weapon.rotatex = 0;
-				players[i].weapon.rotatey = 0;
-				players[i].weapon.lock = -1;
-			}
-
-		} else {
-			players[i].weapon.timer--;
-		}
-	}
-}
-
-//向きを取得
-function player_rotate() {
-	if (player.up && !player.down && !player.right && !player.left) player.facing = 2;
-	if (!player.up && player.down && !player.right && !player.left) player.facing = 0;
-	if (!player.up && !player.down && player.right && !player.left) player.facing = 3;
-	if (!player.up && !player.down && !player.right && player.left) player.facing = 1;
-	if (player.up && !player.down && player.right && !player.left) player.facing = 3;
-	if (player.up && !player.down && !player.right && player.left) player.facing = 1;
-	if (!player.up && player.down && player.right && !player.left) player.facing = 3;
-	if (!player.up && player.down && !player.right && player.left) player.facing = 1;
-	//if (!player.up && !player.down && player.right && player.left) player.facing = 0;
-	//if (player.up && player.down && !player.right && !player.left) player.facing = 0;
-	if (player.up && !player.down && player.right && player.left) player.facing = 2;
-	if (!player.up && player.down && player.right && player.left) player.facing = 0;
-	if (player.up && player.down && player.right && !player.left) player.facing = 3;
-	if (player.up && player.down && !player.right && player.left) player.facing = 1;
-	//if (player.up && player.down && player.right && player.left) player.facing = 0;
-
-
-	if (player.up && !player.down && !player.right && !player.left) player.rotate = 4;
-	if (!player.up && player.down && !player.right && !player.left) player.rotate = 0;
-	if (!player.up && !player.down && player.right && !player.left) player.rotate = 6;
-	if (!player.up && !player.down && !player.right && player.left) player.rotate = 2;
-	if (player.up && !player.down && player.right && !player.left) player.rotate = 5;
-	if (player.up && !player.down && !player.right && player.left) player.rotate = 3;
-	if (!player.up && player.down && player.right && !player.left) player.rotate = 7;
-	if (!player.up && player.down && !player.right && player.left) player.rotate = 1;
-	//if (!player.up && !player.down && player.right && player.left) player.rotate = 0;
-	//if (player.up && player.down && !player.right && !player.left) player.rotate = 0;
-	if (player.up && !player.down && player.right && player.left) player.rotate = 4;
-	if (!player.up && player.down && player.right && player.left) player.rotate = 0;
-	if (player.up && player.down && player.right && !player.left) player.rotate = 6;
-	if (player.up && player.down && !player.right && player.left) player.rotate = 2;
-	//if (player.up && player.down && player.right && player.left) player.rotate = 0;
-}
-
-function player_npc_talk() {
-	for (let i in npc) {
-		let it = npc[i];
-		let facing = new Vec2(game.facing_pos[player.facing][0], game.facing_pos[player.facing][1]);
-
-		if (key_groups_down.confirm) {
-			if (hitbox_rect(it.x, it.y, 16, 16, player.x + 4 + facing.x * 16, player.y + 4 + facing.y * 16, 8, 8)) {
-				talk_npc(i); return;
-			}
-		}
-	}
+	return null;
 }
 
 function talk_npc(i) {
@@ -2584,66 +3530,48 @@ async function mapchange(ID, x, y, loadonly = false) {
 
 		await Promise.all(gets);
 	}
-	player.mapID = ID;
+	PlayerControl.mapID = ID;
 
 	if (!loadonly) {
-		enemy.splice(0, Infinity);
-		npc.splice(0, Infinity);
-		for (let i in loadedjson.MapMeta.npc) {
-			let it = loadedjson.MapMeta.npc[i]
-			npc.push(new NPC(it.x, it.y, it.id, it.dialogueID))
+		entities = new Array();//初期化
+		for (let entity of loadedjson.MapMeta.entity ?? []) {
+			new entityClasses[entity.id](entity.x, entity.y, entity.dialogueID);
 		}
 
 		//プレイヤーの場所を移動
-		if (typeof x != "undefined" && typeof y != "undefined" && !isNaN(x) && !isNaN(y)) [player.x, player.y] = [x, y];
-		if (typeof x == "undefined" || typeof y == "undefined" || isNaN(x) || isNaN(y)) [player.x, player.y] = [loadedjson.Map.player[0], loadedjson.Map.player[1]];
+		//引数で指定された座標
+		if (typeof x != "undefined" && typeof y != "undefined" && !isNaN(x) && !isNaN(y))
+			[PlayerControl.pos.x, PlayerControl.pos.y] = [x, y];
+
+		//デフォルトの座標
+		if (typeof x == "undefined" || typeof y == "undefined" || isNaN(x) || isNaN(y))
+			[PlayerControl.pos.x, PlayerControl.pos.y] = [loadedjson.Map.player[0], loadedjson.Map.player[1]];
 	}
 	IsLoading = false;
 }
 
 function subplayerx(i) {
-	return player.movelog[i * 16][0];
+	return PlayerControl.movelog[i * 16].x;
 }
 
 function subplayery(i) {
-	return player.movelog[i * 16][1];
+	return PlayerControl.movelog[i * 16].y;
 }
 
 function subplayerdrawx(i) {
-	return subplayerx(i) - player.scrollx;
+	return subplayerx(i) - Cam.x;
 }
 
 function subplayerdrawy(i) {
-	return subplayery(i) - player.scrolly;
-}
-
-function enemyx(i) {
-	return enemy[i * 16].x;
-}
-
-function enemyy(i) {
-	return enemy[i * 16].y;
-}
-
-function enemydrawx(i) {
-	return enemyx(i) - player.scrollx;
-}
-
-function enemydrawy(i) {
-	return enemyy(i) - player.scrolly;
-}
-
-function get_enemy_data(i, data) {
-	return loadedjson.enemy[enemy[i].id][data];
+	return subplayery(i) - Cam.y;
 }
 
 function get_item_data_index(i, data) {
 	return loadedjson.item[i][data];
-
 }
 
 function get_item_data(i, data) {
-	return loadedjson.item[player.items[i].id][data];
+	return loadedjson.item[PlayerControl.items[i].id][data];
 }
 /**
  * 翻訳後の文字列を返します
@@ -2651,7 +3579,7 @@ function get_item_data(i, data) {
  * @param  {...string} param パラメーター
  * @returns 
  */
-function get_text(key, ...param) {
+function translate(key, ...param) {
 	if (typeof game.lang[key] != "string") return key;
 
 	let text = game.lang[key];
@@ -2661,266 +3589,10 @@ function get_text(key, ...param) {
 	return text;
 }
 
-function enemy_proc() {
-
-	if (IsLoading) return;
-
-	for (const i in enemy) {
-		enemy_move_proc(i);
-		enemy_knockback_move(i);
-		enemy_damage_proc(i);
-		enemy_overlap(i);
-		slime_animation_proc(i);
-		enemy_become_proc(i);
-		enemy_slime_attack_proc(i)
+function entity_tick() {
+	for (const element of entities) {
+		element.tick();
 	}
-	enemy_death_proc();
-}
-
-function enemy_move_proc(i) {
-
-	//スピード調整
-	if (enemy[i].xspd > 0) {
-		enemy[i].xspd = Math.floor(enemy[i].xspd * 0.85 * 1000) / 1000;
-	} else {
-		enemy[i].xspd = Math.ceil(enemy[i].xspd * 0.85 * 1000) / 1000;
-	}
-	if (enemy[i].yspd > 0) {
-		enemy[i].yspd = Math.floor(enemy[i].yspd * 0.85 * 1000) / 1000;
-	} else {
-		enemy[i].yspd = Math.ceil(enemy[i].yspd * 0.85 * 1000) / 1000;
-	}
-
-	//動き替える
-	if (enemy[i].id == 1) enemy_slime_move_proc(i);
-	if (enemy[i].id == 3) enemy_gorilla_move_proc(i);
-
-	//移動
-	enemy_move(i, enemy[i].xspd, enemy[i].yspd);
-}
-
-function enemy_move(i, x, y) {
-
-	//移動
-	for (let j = 0; j < Math.round(Math.abs(x)); j++) {
-		enemy[i].x += Math.sign(x);
-		if (hitbox(enemy[i].x, enemy[i].y)) enemy[i].x -= Math.sign(x);
-		if (j > game.move_limit) break;
-	}
-	for (let j = 0; j < Math.round(Math.abs(y)); j++) {
-		enemy[i].y += Math.sign(y);
-		if (hitbox(enemy[i].x, enemy[i].y)) enemy[i].y -= Math.sign(y);
-		if (j > game.move_limit) break;
-	}
-}
-
-function enemy_slime_move_proc(i) {
-
-	if (enemy[i].attack.hostility) {
-		enemy_move_hostility(i)
-	} else {
-		enemy_move_normal(i)
-	}
-}
-
-function enemy_gorilla_move_proc(i) {
-
-	if (enemy[i].attack.hostility) {
-		enemy_move_hostility(i)
-	} else {
-		enemy_move_normal(i)
-	}
-}
-
-function enemy_move_normal(i) {
-
-	if (enemy[i].move[0]) enemy[i].yspd -= enemy_speed;
-	if (enemy[i].move[1]) enemy[i].yspd += enemy_speed;
-	if (enemy[i].move[2]) enemy[i].xspd += enemy_speed;
-	if (enemy[i].move[3]) enemy[i].xspd -= enemy_speed;
-	if (enemy[i].move[4] > 0) enemy[i].move[4] -= 1;
-
-	if (!enemy[i].move[4] > 0) {
-		enemy[i].move[0] = false;
-		enemy[i].move[1] = false;
-		enemy[i].move[2] = false;
-		enemy[i].move[3] = false;
-
-		if (Math.random() > 0.95) {
-			if (Math.random() > 0.9) enemy[i].move[0] = true;
-			if (Math.random() > 0.9) enemy[i].move[1] = true;
-			if (Math.random() > 0.9) enemy[i].move[2] = true;
-			if (Math.random() > 0.9) enemy[i].move[3] = true;
-			if (enemy[i].move[0] || enemy[i].move[1] || enemy[i].move[2] || enemy[i].move[3]) enemy[i].move[4] = Math.floor(Math.random() * 5 + 5);
-		}
-	}
-
-	if (enemy[i].move[4] > 0) {
-		enemy[i].moving = true;
-	} else {
-		enemy[i].moving = false;
-	}
-}
-
-function enemy_move_hostility(i) {
-	let dis = getDistance(enemy[i].x, enemy[i].y, subplayerx(0), subplayery(0));
-	if (dis < 16) {
-		enemy[i].moving = false;
-		return
-	}
-
-	let r = calcAngleDegrees(player.x + game.facing_pos[player.facing][0] - enemy[i].x, player.y + game.facing_pos[player.facing][1] - enemy[i].y);
-	enemy[i].xspd += enemy_speed * (Math.cos(r) + "").slice(0);
-	enemy[i].yspd += enemy_speed * (Math.sin(r) + "").slice(0);
-
-	enemy[i].moving = true;
-	return
-}
-
-function slime_animation_proc(i) {
-	if (enemy[i].moving) enemy[i].anim.animing = true;
-	if (enemy[i].anim.animing) enemy[i].anim.tick++;
-	if (enemy[i].anim.tick >= 20) {
-		enemy[i].anim.tick = 0;
-		enemy[i].anim.animing = false;
-	}
-
-	if (enemy[i].id == 1 && enemy[i].anim.tick == 8) createParticle(getEnemyCenter(i).x, getEnemyCenter(i).y, 1, 2);
-
-
-	if (enemy[i].attack_anim.animing) enemy[i].attack_anim.tick++;
-	if (enemy[i].attack_anim.tick >= 20) {
-		enemy[i].attack_anim.tick = 0;
-		enemy[i].attack_anim.animing = false;
-	}
-}
-
-function enemy_overlap(i) {
-	for (const j in enemy) {
-		if (i != j) {
-			if (hitbox_rect(enemy[i].x, enemy[i].y, loadedjson.enemy[enemy[i].id].width, loadedjson.enemy[enemy[i].id].height, enemy[j].x, enemy[j].y, loadedjson.enemy[enemy[j].id].width, loadedjson.enemy[enemy[j].id].height)) {
-
-				let r = calcAngleDegrees(player.x + game.facing_pos[player.facing][0] - enemy[i].x, player.y + game.facing_pos[player.facing][1] - enemy[i].y);
-				let d = getDistance(enemy[i].x, enemy[i].y, enemy[j].x, enemy[j].y);
-				//enemy_knockback(i, (Math.cos(r - 180) + "").slice(0) * Random(0, 1), (Math.sin(r - 180) + "").slice(0) * Random(0, 1));
-				if (r != 1) enemy_move(i, (Math.cos(r - 180) + "").slice(0) * Random(0, 1), (Math.sin(r - 180) + "").slice(0) * Random(0, 1))
-				//console.log([enemy[i].xknb, enemy[i].yknb])
-			}
-		}
-	}
-}
-
-function enemy_knockback(i, x, y) {
-	if (x == Infinity || y == Infinity) alert("infinity")
-	enemy[i].xknb += x;
-	enemy[i].yknb += y;
-}
-
-function enemy_knockback_move(i) {
-	//移動
-	enemy_move(i, enemy[i].xknb, enemy[i].yknb);
-
-	enemy[i].xknb -= enemy[i].xknb * 0.2;
-	enemy[i].yknb -= enemy[i].yknb * 0.2;
-}
-
-function enemy_become_proc(i) {
-	enemy[i].attack.timer--;
-	if (enemy[i].attack.hostility && enemy[i].attack.timer <= 0 && getDistance(player.x, player.y, enemy[i].x, enemy[i].y) > 64) enemy[i].attack.hostility = false;
-}
-
-function enemy_slime_attack_proc(i) {
-	enemy[i].attack.cool_down--;
-	if (!enemy[i].attack.hostility) return;
-
-	if (hitbox_rect(enemy[i].x, enemy[i].y, get_enemy_data(i, "width"), get_enemy_data(i, "height"), player.x, player.y, 16, 16)) {
-		if (enemy[i].attack.cool_down <= 0) {
-			enemy[i].attack.cool_down = 50
-			enemy[i].attack_anim.animing = true;
-			enemy[i].attack_anim.tick = 0;
-		}
-
-		if (enemy[i].attack_anim.tick == 10) player_damage(10, -Math.sign(getEnemyCenter(i).x - (player.x + 8)), -Math.sign(getEnemyCenter(i).y - (player.y + 8)));
-		//console.log("attacked"); 
-	}
-}
-
-/**
- * 
- * @param {*} i enemyID
- * @param {*} damage 与えるダメージの量
- * @param {*} rx ノックバックの方向
- * @param {*} ry ノックバックの方向
- * @param {*} byPlayer 敵対するかどうか
- * @returns true:ダメージを与えた　false:ダメージを与えられなかった
- */
-function enemy_damage(i, damage, rx = 0, ry = 0, byPlayer = false) {
-	//クールダウン判定
-	if (enemy[i].damage_cooldown > 0) return false;
-
-	//敵対処理
-	if (byPlayer) enemy_become_hostility(i);
-
-	//効果音
-	PlaySound("damage", "enemy", true);
-
-	//ノックバック処理
-	if (typeof rx != "undefined" && typeof ry != "undefined") {
-		enemy_knockback(i, rx, ry);
-	}
-
-	//ダメージ処理
-	enemy[i].hp -= damage;
-	//クールダウン処理
-	enemy[i].damage_cooldown += 5;
-
-	//エフェクト処理
-	enemy[i].damage_effect.damage += damage;
-	enemy[i].damage_effect.view_time = 100;
-	enemy[i].damage_effect.Last_damage_timer = 250;
-	createParticle(getEnemyCenter(i).x, getEnemyCenter(i).y, 1, 1);
-
-	return true;
-}
-
-function enemy_become_hostility(i, timer = 1000) {
-	enemy[i].attack.hostility = true
-	enemy[i].attack.timer = timer;
-}
-
-function enemy_damage_proc(i) {
-	//エフェクトの処理
-	if (enemy[i].damage_effect.view_time > 0) enemy[i].damage_effect.view_time--;
-	if (enemy[i].damage_effect.view_time <= 0) enemy[i].damage_effect.damage = 0;
-
-	//ダメージクールダウンの処理
-	enemy[i].damage_cooldown--;
-
-	//ダメージタイマーの処理
-	enemy[i].damage_effect.Last_damage_timer--;
-}
-
-function enemy_death_proc() {
-	for (const i in enemy) {
-		if (enemy[i].hp <= 0) {
-			//倒したときのパーティクル
-			createParticle(enemy[i].x, enemy[i].y, 0, 5); enemy_delete(i);
-
-			//効果音
-			PlaySound("death", "enemy");
-			return;
-		}
-
-		//despawn
-		if (getDistance(player.x + 8, player.y + 8, enemy[i].x, enemy[i].y) > 256 + 16 && !enemy[i].attack.hostility) {
-			enemy_delete(i);
-			return;
-		}
-	}
-}
-
-function enemy_delete(i) {
-	enemy.splice(i, 1);
 }
 
 function enemy_spawn_event() {
@@ -2929,8 +3601,8 @@ function enemy_spawn_event() {
 
 	for (let i = 0; i < 360; i += 3) {
 		let r = 16;
-		let x = Math.floor(player.x / 16 + Math.cos(i) * r);
-		let y = Math.floor(player.y / 16 + Math.sin(i) * r);
+		let x = Math.floor(PlayerControl.pos.x / 16 + Math.cos(i) * r);
+		let y = Math.floor(PlayerControl.pos.y / 16 + Math.sin(i) * r);
 		enemy_spawn_check(x, y);
 	}
 }
@@ -2942,185 +3614,24 @@ function enemy_spawn_check(x, y) {
 
 	//敵をスポーンする場所かを調べる
 	let ID = game.getTileID("enemy", x, y);
-	if (ID == null || typeof ID != "number") return;
+	if (ID == null || typeof ID != "number") return false;
 
 	//敵が既にスポーンされてないか調べる
-	for (const i in enemy) {
-		if (enemy[i].sp[0] == x && enemy[i].sp[1] == y) return;
+	for (const enemy of entities.filter(value => value.hasFamily("Enemy"))) {
+		if (enemy.spawn.x == x * 16 && enemy.spawn.y == y * 16) return false;
 	}
-	enemy.push(new Enemy(x, y, ID));
+	if (!entityClasses.hasOwnProperty(ID)) return false;
 
-}
+	new entityClasses[ID](x * 16, y * 16);
+	return true;
 
-function npc_proc() {
-	for (let i in npc) {
-		npc_move_proc(i)
-
-	}
-}
-
-function npc_move_proc(i) {
-
-	npc_rotate(i);
-
-
-	if (Math.abs(npc[i].xspd) != 0 || Math.abs(npc[i].yspd) != 0) {
-		npc[i].moved = true;
-	} else {
-		npc[i].moved = false;
-	}
-
-	//アニメーションに使用(値を変更すると速度が変わる)
-	if (npc[i].moved) npc[i].moveTimer += 0.12;
-
-
-	//スピード調整
-	if (npc[i].xspd > 0) {
-		npc[i].xspd = Math.floor(npc[i].xspd * 0.85 * 1000) / 1000;
-	} else {
-		npc[i].xspd = Math.ceil(npc[i].xspd * 0.85 * 1000) / 1000;
-	}
-	if (npc[i].yspd > 0) {
-		npc[i].yspd = Math.floor(npc[i].yspd * 0.85 * 1000) / 1000;
-	} else {
-		npc[i].yspd = Math.ceil(npc[i].yspd * 0.85 * 1000) / 1000;
-	}
-
-	//動き替える
-
-
-	//速度移動
-	if (npc[i].up) npc[i].yspd -= 0.5;
-	if (npc[i].down) npc[i].yspd += 0.5;
-	if (npc[i].right) npc[i].xspd += 0.5;
-	if (npc[i].left) npc[i].xspd -= 0.5;
-
-	//移動
-	npc_move(i, npc[i].xspd, npc[i].yspd);
-
-
-}
-
-function npc_move(i, x, y) {
-
-	//移動
-	for (let j = 0; j < Math.round(Math.abs(x)); j++) {
-		npc[i].x += Math.sign(x);
-		if (hitbox(npc[i].x, npc[i].y)) npc[i].x -= Math.sign(x);
-		if (j > game.move_limit) break;
-	}
-	for (let j = 0; j < Math.round(Math.abs(y)); j++) {
-		npc[i].y += Math.sign(y);
-		if (hitbox(npc[i].x, npc[i].y)) npc[i].y -= Math.sign(y);
-		if (j > game.move_limit) break;
-	}
-}
-
-function npc_move_spd_add(i, x, y) {
-	x = Math.sign(x);
-	y = Math.sign(y);
-
-	npc[i].xspd += enemy_speed * x;
-	npc[i].yspd += enemy_speed * y;
-}
-
-function npc_move_random(i) {
-
-	npc[i].move[0] ? npc[i].down = true : npc[i].down = false;
-	npc[i].move[1] ? npc[i].up = true : npc[i].up = false;
-	npc[i].move[2] ? npc[i].right = true : npc[i].right = false;
-	npc[i].move[3] ? npc[i].left = true : npc[i].left = false;
-	if (npc[i].move[4] > 0) npc[i].move[4] -= 1;
-
-	if (!npc[i].move[4] > 0) {
-		npc[i].move[0] = false;
-		npc[i].move[1] = false;
-		npc[i].move[2] = false;
-		npc[i].move[3] = false;
-
-		if (Math.random() > 0.95) {
-			if (Math.random() > 0.9) npc[i].move[0] = true;
-			if (Math.random() > 0.9) npc[i].move[1] = true;
-			if (Math.random() > 0.9) npc[i].move[2] = true;
-			if (Math.random() > 0.9) npc[i].move[3] = true;
-			if (npc[i].move[0] || npc[i].move[1] || npc[i].move[2] || npc[i].move[3]) npc[i].move[4] = Math.floor(Math.random() * 5 + 5);
-		}
-	}
-
-	if (npc[i].move[4] > 0) {
-		npc[i].moving = true;
-	} else {
-		npc[i].moving = false;
-	}
-}
-
-//向きを取得
-function npc_rotate(i) {
-	if (npc[i].up && !npc[i].down && !npc[i].right && !npc[i].left) npc[i].facing = 2;
-	if (!npc[i].up && npc[i].down && !npc[i].right && !npc[i].left) npc[i].facing = 0;
-	if (!npc[i].up && !npc[i].down && npc[i].right && !npc[i].left) npc[i].facing = 3;
-	if (!npc[i].up && !npc[i].down && !npc[i].right && npc[i].left) npc[i].facing = 1;
-	if (npc[i].up && !npc[i].down && npc[i].right && !npc[i].left) npc[i].facing = 3;
-	if (npc[i].up && !npc[i].down && !npc[i].right && npc[i].left) npc[i].facing = 1;
-	if (!npc[i].up && npc[i].down && npc[i].right && !npc[i].left) npc[i].facing = 3;
-	if (!npc[i].up && npc[i].down && !npc[i].right && npc[i].left) npc[i].facing = 1;
-	//if (!npc[i].up && !npc[i].down && npc[i].right && npc[i].left) npc[i].facing = 0;
-	//if (npc[i].up && npc[i].down && !npc[i].right && !npc[i].left) npc[i].facing = 0;
-	if (npc[i].up && !npc[i].down && npc[i].right && npc[i].left) npc[i].facing = 2;
-	if (!npc[i].up && npc[i].down && npc[i].right && npc[i].left) npc[i].facing = 0;
-	if (npc[i].up && npc[i].down && npc[i].right && !npc[i].left) npc[i].facing = 3;
-	if (npc[i].up && npc[i].down && !npc[i].right && npc[i].left) npc[i].facing = 1;
-	//if (npc[i].up && npc[i].down && npc[i].right && npc[i].left) npc[i].facing = 0;
-
-
-	if (npc[i].up && !npc[i].down && !npc[i].right && !npc[i].left) npc[i].rotate = 4;
-	if (!npc[i].up && npc[i].down && !npc[i].right && !npc[i].left) npc[i].rotate = 0;
-	if (!npc[i].up && !npc[i].down && npc[i].right && !npc[i].left) npc[i].rotate = 6;
-	if (!npc[i].up && !npc[i].down && !npc[i].right && npc[i].left) npc[i].rotate = 2;
-	if (npc[i].up && !npc[i].down && npc[i].right && !npc[i].left) npc[i].rotate = 5;
-	if (npc[i].up && !npc[i].down && !npc[i].right && npc[i].left) npc[i].rotate = 3;
-	if (!npc[i].up && npc[i].down && npc[i].right && !npc[i].left) npc[i].rotate = 7;
-	if (!npc[i].up && npc[i].down && !npc[i].right && npc[i].left) npc[i].rotate = 1;
-	//if (!npc[i].up && !npc[i].down && npc[i].right && npc[i].left) npc[i].rotate = 0;
-	//if (npc[i].up && npc[i].down && !npc[i].right && !npc[i].left) npc[i].rotate = 0;
-	if (npc[i].up && !npc[i].down && npc[i].right && npc[i].left) npc[i].rotate = 4;
-	if (!npc[i].up && npc[i].down && npc[i].right && npc[i].left) npc[i].rotate = 0;
-	if (npc[i].up && npc[i].down && npc[i].right && !npc[i].left) npc[i].rotate = 6;
-	if (npc[i].up && npc[i].down && !npc[i].right && npc[i].left) npc[i].rotate = 2;
-	//if (npc[i].up && npc[i].down && npc[i].right && npc[i].left) npc[i].rotate = 0;
 }
 
 function particle_proc() {
 
 	if (IsLoading) return;
-	for (const i in particle) {
-		particle[i].tick++;
-	}
-	paricle_death_check()
-}
-
-function createParticle(spx, spy, id, count) {
-	if (count < 1.0) if (Math.random() > count) return;
-
-	for (let j = 0; j < count; j++) {
-		//データの作成
-		let def = {
-			"x": spx,
-			"y": spy,
-			"id": id,
-			"tick": 0,
-			"lifetime": Math.floor(Random(loadedjson.particle[id].lifetime[0], loadedjson.particle[id].lifetime[1])),
-			"varix": Random(-1, 1),
-			"variy": Random(-1, 1)
-		}
-		//データの追加
-		particle.push(def);
-	}
-}
-
-function paricle_death_check() {
-	for (const i in particle) {
-		if (particle[i].lifetime <= particle[i].tick) particle.splice(i, 1);
+	for (const particle of particles) {
+		particle.tick();
 	}
 }
 
@@ -3141,7 +3652,7 @@ function debug_proc() {
 
 	if (debug.hitbox_visible) for (const i in debug.hitboxes) {
 		ctx.strokeStyle = debug.hitboxes[i].color;
-		ctx.strokeRect((debug.hitboxes[i].a - player.scrollx), (debug.hitboxes[i].b - player.scrolly), debug.hitboxes[i].c, debug.hitboxes[i].d);
+		ctx.strokeRect((debug.hitboxes[i].a - Cam.x), (debug.hitboxes[i].b - Cam.y), debug.hitboxes[i].c, debug.hitboxes[i].d);
 	}
 	debug.hitboxes.splice(0);
 
@@ -3196,6 +3707,12 @@ function debug_proc() {
 		draw_texts(draw_text_debug, 128 + 32, 0)
 	}
 
+	{
+		let draw_text_debug = ["cursor", JsonUICursor.CursorOldPos.x, JsonUICursor.CursorOldPos.y]
+
+		draw_texts(draw_text_debug, 128 + 64, 64)
+	}
+
 	if (false) {
 		let draw_text_debug = ["jsonuiabout"]
 
@@ -3209,8 +3726,8 @@ function debug_proc() {
 	//キー表示
 	for (let i = 0, j = 0; i < keys.length; i++) {
 		if (keys[i].press) {
-			drawTextFont(String.fromCharCode(i), 78 * 4, j * 8);
-			drawTextFont(`${i}`, 74 * 4, j * 8);
+			drawTextFont(String.fromCharCode(i), 78 * 4, j * 8, {});
+			drawTextFont(`${i}`, 74 * 4, j * 8, {});
 			j++;
 		}
 	}
@@ -3218,11 +3735,11 @@ function debug_proc() {
 		let px = 0, dx = 0;
 		for (const key in key_groups) {
 			if (key_groups[key]) {
-				drawTextFont(key.slice(0, 2), 68 * 4, px * 8);
+				drawTextFont(key.slice(0, 2), 68 * 4, px * 8, {});
 				px++;
 			}
 			if (key_groups_down[key]) {
-				drawTextFont(key.slice(0, 2), 64 * 4, dx * 8);
+				drawTextFont(key.slice(0, 2), 64 * 4, dx * 8, {});
 				dx++;
 			}
 		}
@@ -3253,8 +3770,8 @@ function debug_proc() {
 
 	//敵描画
 	for (const i in enemy) {
-		draw_text(enemy[i].hp.toString(), enemy[i].x - player.scrollx, enemy[i].y - player.scrolly - 16);
-		draw_text(i.toString(), enemy[i].x - player.scrollx, enemy[i].y - player.scrolly - 8);
+		draw_text(enemy[i].hp.toString(), enemy[i].x - Cam.x, enemy[i].y - Cam.y - 16);
+		draw_text(i.toString(), enemy[i].x - Cam.x, enemy[i].y - Cam.y - 8);
 	}
 
 	for (const pause of debug.pause_frame) {
@@ -3291,13 +3808,13 @@ function debug_draw_touch() {
 }
 
 function editer_main() {
-	drawImg(img.players, 0, 0, 16, 16, (0 - player.scrollx), (0 - player.scrolly - 8), 16, 24);
+	drawImg(img.players, 0, 0, 16, 16, (0 - Cam.x), (0 - Cam.y - 8), 16, 24);
 }
 
 function get_select_tile_pos(mousex, mousey) {
 	return {
-		x: Math.floor(mousex / 16 / zoomX + player.scrollx / 16),
-		y: Math.floor(mousey / 16 / zoomY + player.scrolly / 16)
+		x: Math.floor(mousex / 16 / zoomX + Cam.x / 16),
+		y: Math.floor(mousey / 16 / zoomY + Cam.y / 16)
 	}
 }
 //canvas.addEventListener("click", e => console.log(get_select_tile_pos(e.offsetX, e.offsetY)))
@@ -3355,6 +3872,10 @@ function draw_text(text, textx, texty, textwidth = Infinity, textheight = Infini
 	return undefined;
 }
 
+//overdide
+function draw_text(text, textx, texty) {
+	drawTextFont(text, textx, texty, {});
+}
 /**
  * @function フォント(１文字)描画します
  * @param {string} text 文字
@@ -3383,7 +3904,7 @@ function draw_font(text, textx, texty, font = "", drawOffsetX = 0, drawOffsetY =
 function draw_texts(text, x, y) {
 
 	for (const i in text) {
-		drawTextFont(text[i], x, i * 8 + y)
+		drawTextFont(text[i], x, i * 8 + y, {});
 	}
 }
 
@@ -3453,7 +3974,15 @@ function draw_icon(i, x, y) {
 }
 */
 
-function draw_prompt(dx, dy, dw, dh, img) {
+/**
+ * 
+ * @param {Number} dx 
+ * @param {Number} dy 
+ * @param {Number} dw 
+ * @param {Number} dh 
+ * @param {Image} img *RECOMMEND: img.gui_prompt
+ */
+function draw_rectangle(dx, dy, dw, dh, img) {
 	//numlockごみ
 	ctx.drawImage(img, 0, 0, 8, 8, (dx - 8), (dy - 8), 8, 8);
 	ctx.drawImage(img, 8, 0, 8, 8, dx, (dy - 8), dw, 8);
@@ -3471,6 +4000,49 @@ function draw_prompt(dx, dy, dw, dh, img) {
 	ctx.drawImage(img, 8, 8, 8, 8, dx, dy, dw, dh);
 }
 
+/**
+ * 
+ * @param {Number} dx 
+ * @param {Number} dy 
+ * @param {Number} dw 
+ * @param {Number} dh 
+ * @param {Image} img *RECOMMEND: img.gui_prompt
+ * @param {Image} imgmore *RECOMMEND: img.gui_tab_select
+ * @param {string} type top middle bottom
+ */
+function draw_tab(dx, dy, dw, dh, img, imgtab, type, select) {
+	//numlockない最高
+	const offset = -4;
+	const selectAtlasList = {
+		"top": [[24, 0], [16, 0]],
+		"middle": [[16, 8], [NaN, NaN]],
+		"bottom": [[24, 16], [16, 16]],
+
+		"topEdge": [[32, 0], [8, 0]],
+		"middleEdge": [[NaN, NaN], [NaN, NaN]],
+		"bottomEdge": [[32, 16], [8, 16]]
+	}
+	const atlasGet = (type, edge) => new Vec2(...selectAtlasList[edge ? type + "Edge" : type][select ? 1 : 0]);
+
+	ctx.drawImage(img, 0, 0, 8, 8, (dx - 8), (dy - 8), 8, 8);
+	ctx.drawImage(img, 8, 0, 8, 8, dx, (dy - 8), dw + offset, 8);
+	ctx.drawImage(imgtab, 0, 0, 8, 8, (dx + dw + offset), (dy - 8), 8, 8);
+	ctx.drawImage(imgtab, atlasGet("top", type === "top").x, atlasGet("top", type === "top").y, 8, 8, dx + dw + offset, dy - 8, 8, 8);
+
+	ctx.drawImage(img, 0, 8, 8, 8, (dx - 8), dy, 8, dh);
+	ctx.drawImage(imgtab, 0, 8, 8, 8, (dx + dw + offset), dy, 8, dh);
+	ctx.drawImage(img, atlasGet("middle", false).x, atlasGet("middle", false).y, 8, 8, dx + dw + offset, dy, 8, dh);
+
+
+	ctx.drawImage(img, 0, 16, 8, 8, (dx - 8), (dy + dh), 8, 8);
+	ctx.drawImage(img, 8, 16, 8, 8, dx, (dy + dh), dw + offset, 8);
+	ctx.drawImage(imgtab, 0, 16, 8, 8, (dx + dw + offset), (dy + dh), 8, 8);
+	ctx.drawImage(imgtab, atlasGet("bottom", type === "bottom").x, atlasGet("bottom", type === "v").y, 8, 8, dx + dw + offset, dy + dh, 8, 8);
+
+	ctx.drawImage(img, 8, 8, 8, 8, dx, dy, dw + offset, dh);
+
+}
+
 function draw_under_page_scroll(x, y) {
 
 	draw("gui_under_page_scroll", x, y);
@@ -3483,33 +4055,26 @@ function draw_hp(p, x, y) {
 	ctx.drawImage(img.gui, 0, Math.floor(p * 9 + 3), 9, 1, x, y, 9, 1);
 }
 
+function getDrawPosX(pos) {
+	return pos - Cam.x;
+}
+
+function getDrawPosY(pos) {
+	return pos - Cam.y;
+}
 
 function game_draw() {
-	let DrawObject = new Array();
 
-	//タイル描画
 	draw_tiles("map1");
 
-	//アニメーション
-	player_animation();
-	for (let i in npc) npc_animation(i);
-
-	//プレイヤー描画
 	draw_player()
 
-	//NPC描画
-	draw_npc()
-
-	//剣描画
 	draw_weapons();
 
-	//敵描画
-	draw_enemy();
+	draw_particle();
 
-	//パーティクル描画
-	draw_particle()
+	draw_entity();
 
-	//タイル描画2
 	draw_tiles("map2");
 
 }
@@ -3538,36 +4103,34 @@ function drawImg(...img) {
 	ctx.drawImage(img[0], get(1), get(2), get(3), get(4), get(5), get(6), get(3), get(4))
 }
 
+function draw_tiles(maplayer) {
+
+	let plx = Math.floor(Cam.x / 16);
+	let ply = Math.floor(Cam.y / 16);
+
+	for (let y = 0; y < 13; y++) {
+		for (let x = 0; x < 21; x++) {
+			let tileID = game.getTileID(maplayer, x + plx, y + ply);
+
+			//軽量化
+			if (!game.DontDrawTIle.includes(tileID)) ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), 16, 16, (x * 16 + (16 - Cam.x % 16) - 16), (y * 16 + (16 - Cam.y % 16) - 16), 16, 16);
+
+		}
+	}
+}
+
 function draw_player() {
 
 	//プレイヤー描画
-	for (const i in players) {
-		ctx.drawImage(img.players, player.anim * 16, player.facing * 32, 16, 24, subplayerdrawx(i), (subplayerdrawy(i) - 8), 16, 24);
+	for (const player of players) {
+		player.draw();
 	}
 }
 
 
 function draw_weapons() {
-
-	//剣描画
-	for (const i in players) {
-		if (players[i].weapon.timer <= 0) {
-			let wtimer = players[i].weapon.timer;
-			if (players[i].weapon.timer <= -20) wtimer = -20;
-
-			draw_weapon(0, subplayerdrawx(i) + Math.floor(make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * 16), subplayerdrawy(i) + make_slip_animation(Math.asin(-wtimer / 10 / Math.PI)) * Math.floor(Math.sin(-players[i].weapon.timer / 50) * 8 - 32));
-		} else {
-
-			//                                                          v#アニメーション速度# 
-			//                                                               v#フレーム数#
-			let weapon_rotation = Math.floor((players[i].weapon.timer / 1) % 8)
-
-			draw_weapon(weapon_rotation, players[i].weapon.x - player.scrollx, players[i].weapon.y - player.scrolly);
-			draw_sweep(weapon_rotation, players[i].weapon.x - player.scrollx, players[i].weapon.y - player.scrolly);
-
-			//draw_weapon(weapon_rotation, 180 - player.scrollx, 180 - player.scrolly);
-			//draw_sweep(weapon_rotation, 180 - player.scrollx, 180 - player.scrolly);
-		}
+	for (const player of players) {
+		player.weapon.draw();
 	}
 }
 
@@ -3590,126 +4153,25 @@ function draw_sweep(rotate, x, y) {
 	//draw_text(`${weapon_offset.x}\n${weapon_offset.y}`,x,y+16)
 }
 
-function player_animation() {
+function draw_entity() {
 
-	//プレイヤー画像指定
-	if (!player.moving) {
-		player.anim = 2;
+	for (const entity of entities) {
+		entity.draw();
 	}
-	else {
-		switch (Math.floor(player.moveTimer % 4)) {
-			case 0:
-				player.anim = 0;
-				break;
-			case 1:
-				player.anim = 2;
-				break;
-			case 2:
-				player.anim = 1;
-				break;
-			case 3:
-				player.anim = 2;
-				break;
-		}
-	}
-
-}
-
-function draw_npc() {
-
-	//プレイヤー描画
-	for (const i in npc) {
-		ctx.drawImage(img.players, npc[i].anim * 16, npc[i].facing * 32, 16, 24, (npc[i].x - player.scrollx), (npc[i].y - player.scrolly - 8), 16, 24);
-	}
-}
-
-function npc_animation(i) {
-
-	//プレイヤー画像指定
-	if (!npc[i].moving) {
-		npc[i].anim = 2;
-	}
-	else {
-		switch (Math.floor(npc[i].moveTimer % 4)) {
-			case 0:
-				npc[i].anim = 0;
-				break;
-			case 1:
-				npc[i].anim = 2;
-				break;
-			case 2:
-				npc[i].anim = 1;
-				break;
-			case 3:
-				npc[i].anim = 2;
-				break;
-		}
-	}
-
-}
-
-
-function draw_tiles(maplayer) {
-
-	let plx = Math.floor(player.scrollx / 16);
-	let ply = Math.floor(player.scrolly / 16);
-
-	for (let y = 0; y < 13; y++) {
-		for (let x = 0; x < 21; x++) {
-			let tileID = game.getTileID(maplayer, x + plx, y + ply);
-
-			//軽量化
-			if (!game.DontDrawTIle.includes(tileID)) ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), 16, 16, (x * 16 + (16 - player.scrollx % 16) - 16), (y * 16 + (16 - player.scrolly % 16) - 16), 16, 16);
-
-		}
-	}
-}
-
-function draw_enemy() {
-
-	for (const i in enemy) {
-		let t = enemy[i];
-
-		let anim = Math.sin(enemy[i].attack_anim.tick / 20 * game.PI);
-
-		if (t.id == 1) drawImg(img.enemy, slime_animation(i).x, slime_animation(i).y, 16, 16, t.x - player.scrollx, t.y - player.scrolly - anim * 16);
-		if (t.id == 2) drawImg(img.enemy, 0, 16, 16, 32, t.x - player.scrollx, t.y - player.scrolly);
-		if (t.id == 3) drawImg(img.enemy, gorilla_animation(i).x, gorilla_animation(i).y, 32, 32, t.x - player.scrollx, t.y - player.scrolly);
-
-		if (enemy[i].damage_effect.Last_damage_timer > 0) draw_hp(t.hp / loadedjson.enemy[t.id].hp, getEnemyCenter(i).x - player.scrollx - 5, t.y - player.scrolly);
-		if (enemy[i].damage_effect.view_time != 0) draw_text(enemy[i].damage_effect.damage + "", enemy[i].x - player.scrollx, enemy[i].y - 16 - Math.log10(-8 * (enemy[i].damage_effect.view_time / 100 - 1)) * 8 - player.scrolly);
-		//if (enemy[i].damage_effect.view_time != 0) draw_text(-8 *( enemy[i].damage_effect.view_time / 100 - 1)  + "", enemy[i].x - player.scrollx, enemy[i].y + 16 - Math.log10((enemy[i].damage_effect.view_time / 100 * 8) * 2) - player.scrolly);
-	}
-}
-
-function slime_animation(i) {
-
-	let x = 0;
-	let y = 0;
-
-	if (enemy[i].anim.animing) x = Math.floor(enemy[i].anim.tick / 20 * 3);
-	if (enemy[i].attack_anim.animing) x = Math.floor(enemy[i].attack_anim.tick / 20 * 3);
-
-	return new Vec2(x * 16, y * 16);
-}
-
-function gorilla_animation(i) {
-
-	let x = 0;
-	let y = 0;
-
-	if (enemy[i].anim.animing) x = Math.floor(enemy[i].anim.tick / 20 * 3);
-	//if (enemy[i].attack_anim.animing) x = Math.floor(enemy[i].attack_anim.tick / 20 * 3);
-
-	return new Vec2(x * 32 + 32, y * 32 + 16);
 }
 function draw_particle() {
 
+	for (let particle of particles) {
+		particle.draw();
+	}
+
+	return;
+
 	for (const i in particle) {
 		let t = particle[i];
-		if (t.id == 0) drawImg(img.particle, Math.floor(t.tick / t.lifetime * 8) * 16, 0, 16, 16, t.x - player.scrollx + particle_death_offset(i)[0], t.y - player.scrolly + particle_death_offset(i)[1]);
-		if (t.id == 1) drawImg(img.particle, 0, 16, 16, 16, t.x - player.scrollx + t.varix * 16 * make_scatter_animation(t.tick / t.lifetime), t.y - player.scrolly - make_jump_animation(t.tick / t.lifetime * 2) * 4);
-		if (t.id == 2) drawImg(img.particle, 16, 16, 16, 16, t.x - player.scrollx + t.varix * 16 * make_scatter_animation(t.tick / t.lifetime), t.y - player.scrolly - make_jump_animation(t.tick / t.lifetime * 2) * 4);
+		if (t.id == 0) drawImg(img.particle, Math.floor(t.tick / t.lifetime * 8) * 16, 0, 16, 16, t.x - Cam.x + particle_death_offset(i)[0], t.y - Cam.y + particle_death_offset(i)[1]);
+		if (t.id == 1) drawImg(img.particle, 0, 16, 16, 16, t.x - Cam.x + t.varix * 16 * make_scatter_animation(t.tick / t.lifetime), t.y - Cam.y - make_jump_animation(t.tick / t.lifetime * 2) * 4);
+		if (t.id == 2) drawImg(img.particle, 16, 16, 16, 16, t.x - Cam.x + t.varix * 16 * make_scatter_animation(t.tick / t.lifetime), t.y - Cam.y - make_jump_animation(t.tick / t.lifetime * 2) * 4);
 	}
 }
 
@@ -3720,614 +4182,9 @@ function particle_death_offset(i) {
 }
 
 
-function gui_draw() {
-	//カーソルの変数の作成
-	let cursor = new Array();
-
-	//体力描画
-	draw_prompt(8, 8, 7 * 8, players.length * 8, img.gui_prompt);
-
-	for (const i in players) {
-		ctx.drawImage(img.gui_menu, players[i].id * 8, 48, 8, 8, 8, (i * 8 + 1 * 8), 8, 8);
-		ctx.drawImage(img.gui_menu, 0, 32, 16, 8, 16, (i * 8 + 1 * 8), 16, 8);
-		draw_text(players[i].hp + "", 32, (i * 8 + 1 * 8));
-	}
-
-	//マップ名描画
-	if (MapNameText.active) {
-		let x = 0;
-		if (0 <= MapNameText.time < 60) x += easeOutExpo((MapNameText.time - 0) / 60);
-		if (180 <= MapNameText.time < 240) x += easeInExpo((MapNameText.time - 180) / 60);
-		x *= ScreenWidth / 2;
-		draw_text(MapNameText.text, x, 64, Infinity, Infinity, "", 0);
-	}
-
-	//メッセージ描画
-	if (gui.message.visible) {
-		draw_prompt(5 * 8, 13 * 8, 32 * 8, 8 * 8, img.gui_message);
-		draw_text(typeof gui.message.text === "string" ? gui.message.text : gui.message.text[gui.message.index].text, 40, 104, 31);
-
-		if (debug.visible) draw_text(gui.message.index, 40, 104 - 16);
-	}
-
-	//メニュー描画
-	if (menu.visible) {
-		ctx.drawImage(img.gui_tab, 0, 0, 64, 32, (5 * 8 - 4), (3 * 8 - 4), 64, 32);
-		ctx.drawImage(img.gui_tab, 0, 0, 64, 32, (13 * 8 - 4), (3 * 8 - 4), 64, 32);
-		ctx.drawImage(img.gui_tab, 0, 0, 64, 32, (21 * 8 - 4), (3 * 8 - 4), 64, 32);
-		ctx.drawImage(img.gui_tab, 0, 0, 64, 32, (29 * 8 - 4), (3 * 8 - 4), 64, 32);
-
-		draw_prompt(5 * 8, 5 * 8, 32 * 8, 16 * 8, img.gui_prompt);
-
-		ctx.drawImage(img.gui_tab, game.tab_offset[menu.tab], menu.tab_select * 32 + 32, 64, 32, ((5 + 8 * menu.tab) * 8 - 4), (3 * 8 - 4), 64, 32);
-
-		//タブテキスト描画
-		draw_icon("party", 5 * 8, 3 * 8);
-		draw_text(get_text("menu.tab.party"), 6 * 8, 3 * 8);
-		draw_icon("items", 13 * 8, 3 * 8);
-		draw_text(get_text("menu.tab.items"), 14 * 8, 3 * 8);
-		draw_icon("equip", 21 * 8, 3 * 8);
-		draw_text(get_text("menu.tab.equip"), 22 * 8, 3 * 8);
-		draw_icon("system", 29 * 8, 3 * 8);
-		draw_text(get_text("menu.tab.system"), 30 * 8, 3 * 8);
-
-		let cursorX = [40];
-
-		//party
-		if (menu.tab === 0) {
-			ctx.drawImage(img.players, 0, 0, 16, 16, 5 * 8, 5 * 8, 16, 16);
-			draw("hp", 5 * 8, 8 * 8);
-			draw_text(players[0].hp + "", 7 * 8, 8 * 8);
-
-		}
-
-		//items
-		if (menu.tab === 1) {
-			cursorX = [40 - 8];
-			for (let i in player.items.slice(menu.scroll[0], menu.scroll[0] + 8)) {
-				draw_gui_item(40, 5 * 8 + i * 16, Number(i) + menu.scroll[0]);
-			}
-			draw_scroll_bar(18 * 16, 6 * 8, menu.scroll[0] / Math.max(menu.scroll[0], player.items.length - 8), 128 - 16);
-		}
-
-		//equip
-		if (menu.tab === 2) {
-
-		}
-
-		//system
-		if (menu.tab === 3) {
-			cursorX = [4 * 8, 12 * 8, 14 * 8, 33 * 8];
-			//右のリスト
-			//config
-			if (menu.item_select[0] === 0) {
-				let itemselect = 0;
-				if (menu.item_select[1] != undefined) itemselect = menu.item_select[1];
-				let configs = loadedjson.configs[game.config_name[itemselect]];
-
-				//縦線
-				draw_gui_vertical_line(14, 5, true);
-				drawImg(img.gui_prompt, 8, 8, 8, 8, 14 * 8, itemselect * 16 + 5 * 8)
-
-
-				let func = (i, dx) => {
-					if (configs[i].default == config[configs[i].variable]) draw_font("D", 36 * 8, dx * 16 + 5 * 8);
-
-					if (configs[i].type === "bool") draw(config[configs[i].variable] ? "switch_on" : "switch_off", 34 * 8, dx * 16 + 5 * 8);
-
-					if (configs[i].type === "number") draw_text(config[configs[i].variable], 36 * 8, dx * 16 + 5 * 8, Infinity, Infinity, "", 1);
-				}
-				draw_gui_items(configs, "name", 15 * 8, 5 * 8, 25, 8, 16, 8, menu.scroll[2], func);
-
-				//数値編集の矢印
-				if (menu.config_num.mode != -1 || menu.config_num.timer >= 50) {
-					let ofsY = 0;
-					if (menu.config_num.mode == 1) ofsY = easeOutExpo(limit(menu.config_num.timer / 100, 0, 1)) * 4;
-					if (menu.config_num.mode == -1) ofsY = easeInExpo(limit(menu.config_num.timer / 100, 0, 1)) * 4;
-					draw("config_num_up", 34 * 8 + 4, (menu.item_select[2] - menu.scroll[menu.select_length - 1]) * 16 + 5 * 8 - ofsY);
-					draw("config_num_down", 34 * 8 + 4, (menu.item_select[2] - menu.scroll[menu.select_length - 1]) * 16 + 5 * 8 + ofsY);
-				}
-
-				//中央のリスト
-				for (let x in game.config_icons) {
-					draw_icon(game.config_icons[x], 13 * 8, (2.5 + Number(x)) * 16)
-				}
-
-				draw_text("test", 14 * 8, 20 * 8)
-
-			}
-
-			//data
-			if (menu.item_select[0] === 1) {
-				draw_gui_items(game.gui_system_data_items, false, 14 * 8, 5 * 8, 25, 2, 16);
-
-				let [savepath, savename, SavedTime, FileSize] = ["???", "???", "???", "???"];
-				if (typeof LastSavedFileData !== "undefined") savename = LastSavedFileData.name;
-
-				if (typeof LastSavedFileData !== "undefined") FileSize = floor(LastSavedFileData.size / 1000, -1) + "KB";
-
-				if (typeof dirHandle !== "undefined" && typeof LastSavedFileData !== "undefined")
-					savepath = slice(dirHandle.name, 5, "…") + "/" + LastSavedFileData.name;
-
-				if (typeof fileHandle !== "undefined")
-					savepath = fileHandle.name;
-
-				if (typeof LastSavedTime !== "undefined") SavedTime = LastSavedTime.toLocaleString();
-
-
-				if (game.saveloadfaliedtime + game.PopUpDelay > timer)
-					draw_text(get_text("menu.loadfailed.type" + game.saveloadfaliedtype), 14 * 8, 16 * 8);
-				if (game.saveloadsuccesstime + game.PopUpDelay > timer)
-					draw_text(get_text("menu.loadsuccess.type" + game.saveloadsuccesstype), 14 * 8, 16 * 8);
-
-				draw_text(get_text("menu.FileSize") + FileSize, 14 * 8, 18 * 8);
-
-				draw_text(get_text("menu.LastSavedTime") + SavedTime, 14 * 8, 19 * 8);
-
-				draw_text(get_text("menu.saved") + savepath, 14 * 8, 20 * 8, 22);
-
-				//playtime
-				{//playtime
-					draw_icon("clock", 31 * 8, 6 * 8)
-					draw_text(get_text("menu.playtimeS"), 31 * 8, 5 * 8)
-					draw_text(`${zeroPadding(milsecToTime(playTime).hour, 2)}:${zeroPadding(milsecToTime(playTime).min, 2)}`, 32 * 8, 6 * 8);
-				}
-				{//savedataplaytime
-					draw_icon("save", 31 * 8, 8 * 8)
-					draw_text(get_text("menu.savedataplaytimeS"), 31 * 8, 7 * 8)
-					draw_text(typeof LastSavedFileData !== "undefined" ? `${zeroPadding(milsecToTime(SaveDataPlayTime).hour, 2)}:${zeroPadding(milsecToTime(SaveDataPlayTime).min, 2)}` : "??:??", 32 * 8, 8 * 8);
-				}
-				if (debug.visible) {
-					draw_text("PlayTime", 23 * 8, 10 * 8);
-					draw_text(playTime, 23 * 8, 11 * 8);
-					draw_text("SavedPlayTime", 23 * 8, 12 * 8);
-					draw_text(SavedPlayTime, 23 * 8, 13 * 8);
-					draw_text("SaveDataPlayTime", 23 * 8, 14 * 8);
-					draw_text(SaveDataPlayTime, 23 * 8, 15 * 8);
-				}
-			}
-
-
-			//about
-			if (menu.item_select[0] === 2) {
-				draw_text(get_text("menu.playtime"), 13 * 8, 5 * 8)
-				draw_text(`${zeroPadding(milsecToTime(playTime).hour, 2)}:${zeroPadding(milsecToTime(playTime).min, 2)}`, 13 * 8, 6 * 8);
-			}
-
-			//左のリスト
-			draw_gui_items(game.gui_system_items, false, 6 * 8, 5 * 8, 25, 2, 16);
-
-
-			//縦線
-			draw_gui_vertical_line(12, 5);
-
-		}
-
-
-
-
-		//カーソル//
-		let select_y_size = game.select_y_size[menu.tab];
-		//タブ
-		cursor.push(new Vec2(menu.tab * 64 + 4 * 8, 3 * 8));
-
-		if (!menu.tab_select)
-			for (let l in menu.item_select)
-				cursor.push(new Vec2(cursorX[l], (menu.item_select[l] - menu.scroll[l]) * select_y_size + 5 * 8));
-
-		if (menu.mode === "ConfigNumEdit") cursor.push(new Vec2(32 * 8, (menu.item_select[2] - menu.scroll[2]) * select_y_size + 5 * 8));
-
-
-	}
-
-	//誰が使いますか
-	if (menu.role_select) {
-
-		draw_prompt(10 * 8, 10 * 8, 7 * 8, 7 * 8, img.gui_prompt);
-		draw_text(get_text("menu.item_use.who_use"), 10 * 8, 10 * 8);
-
-		for (const i in players) {
-			drawImg(img.gui_menu, players[i].id * 8, 48, 8, 8, 10 * 8, (11 * 8 + i * 8));
-			drawImg(img.gui_menu, 0, 32, 16, 8, 11 * 8, (11 * 8 + i * 8));
-			draw_text(String(players[i].hp), 13 * 8, (11 * 8 + i * 8));
-		}
-		cursor.push(new Vec2(9 * 8, 11 * 8));
-	}
-
-	//メッセージ描画
-	if (gui.confirm.visible) {
-		let it = gui.confirm;
-		draw_prompt(it.pos.x, it.pos.y, 8 * 8, 8 * 8, img.gui_prompt);
-		draw_text(it.text, it.pos.x, it.pos.y, 7);
-		cursor.push(new Vec2(it.pos.x + 32 - it.selected * 32, it.pos.y + 64 - 16));
-	}
-
-	//カーソル描画//
-	cursor_draw(cursor);
-
-	//ロード画面
-	if (IsLoading) draw_loading();
-
-	//タッチボタン描画
-	draw_touch_button();
-
-}
-
-function cursor_draw(cursor) {
-
-	//カーソル描画//
-
-	let cursorOfseX = 0;
-	cursorOfseX += easeOutExpo(timer % 100 / 100) * 5;
-	cursorOfseX += easeOutExpo(1 - timer % 100 / 100) * 5;
-	cursorOfseX -= 8;
-
-	if (IsBusy()) cursorOfseX = 0;
-
-	let busyCorsor = `cursor_busy_${timer / 8 % 8 >= 6 ? 0 : 1}`;
-
-	if (menu.CursorNeedUpdate) {
-		menu.CursorNeedUpdate = false;
-		menu.CursorOldPos.x = cursor[cursor.length - 1].x;
-		menu.CursorOldPos.y = cursor[cursor.length - 1].y;
-	}
-
-	if (cursor.length !== 0) {
-		menu.CursorOldPos.x += (cursor[cursor.length - 1].x - menu.CursorOldPos.x) / 2;
-		menu.CursorOldPos.y += (cursor[cursor.length - 1].y - menu.CursorOldPos.y) / 2;
-	}
-
-	for (let i in cursor) {
-		if (i != cursor.length - 1) draw("cursor_uns", cursor[i].x, cursor[i].y);
-
-		if (i == cursor.length - 1) draw(IsBusy() ? busyCorsor : "cursor", menu.CursorOldPos.x + cursorOfseX, menu.CursorOldPos.y);
-	}
-
-}
-function title_gui_draw(dx = 64, dy = 64) {
-	let cursor = new Array();
-
-	draw_gui_items(game.title_items, undefined, dx, dy, 100, 0, 16, 100);
-	cursor.push(new Vec2(dx - 16, title_gui.item_select * 16 + dy));
-
-	cursor_draw(cursor);
-
-	draw_text("title", 0, 0)
-}
-
-/**
- * 縦線を描画します　てきとうです
- * @param {number} x 
- * @param {number} y 
- * @param {boolean} right 
- */
-function draw_gui_vertical_line(x, y, right = false) {
-	//縦線
-	switch (right) {
-		case false:
-			ctx.drawImage(img.gui_prompt_more, 0, 0, 8, 8, x * 8, (y - 1) * 8, 8, 8);
-			ctx.drawImage(img.gui_prompt, 0, 8, 8, 8, x * 8, y * 8, 8, 16 * 8);
-			ctx.drawImage(img.gui_prompt_more, 0, 8, 8, 8, x * 8, (y + 21 - 5) * 8, 8, 8);
-			break;
-		case true:
-			ctx.drawImage(img.gui_prompt_more, 8, 0, 8, 8, x * 8, (y - 1) * 8, 8, 8);
-			ctx.drawImage(img.gui_prompt, 16, 8, 8, 8, x * 8, y * 8, 8, 16 * 8);
-			ctx.drawImage(img.gui_prompt_more, 8, 8, 8, 8, x * 8, (y + 21 - 5) * 8, 8, 8);
-			break;
-	}
-}
-
-function draw_gui_item(x, y, i) {
-	//console.log(i)
-	//アイテムの名前描画
-	draw_text(get_text("item." + get_item_data(i, "name") + ".name"), 8 * 3 + x, y);
-
-	let count_offset = 13 * 8;
-	draw_text(" x", x + count_offset, y);
-	draw_text(player.items[i].count + "", x + count_offset + 2 * 8, y, undefined, undefined, "_purple");
-
-	ctx.drawImage(img.items, getTileAtlasXY(player.items[i].id, 0), getTileAtlasXY(player.items[i].id, 1), 16, 16, 24 + x, y, 16, 16);
-
-	if (get_item_data(i, "efficacy") == "health") {
-		draw("gui_item_text_health", 3 * 8 + x, y + 8);
-		draw_text(get_item_data(i, "heal_power") + "", 7 * 8 + x, y + 8, undefined, undefined, "_purple");
-	}
-}
-
-function draw_scroll_bar(x, y, p = 0, height = 64, id = null) {
-	if (isNaN(p)) p = 0;
-
-	ctx.drawImage(img.gui_scroll_bar, 0, 0, 8, 1, x, y, 8, 1);
-	ctx.drawImage(img.gui_scroll_bar, 0, 1, 8, 1, x, 2 + y, 8, -2 + height);
-	ctx.drawImage(img.gui_scroll_bar, 0, 7, 8, 1, x, (y + height - 1), 8, 1);
-
-	draw("scroll_bar", x, y + (height - 8) * p)
-
-	//デバッグ
-	if (debug.visible) draw_text("p:" + p, 128, 32);
-}
-/**
- * 
- * @param {string[]} array テキストの配列
- * @param {string|undefined} objname さらに参照するオブジェクト
- * @param {number} x 描画するx
- * @param {number} y 描画するy
- * @param {number} w テキストの幅
- * @param {number} h テキストの縦幅
- * @param {number} s 行間
- * @param {number} lines 描画するの行数 
- * @param {number} scroll スクロールのY
- * @param {object} func 実行する関数(引数に行の数が入る)
- */
-function draw_gui_items(array, objname = false, x, y, w = Infinity, h = Infinity, s = 8, lines = Infinity, scroll = 0, func = () => { }) {
-	/**
-	 * @param {number} i 参照する配列のindex
-	 * @param {number} dx 描画する行
-	 */
-	for (let i = scroll, dx = 0; dx < lines; i++, dx++) {
-		//console.log(array.length,i,array[i])
-		if (array.length <= i) return;//範囲ごえ検知
-
-		if (!objname) draw_text(get_text(array[i]), x, dx * s + y, w, h);
-		if (objname) draw_text(get_text(array[i][objname]), x, dx * s + y, w, h);
-		func(i, dx);
-	}
-}
-
-function draw_loading() {
-	draw_prompt(15 * 16, 160, 8 * 8, 8, img.gui_prompt)
-	draw_text("loading…", 15 * 16, 160, 32, 8)
-}
-
-function gui_proc() {
-
-	if (game.saveloadingnow) return;
-
-	if (IsLoading) {
-		gui_close();
-		return;
-	}
-
-	if (MapNameText.active) {
-		MapNameText.time++;
-		if (240 <= MapNameText.time) MapNameText.active = false;
-	}
-
-	//メッセージ消す
-	if (key_groups_down.confirm && gui.message.cool_down < 0) gui.message.next();
-	gui.message.cool_down--;
-
-	//メニュー表示 非表示
-	if (key_groups_down.menu) {
-		if (menu.visible) {
-			gui_close("menu");
-		} else {
-			gui_open("menu");
-		}
-	}
-
-	//承認ウィンドウ
-	if (gui.confirm.visible) {
-		if (key_groups_down.right) gui.confirm.selected = false;
-		if (key_groups_down.left) gui.confirm.selected = true;
-
-		if (key_groups_down.down || key_groups_down.confirm) {
-			if (gui.confirm.selected) gui.confirm.func_ok();
-			if (!gui.confirm.selected) gui.confirm.func_cancel();
-			gui_close("confirm");
-			return;
-		}
-		if (key_groups_down.cancel || key_groups_down.menu) {
-			gui.confirm.func_cancel();
-			gui_close("confirm");
-			return;
-		}
-		return;
-	}
-
-	let scroll_limit = Infinity;
-	let select_limit = Infinity;
-
-	//party
-	if (menu.tab === 0) {
-		scroll_limit = Infinity;
-
-	}
-	//items
-	if (menu.tab === 1) {
-		scroll_limit = player.items.length - 8;
-		//アイテム使用判定
-		item_use_proc();
-	}
-	//equip
-	if (menu.tab === 2) {
-		scroll_limit = Infinity;
-
-	}
-	//config
-	if (menu.tab === 3) {
-		scroll_limit = Infinity;
-
-		let itemselect = 0;
-		if (menu.item_select[1] != undefined) itemselect = menu.item_select[1];
-		let configs = loadedjson.configs[game.config_name[itemselect]];
-
-		if (menu.select_length == 1) select_limit = 7;
-		if (menu.select_length == 2) select_limit = game.config_icons.length - 1;
-
-		if (menu.select_length == 3 && menu.item_select[0] == 0) select_limit = configs.length - 1;
-		if (menu.select_length == 3 && menu.item_select[0] == 1) select_limit = game.gui_system_data_items.length - 1;
-
-		//数値編集の矢印
-		menu.config_num.timer += menu.config_num.mode;
-		//↓閉じるときは速さが２倍
-		if (menu.config_num.mode == -1) menu.config_num.timer += menu.config_num.mode;
-
-		//コンフィグ変更
-		//　メニュー表示     カーソル下選択        systemタブ選択　　　　タブ右選択　　　　　　　　　　　　　configタブ選択
-		if (menu.visible && !menu.tab_select && menu.tab == 3 && menu.select_length == 3 && menu.item_select[0] == 0) {//configタブ
-			if (menu.item_select[2] <= configs.length - 1) {//範囲内選択
-
-				let conf = configs[menu.item_select[2]];
-
-				if (key_groups_down.confirm || key_groups_down.right) {//選択キー処理
-					if (conf.type === "bool") {
-						config[conf.variable] = !config[conf.variable];//切り替え
-						if (config[conf.variable]) Function(conf.ONfunc)();//関数実行
-						if (!config[conf.variable]) Function(conf.OFFfunc)();//関数実行
-					}
-
-					if (conf.type === "number") {
-						menu.mode = "ConfigNumEdit"
-						{
-							menu.config_num.mode = 1;
-							menu.config_num.timer = 0;
-						}
-						return;
-					}
-				}
-				if (key_groups_down.cancel || key_groups_down.left) {//キャンセルキー処理
-					if (menu.mode === "ConfigNumEdit") {
-						menu.mode = "Default"
-						{
-							menu.config_num.mode = -1;
-							menu.config_num.timer = 100;
-						}
-						return;
-					}
-				}
-				if (menu.mode === "ConfigNumEdit") {//数値編集
-					let range = { "min": -Infinity, "max": Infinity };
-					if (conf.range != undefined) range = { "min": conf.range[0], "max": conf.range[1] };
-
-					if (key_groups_hold.up && config[conf.variable] < range.max) config[conf.variable]++;
-					if (key_groups_hold.down && config[conf.variable] > range.min) config[conf.variable]--;
-				}
-				//console.log(conf)
-			}
-		}
-		//データ
-		if (menu.select_length == 2 && menu.item_select[0] == 1) save_load_proc();
-
-		//system左右カーソル移動
-		if ((key_groups_down.left || key_groups_down.cancel /*|| (key_groups_down.up && menu.item_select[menu.select_length - 1] == 0)*/) && !menu.tab_select) {
-			if (menu.select_length === 3 && menu.item_select[0] == 0) {//config限定
-
-				menu.select_length = 2;
-
-				PlaySound("select", "gui");
-				return;
-			}
-			if (menu.select_length === 2) {
-
-				menu.select_length = 1;
-
-				PlaySound("select", "gui");
-				return;
-			}
-		}
-		if ((key_groups_down.right || key_groups_down.confirm) && !menu.tab_select) {
-			if (menu.select_length === 1) {
-				menu.select_length = 2;
-
-				PlaySound("select", "gui");
-				return;
-			}
-			if (menu.select_length === 2 && menu.item_select[0] == 0) {//config限定
-				menu.select_length = 3;
-
-				PlaySound("select", "gui");
-				return;
-			}
-		}
-
-	}
-
-	//メニュー動作
-	if (menu.visible && !menu.role_select && menu.mode === "Default") {
-		let count = game.gui_item_count[menu.tab];
-
-		//アイテムセレクト
-		let l = menu.select_length - 1;
-		while (menu.select_length > menu.item_select.length) menu.item_select.push(0);
-		menu.item_select.splice(menu.select_length, Infinity);
-		while (menu.select_length > menu.scroll.length) menu.scroll.push(0);
-		menu.scroll.splice(menu.select_length, Infinity);
-
-		if (menu.tab_select) {//カーソル上
-			//タブの動き
-			if (key_groups_down.right && menu.tab < 3) {//タブ右に動かす
-				menu.tab++;
-				PlaySound("select", "gui");
-			}
-			if (key_groups_down.left && menu.tab > 0) {//タブ左に動かす
-				menu.tab--;
-				PlaySound("select", "gui");
-			}
-
-			//　　　　　　　　　　　　　　　　　　　　　　　　　      　　　アイテムタブ　　設定タブ　　　　
-			if ((key_groups_down.confirm || key_groups_down.down) && (menu.tab == 1 || menu.tab == 3)) {
-				menu.tab_select = false;//カーソルを下(タブじゃない)にずらす
-				PlaySound("select", "gui");
-			}
-
-			//メニュー閉じる
-			if (key_groups_down.cancel) {
-				menu.visible = false;//Xキーで閉じる
-				PlaySound("select", "gui");
-			}
-			return;
-
-		} else {//カーソル下
-			//カーソルを上にずらす
-			if (key_groups_down.up && menu.item_select[l] == 0 && menu.select_length == 1) {
-				menu.tab_select = true;//カーソルを上(タブ)にずらす
-				PlaySound("select", "gui");
-			}
-			//if (key_groups_down.up && menu.item_select[l] == 0 && menu.select_length==2) menu.select_length==2=false;
-
-			//アイテムセレクト上下
-			if (key_groups_hold.down/* && menu.scroll[l] <= count*/ && menu.item_select[l] < select_limit) menu.item_select[l]++;
-			if (key_groups_hold.up && menu.scroll[l] >= 0) menu.item_select[l]--;
-
-			//サウンド
-			if (key_groups_hold.down /*&& menu.scroll[l] <= count*/) PlaySound("select", "gui");
-			if (key_groups_hold.up && menu.scroll[l] >= 0) PlaySound("select", "gui");
-
-			//スクロール
-			if (menu.item_select[l] - menu.scroll[l] > count && menu.scroll[l] < scroll_limit) menu.scroll[l]++;
-
-			if (menu.item_select[l] - menu.scroll[l] < 0 && menu.scroll[l] > 0) menu.scroll[l]--;
-
-			//範囲ごえ検知&修正
-			if (menu.item_select[l] - menu.scroll[l] > count) menu.item_select[l]--;
-
-			if (menu.item_select[l] - menu.scroll[l] < 0) menu.item_select[l]++;
-
-
-			//カーソルを上にずらす(閉じる)
-			if (key_groups_down.cancel) {
-				menu.item_select[l] = 0;
-				menu.tab_select = true;
-
-				PlaySound("select", "gui");
-			}
-			return;
-		}
-	}
-
-	if (menu.role_select) {
-		//誰が使うか閉じる
-		if (key_groups_down.cancel || key_groups_down.left) {
-			menu.role_select = false;
-
-			return;
-		}
-	}
-
-}
-
 function title_gui_proc() {
+	//if (IsLoading) return false;
+
 	if (key_groups_down.up && title_gui.item_select > 0) title_gui.item_select--;
 	if (key_groups_down.down && title_gui.item_select < game.title_items.length - 1) title_gui.item_select++;
 
@@ -4352,458 +4209,17 @@ function draw_loading_screen() {
 	ctx.fillRect(progressBar.x + 2, progressBar.y + 2, getAllLoadedCount() / getAllWillLoadLength() * (progressBar.w - 4), progressBar.h - 4);
 }
 
-class JsonUIDraw {
-	constructor(UIContent, UIIndex) {
-		/*for (const key of Object.keys(UIContent)) {
-			this[key] = UIContent[key];
-		}*/
-
-
-		let UIData = JsonUIOpen[UIIndex].data[UIContent.id];
-
-		const offset = new Vec2(...UIContent.offset);
-		const offset_type = new Vec2(...UIContent.offset_type ?? []);
-		let dx = offset.x + GetOffsetScreen(offset_type.x, offset_type.y).x + JsonUIOpen[UIIndex].pos.x
-		let dy = offset.y + GetOffsetScreen(offset_type.x, offset_type.y).y + JsonUIOpen[UIIndex].pos.y
-		this.Offset = new Vec2(dx, dy);
-		this.CursorOffset = new Vec2(...UIContent.CursorOffset ?? [-8, 0]);
-		this.size = new Vec2(...UIContent.size);
-
-
-
-		if (UIContent.animIn !== undefined && (JsonUIOpen[UIIndex].ShouldOpenAnim(UIIndex) || JsonUIOpen[UIIndex].opened)) {
-			let anim = -UIContent.animIn.size;
-			if (UIContent.animIn.ease === "easeOutExpo") anim += easeOutExpo((JsonUIOpen[UIIndex].activeTime - UIContent.animIn.offset) / UIContent.animIn.length) * UIContent.animIn.size;
-			if (UIContent.animIn.ease === "easeInExpo") anim += easeInExpo((JsonUIOpen[UIIndex].activeTime - UIContent.animIn.offset) / UIContent.animIn.length) * UIContent.animIn.size;
-
-			if (UIContent.animOut.type === "offsetx") this.Offset.x += Math.round(anim);
-			if (UIContent.animOut.type === "offsety") this.Offset.y += Math.round(anim);
-		}
-		if (UIContent.animOut !== undefined && (JsonUIOpen[UIIndex].ShouldCloseAnim(UIIndex) || JsonUIOpen[UIIndex].closed)) {
-			let anim = 0;
-			if (UIContent.animOut.ease === "easeOutExpo") anim += easeOutExpo((JsonUIOpen[UIIndex].inactiveTime - UIContent.animOut.offset) / UIContent.animOut.length) * UIContent.animOut.size;
-			if (UIContent.animOut.ease === "easeInExpo") anim += easeInExpo((JsonUIOpen[UIIndex].inactiveTime - UIContent.animOut.offset) / UIContent.animOut.length) * UIContent.animOut.size;
-
-			if (UIContent.animOut.type === "offsetx") this.Offset.x += Math.round(anim);
-			if (UIContent.animOut.type === "offsety") this.Offset.y += Math.round(anim);
-		}
-	}
-}
-
-function GetOffsetScreen(textx, texty) {
-	let x, y;
-	switch (textx) {
-		case "left":
-			x = 0;
-			break;
-		case "right":
-			x = ScreenWidth;
-			break;
-		default:
-			x = 0;
-			break;
-	}
-	switch (texty) {
-		case "top":
-			y = 0;
-			break;
-		case "bottom":
-			y = ScreenHeight;
-			break;
-		default:
-			y = 0;
-			break;
-	}
-	return new Vec2(x, y);
-}
-
-function jsonui_default_proc(...objs) {
-
-	for (let obj of objs) {
-		if (obj?.default !== undefined) {
-			obj = Object.assign(obj, loadedjson.jsonui._default[obj.default]);
-			delete obj.default;
-		}
-
-	}
-}
-
-function jsonui_cursor(UIID, UIIndex) {
-
-	let UIGroup = loadedjson.jsonui[UIID];
-	let UIContent = UIGroup[JsonUIOpen[UIIndex].select];
-	let Draw = new JsonUIDraw(UIContent, UIIndex);
-	let data = JsonUIOpen[UIIndex].data[UIContent.id];
-	//console.log(Draw.Offset);
-	if (!UIContent.ShowCursor) return;
-
-	switch (UIContent.type) {
-		case "custom":
-			switch (UIContent.renderer) {
-				case "items":
-				case "roles":
-				case "UIOpen":
-				case "config":
-					JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y + data.select * 16 - data.scroll));
-					break;
-				default:
-					JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y));
-					break;
-			}
-			break;
-		default:
-			JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y));
-			break;
-	}
-}
-
-function jsonui_draw(UIID, UIIndex) {
-	for (const UIContent of loadedjson.jsonui[UIID]) {
-		jsonui_default_proc(UIContent, UIContent.animIn, UIContent.animOut, UIContent.trans);
-
-		let Draw = new JsonUIDraw(UIContent, UIIndex);
-		let UIData = JsonUIOpen[UIIndex];
-
-		switch (UIContent.type) {
-			case "text":
-				drawTextFont(jsonui_variable(get_text(UIContent.text), undefined, UIContent, undefined, UIIndex), Draw.Offset.x, Draw.Offset.y, { color: game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
-				break;
-			case "button":
-				draw_prompt(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt);
-				drawTextFont(get_text(UIContent.text), Draw.Offset.x, Draw.Offset.y, { color: game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
-				break;
-			case "tab":
-				draw_prompt(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt);
-				drawTextFont(get_text(UIContent.text), Draw.Offset.x, Draw.Offset.y, { color: game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
-				break;
-			case "rectangle":
-				if (UIContent.type === "rectangle") draw_prompt(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt);
-				break;
-			case "custom":
-				if (UIContent.type === "custom") jsonui_custom_renderer(UIID, UIIndex, Draw, UIContent, UIData);
-				break;
-		}
-	}
-}
-
-function jsonui_main() {
-	for (let UIIndex in JsonUIOpen) {
-		let UIData = JsonUIOpen[UIIndex];
-		if (UIData.closed) JsonUIOpen.splice(UIIndex, 1)
-	}
-	if (JsonUIOpen.length !== 0) jsonui_select(JsonUIOpen[JsonUIOpen.length - 1].type, JsonUIOpen.length - 1);
-
+function title_gui_draw(dx = 64, dy = 64) {
+	return;
 
 	let cursor = new Array();
-	for (let UIIndex in JsonUIOpen) {
-		let UIData = JsonUIOpen[UIIndex];
 
-		UIData.ActiveChangeDetect(UIIndex);
-		if (UIData.state == 1) UIData.openTime++;
-		if (UIData.state == -1) UIData.closeTime++;
-		if (UIData.ShouldOpenAnim(UIIndex)) UIData.activeTime++;
-		if (UIData.ShouldCloseAnim(UIIndex)) UIData.inactiveTime++;
+	draw_gui_items(game.title_items, undefined, dx, dy, 100, 0, 16, 100);
+	cursor.push(new Vec2(dx - 16, title_gui.item_select * 16 + dy));
 
-		jsonui_draw(UIData.type, UIIndex);
-		jsonui_cursor(UIData.type, UIIndex, cursor);
+	cursor_draw(cursor);
 
-		//if(UIIndex == 1 )console.table([UIData.state == 1 && jsonui_active(UIIndex),UIData.state == -1 || !jsonui_active(UIIndex)])
-
-		if (UIData.openTime >= UIData.openDelay) UIData.opened = true;
-		if (UIData.closeTime >= UIData.closeDelay) UIData.closed = true;
-	}
-	JsonUICursor.draw();
-
-}
-
-function jsonui_active(UIIndex) {
-	//必要かわからん
-	//let UIGroup = loadedjson.jsonui[UIID];
-	//let UIContent = UIGroup[JsonUIOpen[UIIndex].select];
-	//let UIData = JsonUIOpen[UIIndex].data[UIContent.id];
-
-	return JsonUIOpen.length - 1 == UIIndex;
-}
-
-function jsonui_variable(rawvalue, UIGroup, UIContent, UIData, UIIndex) {
-	if (typeof rawvalue !== "string") return rawvalue;
-	let values = rawvalue.split(",");
-	let value = values[0];
-
-	//console.log(values)
-
-	for (let key of Object.keys(loadedjson.jsonui?.variable ?? {})) {
-		let variable = loadedjson.jsonui.variable[key];
-		if (value === key) return variable;
-	}
-
-	switch (value) {
-		case "$TabSelectID":
-			return MenuTabSelect;
-			break;
-		case "$SelectID":
-			return JsonUIOpen[UIIndex].select;
-			break;
-		case "$SelectScrollID":
-			return UIData.select;
-			break;
-		case "$selectUI":
-			return Object.keys(loadedjson.jsonui)[UIData.select];
-			break;
-		case "$itemIndex":
-			return UIData.data[UIContent.id].select;
-			break;
-		case "$fps":
-			return fps;
-			break;
-		case "$getData":
-			return UIData.data[values[1]];
-			break;
-		default:
-			return value;
-			break;
-	}
-}
-
-
-function getJsonuiSelect(UIIndex = JsonUIOpen.length - 1) {
-	return JsonUIOpen[UIIndex].select;
-}
-
-function jsonui_select(UIID, UIIndex) {
-	let UIGroup = loadedjson.jsonui[UIID];
-	let UIContent = UIGroup[JsonUIOpen[UIIndex].select];
-	let UIData = JsonUIOpen[UIIndex];
-
-	let trigger = (array) => {
-		for (const trans of array) {
-			transition(...trans);
-		}
-	}
-
-	let transition = (mode, ...param) => {
-		for (let i in param) {
-			param[i] = jsonui_variable(param[i], UIGroup, UIContent, UIData, UIIndex);
-		}
-
-		switch (mode) {
-			case "select_abs":
-				JsonUIOpen[UIIndex].select = param[0];
-				break;
-			case "select_rel":
-				JsonUIOpen[UIIndex].select += param[0];
-				break;
-			case "open":
-				jsonui_open(...param);
-				break;
-			case "close":
-				JsonUIOpen[UIIndex].close();
-				break;
-			case "closeAll":
-				JsonUIOpen.forEach((element, index) => {
-					if (index >= param[0]) element.close();
-				});
-				break;
-			case "UseItem":
-				item_use_proc(...param);
-				break;
-			case "writeGrovalData":
-				JsonUIOpen[UIIndex].dataGroval[param[0]] = param[1];
-				break;
-			case "data":
-				JsonUIOpen[UIIndex].data[param[0]] = param[1];
-				break;
-		}
-	}
-
-	if (UIContent.trans !== undefined) {
-		if (UIContent.trans.tickBefore !== undefined) trigger(UIContent.trans.tickBefore);
-		for (let transkey of Object.keys(key_groups).filter((key) => key in UIContent.trans)) {
-			if (key_groups_hold[transkey]) trigger(UIContent.trans[transkey]);
-		}
-		if (UIContent.trans.tickAfter !== undefined) trigger(UIContent.trans.tickAfter);
-
-	}
-	if (UIContent.type === "custom" ? game.UICustomScrollable.includes(UIContent?.renderer) : false) {
-		let data = JsonUIOpen[UIIndex].data[UIContent.id];
-		if (true) {
-			if (key_groups_hold.down && data.select < player.items.length - 1) data.select++
-			if (key_groups_hold.up && data.select > 0) data.select--
-			if (key_groups_hold.down || key_groups_hold.up) PlaySound("select", "gui");
-
-			if (data.select * 16 - data.scroll <= 0)
-				data.scroll += Math.floor((data.select * 16 - data.scroll) / 2);
-			if (data.select * 16 - data.scroll + 16 > new Vec2(...UIContent.size).y)
-				data.scroll += Math.ceil((data.select * 16 - data.scroll + 16 - new Vec2(...UIContent.size).y) / 2);
-		} else {
-			if (key_groups_hold.down) data.scroll++;
-			if (key_groups_hold.up) data.scroll--;
-		}
-	}
-
-	if (UIID === "menu") MenuTabSelect = JsonUIOpen[UIIndex].select;
-}
-
-function jsonui_open(type, DefaultX, DefaultY, DefaultSelectID, param) {
-	JsonUIOpen.push(new JsonUI(type, DefaultX, DefaultY, DefaultSelectID, param));
-}
-
-function jsonui_custom_renderer(UIID, UIIndex, Draw, UIContent, UIData) {
-	let items;
-	// items代入
-	switch (UIContent.renderer) {
-		case "items":
-			items = player.items;
-			break;
-		case "roles":
-		case "hud_hp":
-			items = players;
-			break;
-		case "UIOpen":
-			items = Object.keys(loadedjson.jsonui);
-			break;
-		case "config":
-			items = loadedjson.configs[UIData.data.tab] ?? [];
-			break;
-	}
-	// 描画いろいろ
-	switch (UIContent.renderer) {
-		case "items":
-		case "roles":
-		case "hud_hp":
-		case "UIOpen":
-		case "config":
-			let scroll = JsonUIOpen[UIIndex].data[UIContent.id].scroll
-			for (let i in items.slice(Math.floor(scroll / 16), Math.floor(scroll / 16) + Math.ceil(Draw.size.y / 16 + 1))) {
-				let DrawOffset = i * 16 - scroll % 16;
-				let itemIndex = Number(i) + Math.floor(scroll / 16);
-				let item = items[itemIndex];
-
-				for (const key of Object.keys(UIContent.items)) {
-					let itemOffset = new Vec2(...UIContent.items[key].offset);
-					let itemSize = new Vec2(...UIContent.items[key].size);
-
-					let ObjOut = new Object();
-					ObjOut.top = Math.min(DrawOffset + itemOffset.y, 0);
-					ObjOut.bottom = Math.min(DrawOffset + itemOffset.y + itemSize.y, Draw.size.y) - DrawOffset - itemOffset.y;
-
-					if (-ObjOut.top >= itemSize.y) continue;
-					if (-ObjOut.bottom > 0) continue;
-
-					//let draw_text_templ = (text, font = "", AddX = 0, AddY = 0) => draw_text(text, Math.min(itemOffset.x + AddX, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset + AddY, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, undefined, undefined, font, -1, 0, -ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top);
-					let draw_text_templ = (text, color = game.colorPallet.black, align = "start", AddX = 0, AddY = 0) => {
-						const TextX = itemOffset.x + Draw.Offset.x + AddX;
-						const TextY = itemOffset.y + Draw.Offset.y + AddY + DrawOffset;
-						const StartX = 0
-						const StartY = -DrawOffset - itemOffset.y
-						const EndX = Draw.size.x - itemOffset.x - AddX;
-						const EndY = Draw.size.y - itemOffset.y - AddY - DrawOffset;
-
-						drawTextFont(text, TextX, TextY, { color: color, align: align, startX: StartX, startY: StartY, endX: EndX, endY: EndY });
-						//if (key_groups_down.attack && text == "egg") console.table([text, TextX, TextY, StartX, StartY, EndX, EndY])
-					}
-
-					switch (UIContent.items[key].tag) {
-						case "atlas_img":
-							drawImg(img.items, getTileAtlasXY(item.id, 0), getTileAtlasXY(item.id, 1) - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
-							break;
-						case "text":
-							draw_text_templ(get_text(UIContent.items[key].text));
-							break;
-						case "ttftext":
-							draw_text_ttf(get_text(UIContent.items[key].text));
-							break;
-						case "ItemRender":
-							drawImg(img.items, getTileAtlasXY(get_item_data(itemIndex, "icon"), 0), getTileAtlasXY(get_item_data(itemIndex, "icon"), 1) - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
-							break;
-						case "ItemName":
-							draw_text_templ(get_text("item." + get_item_data(itemIndex, "name") + ".name"));
-							break;
-						case "ConfigName":
-							//console.log(UIData.data.tab)
-							draw_text_templ(item.name ?? "");
-							break;
-						case "ItemCount":
-							draw_text_templ(item.count, game.colorPallet.magenta, "start");
-							break;
-						case "ItemEfficacy":
-							if (get_item_data(itemIndex, "efficacy") == "health") {
-								AtlasDrawImage("gui_item_text_health", Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, 0, -ObjOut.top, 0, ObjOut.bottom + ObjOut.top - itemSize.y);
-								draw_text_templ(String(get_item_data(itemIndex, "heal_power")), "start", "black", 32, 0);
-							}
-							break;
-						case "debugtest":
-							draw_text_templ(`${ObjOut.top},${ObjOut.bottom}`, "_purple");
-							break;
-						case "role_icon":
-							drawImg(img.gui, players[itemIndex].id * 8, 48 - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
-							break;
-						case "role_hp":
-							draw_text_templ(players[itemIndex].hp);
-							break;
-						case "img":
-						case "image":
-							AtlasDrawImage(UIContent.items[key].img, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, 0, -ObjOut.top, 0, ObjOut.bottom + ObjOut.top - itemSize.y);
-							break;
-						case "uilist":
-							draw_text_templ(item, "_purple");
-							break;
-					}
-				}
-			}
-			break;
-	}
-}
-
-function gui_close(...input) {
-	for (let name of input) {
-		switch (name) {
-			case "menu":
-				menu.visible = false;
-				//誰が使いますか画面も閉じる
-				menu.role_select = false;
-
-				menu.item_select.fill(0);
-				menu.select_length = 1;
-				menu.role_select = 0;
-				menu.mode = "Default";
-				menu.tab_select = true;
-				break;
-			case "message":
-				gui.message.visible = false;
-				break;
-			case "confirm":
-				gui.confirm.visible = false;
-				break;
-			case "whouse":
-				menu.role_select = false;
-				break;
-
-		}
-	}
-}
-
-function gui_open(...input) {
-	for (let name of input) {
-		switch (name) {
-			case "menu":
-				menu.visible = true;
-				menu.CursorOldPos.x = 0;
-				menu.CursorOldPos.y = 24;
-				break;
-			case "message":
-				gui.message.visible = true;
-				gui.message.text = "text";
-				break;
-			case "confirm":
-				gui.confirm.visible = true;
-				break;
-			case "whouse":
-				menu.role_select = true;
-				break;
-
-		}
-	}
+	draw_text("title", 0, 0)
 }
 
 
@@ -4818,7 +4234,7 @@ function canPlayerMoveForOpenGui() {
 	if (gui.message.visible) return false;
 	if (menu.visible) return false;
 	if (gui.confirm.visible) return false;
-
+	
 	return true;
 	*/
 
@@ -4849,31 +4265,6 @@ function item_use_proc() {
 	}
 }
 
-function item_use_proc(i, isRoleSelect, windowPos) {
-	if (i > player.items.length - 1) return false;
-
-	//誰が使いますか画面を出す
-	if (get_item_data(i, "role_select") && !isRoleSelect) {
-		jsonui_open("item_role_select", 128, 64, undefined, i)
-		return;
-	}
-
-	//アイテム使用
-	if (!get_item_data(i, "role_select") || isRoleSelect) {
-		if (!get_item_data(i, "role_select")) menu.who_use = 0;
-
-		item_use(i);
-	}
-	//menu.role_select = false;
-
-	//アイテムの数を減らす
-	player.items[i].count--;
-	//アイテムの数が0だったら消す
-	if (player.items[i].count == 0) player.items.splice(i, 1);
-
-	return true;
-
-}
 
 async function save_load_proc() {
 	if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.tab == 3 && menu.select_length == 2) {
@@ -4912,11 +4303,6 @@ async function save_load_proc() {
 
 		game.saveloadingnow = false;
 	}
-}
-
-function item_use(i) {//i = itemselectINDEX
-
-	if (get_item_data(i, "efficacy") == "health") player_heal(menu.who_use, get_item_data(i, "heal_power"));
 }
 
 function configReset() {
@@ -4926,45 +4312,14 @@ function configReset() {
 		const configs = loadedjson.configs[configKey];
 		//console.table(configs)
 		for (const config of configs) {
-			game.config[config.variable] = config.default;
+			config[config.variable] = config.default;
 		}
 	}
 }
 
-
 //あざす https://www.w3schools.com/graphics/game_sound.asp
 function PlaySound(src = "select", group = "other", DoNotStop = false) {
 	if (config[game.soundGroupsConfig[group]]) sounds[src].play(DoNotStop)
-}
-
-function font2x(Glyph) {
-	let fontDataArray = new Array(16);
-	for (let line = 0; line < 8; line++) {
-		let fontDataLine = new Array(16);
-
-		Glyph[line].toString(2).split("").forEach((element, index) => {
-			fontDataLine[index * 2] = element;
-			fontDataLine[index * 2 + 1] = element;
-		});
-
-		let lineResult = parseInt(fontDataLine.join(''), 2);
-		fontDataArray[line * 2] = lineResult;
-		fontDataArray[line * 2 + 1] = lineResult;
-	}
-	console.log(fontDataArray)
-	return fontDataArray;
-}
-
-function font2xmain() {
-	let fontData = JSON.parse(JSON.stringify(loadedjson.rawfont))
-
-	for (const key of Object.keys(fontData).filter((word) => word == String(Number(word)))) {
-		let Obj = fontData[key];
-
-		fontData[key] = font2x(Obj)
-	}
-	return JSON.stringify(fontData);
-
 }
 
 //AIマジ感謝
@@ -4987,157 +4342,9 @@ function isCharacterSupportedByFont(character, fontFamily) {
 	ctx.font = customFont;
 	var customWidth = ctx.measureText(character).width;
 
-	// 幅が異なるかどうかを比較
-	return customWidth !== defaultWidth;
-}
-
-function replaceUnsupportedCharacters(text, fontFamily) {
-	if (!fontIsloaded(fontFamily)) return text;
-	// 各文字をチェックして、対応していないものを空白に置き換える
-	var result = '';
-	for (var i = 0; i < text.length; i++) {
-		if (isCharacterSupportedByFont(text[i], fontFamily)) {
-			result += text[i];
-		} else {
-			result += '?'; // 対応していない文字を空白に置き換える
-		}
-	}
-	return result;
-}
-
-function fontIsloaded(fontFamily) {
-	// これでフォントが読み込みされているかを判定しています //
-	// 読み込みされていない場合はfalseを返します           //
-	// なんか動くのでヨシ!                               //ずれんな
-	return isCharacterSupportedByFont("a", fontFamily);
-}
-
-function item_use_proc(i, isRoleSelect, windowPos) {
-	if (i > player.items.length - 1) return false;
-
-	//誰が使いますか画面を出す
-	if (get_item_data(i, "role_select") && !isRoleSelect) {
-		jsonui_open("item_role_select", 128, 64, undefined, i)
-		return;
-	}
-
-	//アイテム使用
-	if (!get_item_data(i, "role_select") || isRoleSelect) {
-		if (!get_item_data(i, "role_select")) menu.who_use = 0;
-
-		item_use(i);
-	}
-	//menu.role_select = false;
-
-	//アイテムの数を減らす
-	player.items[i].count--;
-	//アイテムの数が0だったら消す
-	if (player.items[i].count == 0) player.items.splice(i, 1);
-
-	return true;
-
-}
-
-async function save_load_proc() {
-	if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.tab == 3 && menu.select_length == 2) {
-		game.saveloadingnow = true;
-		let result;
-		/*
-		if (menu.item_select[1] === 0) result = await savedatawrite(true);
-		if (menu.item_select[1] === 1) result = await savedataload(true)
-		if (menu.item_select[1] === 2) result = await savepathreset(true);
-		if (menu.item_select[1] === 3) result = await savedatawrite(false)
-		if (menu.item_select[1] === 4) result = await savedataload(false);*/
-
-		switch (menu.item_select[1]) {
-			case 0:
-				await savepathreset();
-				result = await savepathselect();
-				break;
-			case 1:
-				result = await savedatawrite();
-				break;
-			case 2:
-				result = await savedataload();
-				break;
-
-		}
-
-		//failed
-		if (result == undefined && menu.item_select[1] !== 2) {
-			game.saveloadfaliedtime = timer;
-			game.saveloadfaliedtype = menu.item_select[1];
-		}
-		if (result != undefined) {
-			game.saveloadsuccesstime = timer;
-			game.saveloadsuccesstype = menu.item_select[1];
-		}
-
-		game.saveloadingnow = false;
-	}
-}
-
-function item_use(i) {//i = itemselectINDEX
-
-	if (get_item_data(i, "efficacy") == "health") player_heal(menu.who_use, get_item_data(i, "heal_power"));
-}
-
-
-
-//あざす https://www.w3schools.com/graphics/game_sound.asp
-function PlaySound(src = "select", group = "other", DoNotStop = false) {
-	if (config[game.soundGroupsConfig[group]]) sounds[src].play(DoNotStop)
-}
-
-function font2x(Glyph) {
-	let fontDataArray = new Array(16);
-	for (let line = 0; line < 8; line++) {
-		let fontDataLine = new Array(16);
-
-		Glyph[line].toString(2).split("").forEach((element, index) => {
-			fontDataLine[index * 2] = element;
-			fontDataLine[index * 2 + 1] = element;
-		});
-
-		let lineResult = parseInt(fontDataLine.join(''), 2);
-		fontDataArray[line * 2] = lineResult;
-		fontDataArray[line * 2 + 1] = lineResult;
-	}
-	console.log(fontDataArray)
-	return fontDataArray;
-}
-
-function font2xmain() {
-	let fontData = JSON.parse(JSON.stringify(loadedjson.rawfont))
-
-	for (const key of Object.keys(fontData).filter((word) => word == String(Number(word)))) {
-		let Obj = fontData[key];
-
-		fontData[key] = font2x(Obj)
-	}
-	return JSON.stringify(fontData);
-
-}
-
-//AIマジ感謝
-function isCharacterSupportedByFont(character, fontFamily) {
-	// canvas要素を動的に作成
-	//var canvas = document.createElement('canvas');
-	//var context = canvas.getContext('2d');
-
-	// 比較用のデフォルトフォントを指定
-	var defaultFont = '10px sans-serif';
-
-	// カスタムフォントを指定
-	var customFont = '10px ' + fontFamily;
-
-	// デフォルトフォントでの描画と測定
-	ctx.font = defaultFont;
-	var defaultWidth = ctx.measureText(character).width;
-
-	// カスタムフォントでの描画と測定
-	ctx.font = customFont;
-	var customWidth = ctx.measureText(character).width;
+	// 一部の英語はうまく判定できないので除外 //
+	let IsFireFox = window.navigator.userAgent.toLowerCase().indexOf('firefox') !== -1;
+	if (character.charCodeAt(0) >= 256 && IsFireFox) return true;
 
 	// 幅が異なるかどうかを比較
 	return customWidth !== defaultWidth;
