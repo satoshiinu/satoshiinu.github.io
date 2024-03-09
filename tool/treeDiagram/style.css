@@ -1,0 +1,30 @@
+#treeParamInput:hover+#TextParent:after {
+    content: '例: R,R,W,W,W';
+    position: absolute;
+}
+
+#waysSel:hover+#TextParent:after {
+    content: '注意: 多すぎると端末がフリーズします(6以上)';
+    position: absolute;
+}
+
+#probValueInput:hover+#TextParent:after {
+    content: 'カンマ区切りで指定できます 例: 4,6';
+    position: absolute;
+}
+
+#TextParent {
+    position: relative;
+    top: -10px;
+    left: -100px;
+    font-size: 0.7em;
+    white-space: nowrap;
+}
+
+#probValueInput+#TextParent {
+    position: relative;
+    top: -10px;
+    left: -150px;
+    font-size: 0.7em;
+    white-space: nowrap;
+}
