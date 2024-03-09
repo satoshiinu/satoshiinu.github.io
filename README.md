@@ -61,14 +61,6 @@
             </div>
             <div><img src="right.gif" alt="" width="15" height="15"><a href="/profile/">自己紹介</a></div>
             <div><img src="right.gif" alt="" width="15" height="15"><a href="https://www.youtube.com/channel/UCLlHaCZy-SzYr0X4AUH0fwg">YouTube</a></div>
-            <div class="tab_text">
-                <img src="tab.gif" alt="">
-                <p>
-                    <font color="white">
-                        ブログ
-                    </font>
-                </p>
-            </div>
         </div>
     </div>
 </body>
