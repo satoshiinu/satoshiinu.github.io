@@ -32,7 +32,6 @@
             </font>
         </p>
     </div>
-    <img src="newicon.png" alt="さとしいぬ" width="100" height="100" border="0" />
     <div>
         <font color="black" size="6">
         </font>
