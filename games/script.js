@@ -86,15 +86,17 @@ let willLoadImg = [
 
 let willLoadJson = [
 	["param/atlas.json", "atlas", true],
-	["param/enemy.json", "enemy", true],
-	["param/particle.json", "particle", true],
+	//["param/enemy.json", "enemy", true],
+	//["param/particle.json", "particle", true],
 	["param/item.json", "item", true],
-	["param/dialogue.json", "dialogue", true],
+	//["param/dialogue.json", "dialogue", true],
 
 	["param/lang/en_us.json", "en_us", true],
 	["param/lang/ja_jp.json", "ja_jp", true],
-	["param/config.json", "configs", true],
-	["param/ui.json", "jsonui", true, "jsonui"]
+	//["param/config.json", "configs", true],
+	["param/ui.json", "jsonui", true, "jsonui"],
+
+	["param/levelTest.json", "level", true]
 ]
 //Object.freeze(willLoadJson);
 
@@ -143,12 +145,27 @@ class Vec2 {
 		this.x = x;
 		this.y = y;
 	}
+	toString() {
+		return `x${this.x}_y${this.y}`;
+	}
+	[Symbol.iterator] = function* () {
+		yield this.x;
+		yield this.y;
+	}
+
 }
 
 class Size {
 	constructor(width = 0, height = 0) {
 		this.w = width;
 		this.h = height;
+	}
+	toString() {
+		return `w${this.w}_h${this.h}`;
+	}
+	[Symbol.iterator] = function* () {
+		yield this.w;
+		yield this.h;
 	}
 }
 
@@ -159,12 +176,28 @@ class Rect {
 		this.w = w;
 		this.h = h;
 	}
+	toString() {
+		return `x${this.x}_y${this.y}_w${this.w}_h${this.h}`;
+	}
+	[Symbol.iterator] = function* () {
+		yield this.x;
+		yield this.y;
+		yield this.w;
+		yield this.h;
+	}
 }
 
 class Range {
 	constructor(min = -Infinity, max = Infinity) {
 		this.min = min;
 		this.max = max;
+	}
+	toString() {
+		return `min${this.min}_max${this.max}`;
+	}
+	[Symbol.iterator] = function* () {
+		yield this.min;
+		yield this.max;
 	}
 }
 
@@ -236,15 +269,15 @@ new ConfigBool("AttackRotateRock", "player", true);
 
 new ConfigBool("AutoAim", "weapon", true);
 
-
+/*
 class Item {
 	constructor(ID, count = 99) {
 		this.id = ID;
 		this.count = count;
 	}
 	use(isRoleSelect, playerIndex = 0) {
-		const index = PlayerControl.items.indexOf(this);
-		if (index > PlayerControl.items.length - 1) return false;
+		const index = Items.indexOf(this);
+		if (index > Items.length - 1) return false;
 
 		//誰が使いますか画面を出す
 		if (get_item_data(index, "role_select") && !isRoleSelect) {
@@ -262,7 +295,7 @@ class Item {
 		//アイテムの数を減らす
 		this.count--;
 		//アイテムの数が0だったら消す
-		if (this.count == 0) PlayerControl.items.splice(index, 1);
+		if (this.count == 0) Items.splice(index, 1);
 
 		return true;
 
@@ -271,7 +304,129 @@ class Item {
 function item_use(i, player) {//i = itemselectINDEX
 
 	if (get_item_data(i, "efficacy") == "health") player.heal(menu.who_use, get_item_data(i, "heal_power"));
+}*/
+
+class FamilyUtil {
+	hasFamily(value) {
+		return this.family.includes(value);
+	}
+	addFamily(value) {
+		this.family.push(value);
+	}
+	static getFamilies(value) {
+		return entities.filter(v => v.hasFamily(value));
+	}
 }
+
+class ItemProperties extends FamilyUtil {
+	type = null;
+	icon = null;
+	name = null;
+	constructor(prop) {
+		super();
+		if (prop === undefined) return;
+		this.type = prop.type;
+		this.icon = prop.icon;
+		this.name = prop.name;
+		this.registerName = prop.registerName;
+	}
+	static of() {
+		return new ItemProperties();
+	}
+	setType(type) {
+		this.type = type;
+		return this;
+	}
+	setIcon(icon) {
+		this.icon = icon;
+		return this;
+	}
+	setName(name) {
+		this.name = name;
+		return this;
+	}
+	setRegisterName(name) {
+		this.registerName = name;
+	}
+}
+
+let regItems = new Array();
+
+class Item extends ItemProperties {
+	count = 10;
+	roleSelectAble = false;
+	constructor(prop, count) {
+		super(...arguments);
+		console.trace(...arguments)
+		this.count = count;
+
+		Items.push(this);
+	}
+	mayUse(isRoleSelect, playerIndex = 0) {
+		const index = this.getIndex;
+		const player = players[playerIndex];
+		if (index > Items.length - 1) return false;
+
+		//誰が使いますか画面を出す
+		if (this.roleSelectAble && !isRoleSelect) {
+			jsonui_open("item_role_select", 128, 64, undefined, index)
+			return;
+		}
+
+		//アイテム使用
+		if (!this.roleSelectAble || isRoleSelect) {
+			if (this.use(player)) {
+				this.decrementStack(1);
+			}
+		}
+
+
+		return true;
+
+	}
+	use(player) {
+		return true;
+	}
+	decrementStack(value = 1) {
+		this.count -= value;
+		if (this.count == 0)
+			this.remove();
+	}
+	get getIndex() {
+		return Items.indexOf(this);
+	}
+	remove() {
+		Items.splice(this.getIndex, 1);
+	}
+	static register() {
+		register(regItems, ...arguments);
+	}
+	getDisplayName() {
+		return translate(`item.${this.registerName}.name`);
+	}
+	getDisplayEfficacy() {
+		return [translate("none")];
+	}
+
+}
+
+
+class ItemRoleSelectAble extends Item {
+	roleSelectAble = true;
+}
+class ItemHealable extends ItemRoleSelectAble {
+	use(player) {
+		return player.heal(this.healPower);
+	}
+	getDisplayEfficacy() {
+		return [translate("none")];
+	}
+}
+
+let Items = new Array();
+
+Item.register("apple", ItemHealable, ItemProperties.of().setIcon(0).setHealPower(20));
+
 
 class Cam {
 	static x = 0;
@@ -284,12 +439,17 @@ class Cam {
 
 		this.x = PlayerControl.pos.x - 160 + this.offset.x + debug.camx;
 		this.y = PlayerControl.pos.y - 80 + this.offset.y + debug.camy;
+		return;
 		if (this.x < 0) this.x = 0;
 		if (this.y < 0) this.y = 0;
 		if (this.x > 1280) this.x = 1280;
 		if (this.y > 1420) this.y = 1420;
 	}
 }
+//プレイヤーの変数の作成
+//let player = new PlayerControl();
+let players = new Array();
+
 
 class Players {
 	constructor(ID = 0) {
@@ -346,8 +506,9 @@ class Players {
 
 	}
 	heal(heal) {
-		this.health += heal;
-		if (this.maxHealth <= this.health) this.health = this.maxHealth;
+		if (this.health === this.maxHealth) return false;
+		this.health += Math.min(heal, this.maxHealth);
+		return true;
 	}
 	get getIndex() {
 		return players.indexOf(this);
@@ -367,19 +528,11 @@ class Players {
 	}
 }
 
+
 class PlayerControl {
 	static pos = new Vec2();
 	static speed = new Vec2();
 	static mapID = "";
-	static effect = new Array();
-	static boat = false;
-	static items = [
-		new Item(0, 10),
-		new Item(1, 10),
-		new Item(2, 10),
-		new Item(3, 10),
-		new Item(1, 10)
-	]
 	static key = {
 		up: false,
 		down: false,
@@ -470,35 +623,35 @@ class PlayerControl {
 			if (hitbox(this.pos.x, this.pos.y) && checkhitbox) this.pos.x -= Math.sign(mvx);
 
 
-			if (i > game.move_limit) break;
+			if (i > Game.move_limit) break;
 		}
 		for (let i = 0; i < Math.round(Math.abs(mvy)); i++) {
 			this.pos.y += Math.sign(mvy);
 
 			if (hitbox(this.pos.x, this.pos.y) && checkhitbox) this.pos.y -= Math.sign(mvy);
 
-			if (i > game.move_limit) break;
+			if (i > Game.move_limit) break;
 		}
 	}
 	static mapChangeCheck() {
-		for (const i in game.map.warp) {
-			let [x, y, w, h] = [game.map.warp[i].x * 16, game.map.warp[i].y * 16, game.map.warp[i].w * 16, game.map.warp[i].h * 16];
+		for (const i in Game.map.warp) {
+			let [x, y, w, h] = [Game.map.warp[i].x * 16, Game.map.warp[i].y * 16, Game.map.warp[i].w * 16, Game.map.warp[i].h * 16];
 			if (isNaN(w)) w = 16; if (isNaN(h)) h = 16;
 
 			if (hitbox_rect(x, y, w, h, this.pos.x, this.pos.y, 16, 16)) {
 				let [x, y] = [this.pos.x, this.pos.y];
-				if (game.map.warp[i].relpos != undefined) {
-					[x, y] = [game.map.warp[i].relpos?.x * 16 + x, game.map.warp[i].relpos.y * 16 + y];
-					mapchange(game.map.warp[i].to, x, y);
+				if (Game.map.warp[i].relpos != undefined) {
+					[x, y] = [Game.map.warp[i].relpos?.x * 16 + x, Game.map.warp[i].relpos.y * 16 + y];
+					mapchange(Game.map.warp[i].to, x, y);
 					return;
 				}
-				if (game.map.warp[i].abspos != undefined) {
-					[x, y] = [game.map.warp[i].abspos?.x * 16, game.map.warp[i].abspos.y * 16];
-					mapchange(game.map.warp[i].to, x, y);
+				if (Game.map.warp[i].abspos != undefined) {
+					[x, y] = [Game.map.warp[i].abspos?.x * 16, Game.map.warp[i].abspos.y * 16];
+					mapchange(Game.map.warp[i].to, x, y);
 					return;
 				}
 				{
-					mapchange(game.map.warp[i].to);
+					mapchange(Game.map.warp[i].to);
 					return;
 				}
 			}
@@ -510,7 +663,7 @@ class PlayerControl {
 
 		for (let i in npc) {
 			let it = npc[i];
-			let facing = new Vec2(game.facing_pos[player.facing][0], game.facing_pos[player.facing][1]);
+			let facing = new Vec2(Game.facing_pos[player.facing][0], Game.facing_pos[player.facing][1]);
 
 			if (key_groups_down.confirm) {
 				if (hitbox_rect(it.x, it.y, 16, 16, player.x + 4 + facing.x * 16, player.y + 4 + facing.y * 16, 8, 8)) {
@@ -559,7 +712,7 @@ class Weapon {
 		this.pos = new Vec2();
 		this.start = new Vec2(this.getPlayer.getPosX, this.getPlayer.getPosY);
 		this.autoAim = new Vec2();
-		this.rotate = new Vec2(...game.rotate_pos[PlayerControl.rotate]);
+		this.rotate = new Vec2(...Game.rotate_pos[PlayerControl.rotate]);
 		this.speed = 1;
 	}
 	tick() {
@@ -569,7 +722,7 @@ class Weapon {
 			let hit_enemy = new Array();
 			hit_enemy = hitbox_entity_rect(this.pos.x - 8, this.pos.y - 8, 32, 32, "Enemy");
 			for (const entity of hit_enemy) {
-				const facing = new Vec2(...game.facing_pos[PlayerControl.facing]);
+				const facing = new Vec2(...Game.facing_pos[PlayerControl.facing]);
 				const knockbackPower = 2.5;
 				const attackPower = 10;
 				entity.damage(attackPower, facing.x * knockbackPower, facing.y * knockbackPower, true);
@@ -577,11 +730,11 @@ class Weapon {
 
 			//岩壊す
 			const layer = "map1";
-			let breakTiles = hitbox_rema(this.pos.x - 8, this.pos.y - 8, 32, 32, "red", game.breakableTile, layer);
+			let breakTiles = hitbox_rema(this.pos.x - 8, this.pos.y - 8, 32, 32, "red", Game.breakableTile, layer);
 			for (const breakTile of breakTiles) {
 				//console.log(breaks[0])
-				if (game.breakableTileAbout[breakTile.id].breakProbability > Math.random()) {
-					replaceTile(game.breakableTileAbout[breakTile.id].becomeTile, layer, breakTile.x, breakTile.y);
+				if (Game.breakableTileAbout[breakTile.id].breakProbability > Math.random()) {
+					replaceTile(Game.breakableTileAbout[breakTile.id].becomeTile, layer, breakTile.x, breakTile.y);
 					replaceHitboxTile(false, breakTile.x, breakTile.y);
 					splinterParticle.RockBreak.create(breakTile.x * 16 + 8, breakTile.y * 16 + 8, 8);
 					PlaySound("break", "tile");
@@ -592,7 +745,7 @@ class Weapon {
 			}
 
 			//オートエイム
-			if (this.time <= 12 && (hit_enemy.length == 0 || !game.weapon_canlock) && config.weapon_auto_aiming) {
+			if (this.time <= 12 && (hit_enemy.length == 0 || !Game.weapon_canlock) && config.weapon_auto_aiming) {
 				let x = this.start.x;
 				let y = this.start.y;
 				if (getNearestEntityDistance(x, y, "Enemy") < 100) {
@@ -613,7 +766,7 @@ class Weapon {
 			this.pos.y = Math.floor(this.rotate.y * (Math.sin(Math.PI / 2 * this.time / 12) * 64) + this.autoAim.y + this.getPlayer.getPosY);
 
 			//カウントアップ
-			if (hit_enemy.length == 0 || !game.weapon_canlock) this.time += this.speed;
+			if (hit_enemy.length == 0 || !Game.weapon_canlock) this.time += this.speed;
 
 			//リセット
 			if (this.time >= 24) this.reset()
@@ -640,31 +793,69 @@ class Weapon {
 	}
 }
 
-class Entity {
+players[0] = new Players(0);
+//事前に埋めとく
+player_movelog_reset();
+
+class EntityFamilies {
+	static register(name) {
+		this[name] = Symbol(name);
+	}
+}
+EntityFamilies.register("Default");
+EntityFamilies.register("Enemy");
+EntityFamilies.register("Neutral");
+EntityFamilies.register("Slime");
+
+let entities = new Array();
+
+
+class EntityProperties extends FamilyUtil {
+	type = null;
+	constructor(prop) {
+		super();
+		if (prop === undefined) return;
+		this.type = prop.type;
+		this.registerName = prop.registerName;
+	}
+	static of() {
+		return new EntityProperties();
+	}
+	setType(type) {
+		this.type = type;
+		return this;
+	}
+	setRegisterName(name) {
+		this.registerName = name;
+	}
+}
+
+class Entity extends EntityProperties {
 	pos = new Vec2();
 	speed = new Vec2();
 	spawn = new Vec2();
 	family = new Array();
 	wasMoved = false;
 
-	customType = null;
 	moveSpeed = 0.25;
 	size = new Size(16, 16);
 	maxHealth = 20;
 	health = 20;
-	constructor(spawnX, spawnY) {
+
+	constructor(prop, spawnX, spawnY) {
+		super(...arguments);
+
 		this.spawn.x = spawnX;
 		this.pos.x = spawnX;
 		this.spawn.y = spawnY;
 		this.pos.y = spawnY;
 
-		this.spawnScript();
+		this.addFamily(EntityFamilies.Default);
 
 		entities.push(this);
 	}
 	tick() {
 		this.move();
-
 	}
 	move() {
 
@@ -687,22 +878,22 @@ class Entity {
 		for (let i = 0; i < Math.round(Math.abs(this.speed.x)); i++) {
 			this.pos.x += Math.sign(this.speed.x);
 			if (hitbox(this.pos.x, this.pos.y)) this.pos.x -= Math.sign(this.speed.x);
-			if (i > game.move_limit) break;
+			if (i > Game.move_limit) break;
 		}
 		for (let i = 0; i < Math.round(Math.abs(this.speed.y)); i++) {
 			this.pos.y += Math.sign(this.speed.y);
 			if (hitbox(this.pos.x, this.pos.y)) this.pos.y -= Math.sign(this.speed.y);
-			if (i > game.move_limit) break;
+			if (i > Game.move_limit) break;
 		}
 	}
 	moveScript() {
 
 	}
-	spawnScript() {
-		this.addFamily("Default");
-	}
 	draw() {
 		drawImg(img.enemy, 0, 0, 16, 16, this.pos.x - Cam.x, this.pos.y - Cam.y);
+	}
+	drawCondition() {
+		return Game.onScreenArea(new Rect(this.pos.x, this.pos.y, this.size.w, this.size.h));
 	}
 	damage(damage, rx = 0, ry = 0, byPlayer = false) {
 		return false;
@@ -717,13 +908,9 @@ class Entity {
 	get getCenterY() {
 		return this.pos.y + this.size.h / 2;
 	}
-	hasFamily(value) {
-		return this.family.includes(value);
+	static register() {
+		register(regEntity, ...arguments);
 	}
-	addFamily(value) {
-		this.family.push(value);
-	}
-
 }
 
 class EntityEnemy extends Entity {
@@ -753,7 +940,7 @@ class EntityEnemy extends Entity {
 		if (this.damageEffect.ViewTime <= 0) this.damageEffect.Damage = 0;
 
 		if (this.health <= 0) {
-			smokeParticle.create(this.pos.x, this.pos.y, 1);
+			smokeParticle.create(this.pos.x, this.pos.y, 5);
 			this.despawn();
 		}
 
@@ -811,9 +998,9 @@ class EntityEnemy extends Entity {
 			drawTextFont(this.damageEffect.Damage.toString(), this.pos.x - Cam.x, this.pos.y - 16 - Math.log10(-8 * (this.damageEffect.ViewTime / 100 - 1)) * 8 - Cam.y, {});
 
 	}
-	spawnScript() {
-		super.spawnScript(...arguments);
-		this.addFamily("Enemy");
+	constructor() {
+		super(...arguments);
+		this.addFamily(EntityFamilies.Enemy);
 	}
 }
 
@@ -850,7 +1037,7 @@ class EntityEnemyNeutralBasic extends EntityEnemy {
 				return;
 			}
 
-			let r = calcAngleDegrees(subplayerx(0) + game.facing_pos[PlayerControl.facing][0] - this.pos.x, subplayery(0) + game.facing_pos[PlayerControl.facing][1] - this.pos.y);
+			let r = calcAngleDegrees(subplayerx(0) + Game.facing_pos[PlayerControl.facing][0] - this.pos.x, subplayery(0) + Game.facing_pos[PlayerControl.facing][1] - this.pos.y);
 			this.speed.x += this.moveSpeed * Math.cos(r);
 			this.speed.y += this.moveSpeed * Math.sin(r);
 
@@ -896,13 +1083,13 @@ class EntityEnemyNeutralBasic extends EntityEnemy {
 		this.hostilityDelay = becomeNotHostilityDelay;
 
 	}
-	spawnScript() {
-		super.spawnScript(...arguments);
-		this.addFamily("Neutral");
+	constructor() {
+		super(...arguments);
+		this.addFamily(EntityFamilies.Neutral);
 	}
 }
 
-class SlimeEntity extends EntityEnemyNeutralBasic {
+class EntitySlime extends EntityEnemyNeutralBasic {
 	anim = {
 		time: 0,
 		flag: false
@@ -923,9 +1110,9 @@ class SlimeEntity extends EntityEnemyNeutralBasic {
 		drawImg(img.enemy, DrawOffset.x + drawPos.x, DrawOffset.y + drawPos.y, 16, 16, this.pos.x - Cam.x, this.pos.y - Cam.y - make_jump_animation(this.attack.animTime / 20) * 5);
 		this.drawDamageEffect();
 	}
-	spawnScript() {
-		super.spawnScript(...arguments);
-		this.addFamily("Slime");
+	constructor() {
+		super(...arguments);
+		this.addFamily(EntityFamilies.Slime);
 	}
 	animationTick() {
 
@@ -954,11 +1141,7 @@ class SlimeEntity extends EntityEnemyNeutralBasic {
 
 		return new Vec2(x * 16, y * 16);
 	}
-	static Blue =
-		class extends SlimeEntity {
-			customType = "blue"
-		}
-
+	static typeBlue = Symbol("Blue");
 }
 
 class EntityNpcBasic extends Entity {
@@ -1004,21 +1187,21 @@ class EntityNpcBasic extends Entity {
 		}
 	}
 }
-const entityClasses = {
-	1: SlimeEntity.Blue
-}
-
-function entityClass(Class, Type) {
-	return {
-		class: Class,
-		type: Type
+const regEntity = {};
+function register(obj, name, clas, prop) {
+	prop.setRegisterName(name);
+	obj[name] = (...arg) => {
+		return new clas(prop, ...arg);
 	}
 }
+Entity.register("slimeBlue", EntitySlime, EntityProperties.of().setType(EntitySlime.typeBlue));
+
 
 let particles = new Array();
 
 class Particle {
 	pos = new Vec2();
+	size = new Size();
 	time = 0;
 	lifetime = 0;
 	random = new Array();
@@ -1040,6 +1223,9 @@ class Particle {
 	draw() {
 
 	}
+	drawCondition() {
+		return Game.onScreenArea(new Rect(this.pos.x, this.pos.y, this.size.w, this.size.h))
+	}
 	tick() {
 		this.time++;
 
@@ -1053,6 +1239,7 @@ class Particle {
 
 class splinterParticle extends Particle {
 
+	size = new Size(8, 8);
 	DrawOffset = new Vec2(0, 0);
 	lifetime = Random(25, 50, true);
 
@@ -1071,187 +1258,315 @@ class splinterParticle extends Particle {
 
 class smokeParticle extends Particle {
 
+	size = new Size(16, 16);
 	DrawOffset = new Vec2(0, 0);
 	lifetime = Random(50, 100, true);
 
 	draw() {
-		drawImg(img.particle, this.DrawOffset.x + Math.floor(this.time / this.lifetime * 8) * 16, this.DrawOffset.y, 16, 16, getDrawPosX(this.pos.x), getDrawPosY(this.pos.y + this.time * this.random[0] / 10, -this.time / 5 - this.random[1] * 4));
+		drawImg(img.particle, this.DrawOffset.x + Math.floor(this.time / this.lifetime * 8) * 16, this.DrawOffset.y, 16, 16, getDrawPosX(this.pos.x + this.random[0] * this.time / 10), getDrawPosY(this.pos.y + -Math.abs(this.time * this.random[1] / 10), -this.time / 5 - this.random[1] * 4));
 	}
 }
 
+const chunkSize = new Size(256, 256);
+
+class pos extends Vec2 {
+	isChunkPos = false;
+	getChunkPos() {
+		return new cpos(Math.floor(this.x / chunkSize.w), Math.floor(this.y / chunkSize.h));
+	}
+	getInChunkPos() {
+		return new cpos(Math.abs(this.x % chunkSize.w), Math.abs(this.y % chunkSize.h));
+	}
+	getInChunkIndex() {
+		return this.getInChunkPos(this).x + this.getInChunkPos(this).y * chunkSize.w;
+	}
+}
+class cpos extends Vec2 {
+	isChunkPos = true;
+	getChunkPos() {
+		return this;
+	}
+}
+
+class Level {
+	rawData = null;
+	chunks = new Object();
+	levelName = "test";
+	async chunkLoad(cpos) {
+		//新しいチャンクで待機
+		this.chunks[cpos.getChunkPos().toString()] = ChunkLevel.create(level, cpos, this.levelName);
+
+		return this.chunks[cpos.getChunkPos().toString()] = await ChunkLevel.load(level, cpos, this.levelName);
+	}
+	async chunkCreate(cpos) {
+		return this.chunks[cpos.getChunkPos().toString()] = ChunkLevel.create(level, cpos, this.levelName);
+	}
+	toString() {
+
+	}
+	getTile(pos) {
+		if (pos.isChunkPos) throw new Error("is cpos");
+		return this.getChunk(pos)?.getTile(pos) ?? new Tile;
+	}
+	setTile(pos, value) {
+		return Object.assign(this.getTile(pos), value);
+	}
+	getChunk(pos) {
+		return this.chunks[pos.getChunkPos().toString()] ?? null;
+	}
+	hasChunk(cpos) {
+		let cposArr = Array.toArray(cpos);
+		cposArr.forEach(value => value.getChunkPos());
+		for (const cpos of cposArr) {
+			if (Object.keys(this.chunks).includes(cpos.toString())) return true;
+		}
+		return false;
+	}
+	autoLoadDispose(ppos) {
+		const pcpos = new pos(ppos.x / 16, ppos.y / 16).getChunkPos()
+		const loadcpos = [
+			new cpos(pcpos.x + 1, pcpos.y + 1),
+			new cpos(pcpos.x + 0, pcpos.y + 1),
+			new cpos(pcpos.x - 1, pcpos.y + 1),
+			new cpos(pcpos.x + 1, pcpos.y + 0),
+			new cpos(pcpos.x + 0, pcpos.y + 0),
+			new cpos(pcpos.x - 1, pcpos.y + 0),
+			new cpos(pcpos.x + 1, pcpos.y - 1),
+			new cpos(pcpos.x + 0, pcpos.y - 1),
+			new cpos(pcpos.x - 1, pcpos.y - 1)
+		]
+		for (const cpos of loadcpos) {
+			if (this.hasChunk(cpos)) continue;
+			this.chunkLoad(cpos);
+		}
+		for (const chunk of Object.keys(this.chunks)) {
+			if (!loadcpos.map(value => value.toString()).includes(chunk))
+				delete this.chunks[chunk];
+		}
+	}
+}
+
+const level = new Level;
+
+class ChunkLevel {
+	constructor(rawObj, cpos = console.error("no cpos")) {
+		if (rawObj === null) rawObj = ChunkLevel.getDefaultValue();
+		this.cData = rawObj.cData.map(value => new Tile(...value));
+		this.cpos = cpos;
+	}
+	init(cpos) {
+		this.cpos = cpos;
+	}
+	dispose(level) {
+
+	}
+	static create(level, cpos) {
+		return new ChunkLevel(this.getDefaultValue(), cpos);
+	}
+	static async load(level, cpos, levelName) {
+		//return new ChunkLevel(level.rawData.chunks[pos.x][pos.y]);
+		return new ChunkLevel(await loadJson(`/maps/${levelName}/${cpos.toString()}.json`) ?? null, cpos);
+	}
+	static getDefaultValue() {
+		const chunk = new Object;
+		chunk.cData = new Array(chunkSize.w * chunkSize.h).fill(Array.from(new Tile(0, 0, 0, 0)));
+		return chunk;
+	}
+	toString() {
+		const thisCopy = Object.assign({}, this);
+		thisCopy.cData = thisCopy.cData.map(value => Array.from(value))
+		return JSON.stringify(thisCopy);
+	}
+	getTile(pos) {
+		return this.cData[pos.getInChunkIndex()];
+	}
+}
+
+class Tile {
+	constructor(layer1 = 0, layer2 = 0, hitbox = 0, enemy = 0) {
+		this.layer1 = layer1;
+		this.layer2 = layer2;
+		this.hitbox = hitbox;
+		this.enemy = enemy;
+	}
+	[Symbol.iterator] = function* () {
+		yield this.layer1;
+		yield this.layer2;
+		yield this.hitbox;
+		yield this.enemy;
+	}
+}
 
 class Game {
-	constructor() {
-		this.ver = "23m11w3";
+	static ver = "23m03w1";
 
-		this.saveloadingnow = false;
-		this.saveloadfaliedtime = -1;
-		this.saveloadfaliedtype = -1;
-		this.saveloadsuccesstime = -111;
-		this.saveloadsuccesstype = -111;
-		this.PopUpDelay = 100;
+	static saveloadingnow = false;
+	static saveloadfaliedtime = -1;
+	static saveloadfaliedtype = -1;
+	static saveloadsuccesstime = -111;
+	static saveloadsuccesstype = -111;
+	static PopUpDelay = 100;
 
-		this.PlayingScreen = false;
+	static PlayingScreen = false;
 
-		this.move_limit = 32767;
-		this.weapon_canlock = false;
-		this.PI = Math.floor(Math.PI * Math.pow(10, 5)) / Math.pow(10, 5);
+	static move_limit = 32767;
+	static weapon_canlock = false;
+	static PI = Math.floor(Math.PI * Math.pow(10, 5)) / Math.pow(10, 5);
 
-		this.colorPallet = {
-			"magenta": "magenta",//accsent
-			"green": "lime",
-			"blue": "blue",
-			"black": "black",// common
-			"gray": "gray",
-			"white": "white"
-		}
-
-		this.map = new Object;
-
-		this.map_path = {
-			"VillageAround": "param/maps/VillageAroundMap.map",
-			"LvSpot": "param/maps/LvSpotMap.map",
-			"Default": "param/maps/Map.map"
-		}
-
-		this.rotate_pos = [
-			[0, 1],//　 ↓
-			[-1, 1],//  ↙
-			[-1, 0],//  ←
-			[-1, -1],// ↖
-			[0, -1],//  ↑
-			[1, -1],//  ↗　
-			[1, 0],//　 →
-			[1, 1],//　 ↘
-		]
-
-		this.facing_pos = [
-			[0, 1],//　 ↓
-			[-1, 0],//  ←
-			[0, -1],//  ↑
-			[1, 0],//　 →
-		]
-
-		this.tab_offset = [
-			64, 128, 128, 128
-		]
-
-		this.gui_item_count = [
-			15, 7, 15, 7
-		]
-
-		this.breakableTile = [
-			9, 10, 11
-		]
-
-		this.breakableTileAbout = {
-			9: {
-				"breakProbability": 0.1,
-				"becomeTile": 12
-			},
-			10: {
-				"breakProbability": 0.05,
-				"becomeTile": 12
-			},
-			11: {
-				"breakProbability": 0.05,
-				"becomeTile": 13
-			}
-		}
-
-		this.animationTile = {
-			7: {
-
-			}
-		}
-
-		this.DontDrawTIle = [
-			0
-		]
-
-		this.enemy_type = [
-			"slime",
-			"gorilla",
-			"fish",
-			"desert",
-			"snow",
-			"poison",
-			"fire",
-			"dark",
-			"other"
-		]
-
-		this.gui_system_items = [
-			"menu.system.config",
-			"menu.system.data",
-			"menu.system.about"
-		]
-		this.gui_system_data_items = [
-			"menu.system.data.select",
-			"menu.system.data.save",
-			"menu.system.data.load"
-		]
-
-		this.config_name = [
-			"player",
-			"weapon",
-			"data",
-			"control",
-			"sounds",
-			"other",
-			"debug"
-		]
-
-		this.config_icons = [
-			"player",
-			"weapon",
-			"colorFloppy",
-			"gamepad",
-			"sound",
-			"other",
-			"debug"
-		]
-
-		this.soundGroupsConfig = {
-			"player": "sound_player",
-			"tile": "sound_tile",
-			"enemy": "sound_enemy",
-			"gui": "sound_gui",
-			"bgm": "bgm",
-			"other": "other"
-		}
-
-		this.select_y_size = [
-			16, 16, 16, 16
-		]
-
-		this.savemetadata = {
-			"codename": "project2023",
-			"ver": this.ver
-		}
-
-		this.title_items = [
-			"newgame",
-			"loadgame"
-		]
-
-		this.UICustomScrollable = [
-			"items",
-			"roles",
-			"hud_hp",
-			"UIOpen",
-			"config"
-		]
-
-
+	static colorPallet = {
+		"magenta": "magenta",//accsent
+		"green": "lime",
+		"blue": "blue",
+		"black": "black",// common
+		"gray": "gray",
+		"white": "white"
 	}
-	getTileID(maplayer = "map1", x, y) {
-		if (typeof game.map[maplayer] !== "undefined")
-			if (y >= 0 && y < game.map[maplayer].length)
-				if (x >= 0 && x < game.map[maplayer][y].length)
-					return game.map[maplayer][y][x];
+
+	static map = new Object;
+
+	static map_path = {
+		"VillageAround": "param/maps/VillageAroundMap.map",
+		"LvSpot": "param/maps/LvSpotMap.map",
+		"Default": "param/maps/Map.map"
 	}
-	async NewGame() {
+
+	static rotate_pos = [
+		[0, 1],//　 ↓
+		[-1, 1],//  ↙
+		[-1, 0],//  ←
+		[-1, -1],// ↖
+		[0, -1],//  ↑
+		[1, -1],//  ↗　
+		[1, 0],//　 →
+		[1, 1],//　 ↘
+	]
+
+	static facing_pos = [
+		[0, 1],//　 ↓
+		[-1, 0],//  ←
+		[0, -1],//  ↑
+		[1, 0],//　 →
+	]
+
+	static tab_offset = [
+		64, 128, 128, 128
+	]
+
+	static gui_item_count = [
+		15, 7, 15, 7
+	]
+
+	static breakableTile = [
+		9, 10, 11
+	]
+
+	static breakableTileAbout = {
+		9: {
+			"breakProbability": 0.1,
+			"becomeTile": 12
+		},
+		10: {
+			"breakProbability": 0.05,
+			"becomeTile": 12
+		},
+		11: {
+			"breakProbability": 0.05,
+			"becomeTile": 13
+		}
+	}
+
+	static animationTile = {
+		7: {
+
+		}
+	}
+
+	static DontDrawTIle = [
+		0
+	]
+
+	static enemy_type = [
+		"slime",
+		"gorilla",
+		"fish",
+		"desert",
+		"snow",
+		"poison",
+		"fire",
+		"dark",
+		"other"
+	]
+
+	static gui_system_items = [
+		"menu.system.config",
+		"menu.system.data",
+		"menu.system.about"
+	]
+	static gui_system_data_items = [
+		"menu.system.data.select",
+		"menu.system.data.save",
+		"menu.system.data.load"
+	]
+
+	static config_name = [
+		"player",
+		"weapon",
+		"data",
+		"control",
+		"sounds",
+		"other",
+		"debug"
+	]
+
+	static config_icons = [
+		"player",
+		"weapon",
+		"colorFloppy",
+		"gamepad",
+		"sound",
+		"other",
+		"debug"
+	]
+
+	static soundGroupsConfig = {
+		"player": "sound_player",
+		"tile": "sound_tile",
+		"enemy": "sound_enemy",
+		"gui": "sound_gui",
+		"bgm": "bgm",
+		"other": "other"
+	}
+
+	static select_y_size = [
+		16, 16, 16, 16
+	]
+
+	static savemetadata = {
+		"codename": "project2023",
+		"ver": Game.ver
+	}
+
+	static title_items = [
+		"newgame",
+		"loadgame"
+	]
+
+	static UIListScrollable = [
+		"items",
+		"roles",
+		"hud_hp",
+		"UIOpen",
+		"config"
+	]
+
+
+	static getTileID(maplayer = "map1", x, y) {
+		if (typeof Game.map[maplayer] !== "undefined")
+			if (y >= 0 && y < Game.map[maplayer].length)
+				if (x >= 0 && x < Game.map[maplayer][y].length)
+					return Game.map[maplayer][y][x];
+	}
+	static async NewGame() {
 
 		//コンフィグリセット
 		configReset();
@@ -1259,18 +1574,40 @@ class Game {
 		//マップDefault(placeholder)
 		await mapchange("Default");
 
-		game.PlayingScreen = true;
+		Game.PlayingScreen = true;
 		gamestarted = true;
 	}
-	async LoadGame() {
+	static async LoadGame() {
 
 		await savedataload();
 
-		game.PlayingScreen = true;
+		Game.PlayingScreen = true;
 		gamestarted = true;
 	}
+	static onScreenArea(size) {
+		let ax = Cam.x;
+		let ay = Cam.y;
+		let aw = ScreenWidth;
+		let ah = ScreenHeight;
+		let bx = size.x;
+		let by = size.y;
+		let bw = size.w;
+		let bh = size.h;
+
+		let acx = ax + aw / 2;
+		let acy = ay + ah / 2;
+		let bcx = bx + bw / 2;
+		let bcy = by + bh / 2;
+
+		let dx = Math.abs(acx - bcx);
+		let dy = Math.abs(acy - bcy);
+
+		let sx = (aw + bw) / 2;
+		let sy = (ah + bh) / 2;
+
+		return dx < sx && dy < sy;
+	}
 }
-let game = new Game();
 
 class Message {
 	constructor() {
@@ -1402,8 +1739,8 @@ class Sound {
 
 //audioの仕様をカスタム
 class Sound {
-	constructor(audioElem) {
-		this.sound = audioElem;
+	constructor(element) {
+		this.sound = element;
 		this.play = function (DoNotStop = false) {
 			if (!DoNotStop)
 				this.sound.currentTime = 0;
@@ -1414,35 +1751,38 @@ class Sound {
 			this.sound.pause();
 		}
 	}
+	/**
+	 * audio要素を作成します 使用例: new Sound(await createAudioElem(url, volume));
+	 * @param {*} url ファイルのURL
+	 * @param {*} volume 音量
+	 * @returns audio要素
+	 */
+	static async createAudioElem(url, volume = 1) {
+		return new Promise((resolve, reject) => {
+			const audio = new Audio();
+			audio.preload = 'auto';
+			audio.volume = volume;
+			audio.src = url;
+
+			// エラー処理を追加
+			audio.onerror = () => {
+				reject(audio.error)
+			};
+
+			// 'canplaythrough'イベントが発火したら、Promiseを解決する
+			audio.addEventListener('canplaythrough', () => {
+				resolve(audio);
+			}, { once: true });
+
+			// 読み込みを開始
+			audio.load();
+		});
+	}
+	static async init(url, volume = 1) {
+		return new Sound(await Sound.createAudioElem(url, Math.min(1, volume)));
+	}
 }
 
-/**
- * audio要素を作成します 使用例: new Sound(await loadAudio(url, volume));
- * @param {*} url ファイルのURL
- * @param {*} volume 音量
- * @returns audio要素
- */
-async function loadAudio(url, volume = 1) {
-	return new Promise((resolve, reject) => {
-		const audio = new Audio();
-		audio.preload = 'auto';
-		audio.volume = volume;
-		audio.src = url;
-
-		// エラー処理を追加
-		audio.onerror = () => {
-			reject(audio.error)
-		};
-
-		// 'canplaythrough'イベントが発火したら、Promiseを解決する
-		audio.addEventListener('canplaythrough', () => {
-			resolve(audio);
-		}, { once: true });
-
-		// 読み込みを開始
-		audio.load();
-	});
-}
 
 let IsLoading = true;
 
@@ -1495,7 +1835,7 @@ let load = {
 	"soundcount": 0,
 	"type": "",
 	"ejectLog": false,
-	"fastLoad": false//its test module
+	"fastLoad": true// test module
 }
 
 //セーブデータ読み込み用の変数の作成
@@ -1531,29 +1871,7 @@ let MainProcTime = 0;
 
 
 
-//プレイヤーの変数の作成
-//let player = new PlayerControl();
-let players = new Array();
 
-players[0] = new Players(0);
-
-//事前に埋めとく
-player_movelog_reset();
-
-
-//敵の変数の作成
-let enemy_speed = 0.25
-
-let enemy = new Array();
-//敵の変数の作成
-
-let entities = new Array();
-
-//NPCの変数の作成
-let npc = new Array();
-
-//パーティクルの変数の作成
-let particle = new Array();
 
 //キーの変数の作成
 let key = new Object();
@@ -1769,8 +2087,8 @@ class JsonUI {
 		for (const UIContentKey of Object.keys(UIGroup)) {
 			let UIContent = UIGroup[UIContentKey]
 			switch (UIContent.type) {
-				case "custom":
-					if (game.UICustomScrollable.includes(UIContent.renderer))
+				case "list":
+					if (Game.UIListScrollable.includes(UIContent.renderer))
 						this.data[UIContent.id] = { "scroll": 0, "select": 0 };
 
 					if (UIContent.renderer === "roles")
@@ -1800,16 +2118,32 @@ class JsonUI {
 	get index() {
 		return JsonUIOpen.indexOf(this);
 	}
-	ShouldOpenAnim(UIIndex, UIContent) {
+	ShouldOpenAnim() {
+		let topLayerData = JsonUIOpen[JsonUIOpen.length - 1];
+
+		if (!this.getUIContent(0)?.inactiveHidden?.this) return this.state === 1;
+		if (!topLayerData.getUIContent(0)?.inactiveHidden?.target) return this.state === 1;
+
 		return this.state === 1 && jsonui_active(this.index);
 	}
-	ShouldCloseAnim(UIIndex, UIContent) {
+	ShouldCloseAnim() {
+		let topLayerData = JsonUIOpen[JsonUIOpen.length - 1];
+
+		if (this.getUIContent(0)?.inactiveHidden?.this === false) return this.state === -1;
+		if (topLayerData.getUIContent(0)?.inactiveHidden?.target === false) return this.state === -1;
+
 		return this.state === -1 || !jsonui_active(this.index);
 	}
-	ActiveChangeDetect(UIIndex) {
-		this.#ActiveChange.active = !this.#ActiveChange.TickAgo && jsonui_active(UIIndex) && this.#ActiveChange.TickAgo !== undefined;
-		this.#ActiveChange.inactive = this.#ActiveChange.TickAgo && !jsonui_active(UIIndex) && this.#ActiveChange.TickAgo !== undefined;
-		this.#ActiveChange.TickAgo = jsonui_active(UIIndex);
+	ActiveChangeDetect() {
+		//bug fix
+		let topLayerData = JsonUIOpen[JsonUIOpen.length - 1];
+		this.#noActiveChange = !topLayerData.getUIContent(0)?.inactiveHidden?.target
+		if (this.#noActiveChange) return;
+		//end
+
+		this.#ActiveChange.active = !this.#ActiveChange.TickAgo && jsonui_active(this.index) && this.#ActiveChange.TickAgo !== undefined;
+		this.#ActiveChange.inactive = this.#ActiveChange.TickAgo && !jsonui_active(this.index) && this.#ActiveChange.TickAgo !== undefined;
+		this.#ActiveChange.TickAgo = jsonui_active(this.index);
 
 
 		if (this.#ActiveChange.active) this.activeTime = 0;
@@ -1820,6 +2154,7 @@ class JsonUI {
 		inactive: false,
 		TickAgo: undefined
 	}
+	#noActiveChange = false;
 	getUIContent(index) {
 		return this.UIGroup[index];
 	}
@@ -1837,6 +2172,7 @@ class JsonUI {
 		if (this.closed) JsonUIOpen.splice(this.index, 1);
 	}
 	tick() {
+
 		this.ActiveChangeDetect(this.index)
 		if (this.state === 1) this.openTime++;
 		if (this.state === -1) this.closeTime++;
@@ -1851,7 +2187,7 @@ class JsonUI {
 
 		for (const UIContent of this.UIGroup) {
 
-			this.defaultProc(UIContent, ...ConvertArray(UIContent.animIn), ...ConvertArray(UIContent.animOut), UIContent.trans);
+			this.defaultProc(UIContent, ...Array.toArray(UIContent.animIn), ...Array.toArray(UIContent.animOut), UIContent.trans);
 
 
 			let Draw = new JsonUIDraw(UIContent, this, false);
@@ -1860,47 +2196,55 @@ class JsonUI {
 
 			switch (UIContent.type) {
 				case "text":
-					drawTextFont(translate(jsonui_variable(UIContent.text), undefined, UIContent, undefined, this.index), Draw.Offset.x, Draw.Offset.y, { color: game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
+					drawTextFont(translate(jsonui_variable(UIContent.text), undefined, UIContent, undefined, this.index), Draw.Offset.x, Draw.Offset.y, { color: Game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
 					break;
 				case "button":
 					draw_rectangle(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt);
-					drawTextFont(translate(UIContent.text), Draw.Offset.x, Draw.Offset.y, { color: game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
+					drawTextFont(translate(UIContent.text), Draw.Offset.x, Draw.Offset.y, { color: Game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
 					break;
 				case "tabConfig":
 					let sizeOverride = new JsonUIDraw(loadedjson.jsonui[UIID][0], this.index).Offset.x - Draw.Offset.x;
 				//console.log(sizeOverride)
 				case "tab":
 					draw_tab(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt, img.gui_tab_select, UIContent.tabType, UIData.data.selectid === UIContent.id);
-					drawTextFont(translate(UIContent.text), Draw.Offset.x, Draw.Offset.y, { color: game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
+					drawTextFont(translate(UIContent.text), Draw.Offset.x, Draw.Offset.y, { color: Game.colorPallet.black, align: "start", startX: 0, startY: 0, endX: Draw.size.x, endY: Draw.size.y });
 					break;
 				case "rectangle":
 					draw_rectangle(Draw.Offset.x, Draw.Offset.y, Draw.size.x, Draw.size.y, img.gui_prompt);
 					break;
-				case "custom":
-					this.customRenderer(UIContent, Draw);
+				case "list":
+					this.listRenderer(UIContent, Draw);
 					break;
 			}
 		}
+
+		if (debug.uiActiveTime) {
+			drawTextFont(this.activeTime, 0, this.index * 16 + 0, {});
+			drawTextFont(this.inactiveTime, 0, this.index * 16 + 8, {});
+		}
+
 	}
-	customRenderer(UIContent, Draw) {
-		let drawItems;
+	getListItems(renderer) {
+
 		// items代入
-		switch (UIContent.renderer) {
+		switch (renderer) {
 			case "items":
-				drawItems = PlayerControl.items;
+				return Items;
 				break;
 			case "roles":
 			case "hud_hp":
-				drawItems = players;
+				return players;
 				break;
 			case "UIOpen":
-				drawItems = Object.keys(loadedjson.jsonui);
+				return Object.keys(loadedjson.jsonui);
 				break;
 			case "config":
-				drawItems = getConfigsGroup(this.data.tab);
+				return getConfigsGroup(this.data.tab);
 				break;
 		}
-		// 描画いろいろ
+	}
+	listRenderer(UIContent, Draw) {
+		let drawItems = this.getListItems(UIContent.renderer);
 		switch (UIContent.renderer) {
 			case "items":
 			case "roles":
@@ -1924,8 +2268,8 @@ class JsonUI {
 						if (-ObjOut.top >= itemSize.y) continue;
 						if (-ObjOut.bottom > 0) continue;
 
-						//let draw_text_templ = (text, font = "", AddX = 0, AddY = 0) => draw_text(text, Math.min(itemOffset.x + AddX, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset + AddY, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, undefined, undefined, font, -1, 0, -ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top);
-						let draw_text_templ = (text, color = game.colorPallet.black, align = "start", AddX = 0, AddY = 0) => {
+						//let drawTextTempl = (text, font = "", AddX = 0, AddY = 0) => draw_text(text, Math.min(itemOffset.x + AddX, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset + AddY, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, undefined, undefined, font, -1, 0, -ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top);
+						let drawTextTempl = (text, color = Game.colorPallet.black, AddX = 0, AddY = 0) => {
 							const TextX = itemOffset.x + Draw.Offset.x + AddX;
 							const TextY = itemOffset.y + Draw.Offset.y + AddY + DrawOffset;
 							const StartX = 0
@@ -1933,8 +2277,18 @@ class JsonUI {
 							const EndX = Draw.size.x - itemOffset.x - AddX;
 							const EndY = Draw.size.y - itemOffset.y - AddY - DrawOffset;
 
-							drawTextFont(text, TextX, TextY, { color: color, align: align, startX: StartX, startY: StartY, endX: EndX, endY: EndY });
-							//if (key_groups_down.attack && text == "egg") console.table([text, TextX, TextY, StartX, StartY, EndX, EndY])
+							drawTextFont(text, TextX, TextY, { color: color, align: undefined, startX: StartX, startY: StartY, endX: EndX, endY: EndY });
+
+						}
+						let drawImageTempl = (image, sx, sy, sw, sh, AddX = 0, AddY = 0) => {
+							const TextX = itemOffset.x + Draw.Offset.x + AddX;
+							const TextY = itemOffset.y + Draw.Offset.y + AddY + DrawOffset;
+							const StartX = 0
+							const StartY = -DrawOffset - itemOffset.y
+							const EndX = Draw.size.x - itemOffset.x - AddX;
+							const EndY = Draw.size.y - itemOffset.y - AddY - DrawOffset;
+
+							drawImg(image, sx, sy, sw, sh, TextX, TextY, { startX: EndX, startY: EndY, endX: StartX, endY: StartY });
 						}
 
 						switch (UIContent.items[key].tag) {
@@ -1942,47 +2296,55 @@ class JsonUI {
 								drawImg(img.items, getTileAtlasXY(drawItem.id, 0), getTileAtlasXY(drawItem.id, 1) - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
 								break;
 							case "text":
-								draw_text_templ(translate(UIContent.items[key].text));
+								drawTextTempl(translate(UIContent.items[key].text));
 								break;
 							case "ttftext":
 								draw_text_ttf(translate(UIContent.items[key].text));
 								break;
 							case "ItemRender":
-								drawImg(img.items, getTileAtlasXY(get_item_data(itemIndex, "icon"), 0), getTileAtlasXY(get_item_data(itemIndex, "icon"), 1) - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
+								drawImageTempl(img.items, getTileAtlasXY(drawItem.icon, 0), getTileAtlasXY(drawItem.icon, 1), 16, 16);
 								break;
 							case "ItemName":
-								draw_text_templ(translate("item." + get_item_data(itemIndex, "name") + ".name"));
-								break;
-							case "ConfigName":
-								draw_text_templ(translate(drawItem.name));
-								break;
-							case "ConfigValue":
-								draw_text_templ(translate(drawItem.value));
+								drawTextTempl(drawItem.getDisplayName());
 								break;
 							case "ItemCount":
-								draw_text_templ(drawItem.count, game.colorPallet.magenta, "start");
+								drawTextTempl(drawItem.count, Game.colorPallet.magenta);
 								break;
 							case "ItemEfficacy":
-								if (get_item_data(itemIndex, "efficacy") == "health") {
-									AtlasDrawImage("gui_item_text_health", Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, 0, -ObjOut.top, 0, ObjOut.bottom + ObjOut.top - itemSize.y);
-									draw_text_templ(String(get_item_data(itemIndex, "heal_power")), "start", "black", 32, 0);
+								drawTextTempl(drawItem.getDisplayEfficacy, "start", "black", 32, 0);
+
+								break;
+							case "ConfigName":
+								drawTextTempl(translate(drawItem.name));
+								break;
+							case "ConfigValue":
+								switch (drawItem.type) {
+									case "bool":
+										if (drawItem.value)
+											drawImageTempl(img.gui, 0, 16, 16, 8);
+										else
+											drawImageTempl(img.gui, 0, 24, 16, 8);
+										break;
+									default:
+										drawTextTempl(translate(drawItem.value));
+										break;
 								}
 								break;
 							case "debugtest":
-								draw_text_templ(`${ObjOut.top},${ObjOut.bottom}`, "_purple");
+								drawTextTempl(`${ObjOut.top},${ObjOut.bottom}`, "_purple");
 								break;
 							case "role_icon":
 								drawImg(img.gui, players[itemIndex].id * 8, 48 - ObjOut.top, itemSize.x, ObjOut.bottom + ObjOut.top, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top);
 								break;
 							case "role_hp":
-								draw_text_templ(players[itemIndex].health);
+								drawTextTempl(players[itemIndex].health);
 								break;
 							case "img":
 							case "image":
 								AtlasDrawImage(UIContent.items[key].img, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, 0, -ObjOut.top, 0, ObjOut.bottom + ObjOut.top - itemSize.y);
 								break;
 							case "uilist":
-								draw_text_templ(drawItem, "_purple");
+								drawTextTempl(drawItem, "_purple");
 								break;
 						}
 					}
@@ -2023,17 +2385,16 @@ class JsonUI {
 					});
 					break;
 				case "UseItem":
-					PlayerControl.items[param[0]].use(param[1]);
+					Items[param[0]].mayUse(param[1]);
 					break;
 				case "data":
 					JsonUIOpen[this.index].data[param[0]] = param[1];
 					break;
 				case "ChangeConfig":
-					let configData = loadedjson.configs[this.data.tab][this.data.configRender.select];
-					let configState = config[configData.variable];
+					let configData = config[this.data.configRender.select];
 					switch (configData.type) {
 						case "bool":
-							configState = !configState;
+							configData.value = !configData.value;
 							break;
 					}
 					break;
@@ -2048,10 +2409,10 @@ class JsonUI {
 			if (UIContent.trans.tickAfter !== undefined) trigger(UIContent.trans.tickAfter);
 
 		}
-		if (UIContent.type === "custom" ? game.UICustomScrollable.includes(UIContent?.renderer) : false) {
+		if (UIContent.type === "list" && Game.UIListScrollable.includes(UIContent?.renderer)) {
 			let data = this.data[UIContent.id];
 			if (true) {
-				if (key_groups_hold.down && data.select < PlayerControl.items.length - 1) data.select++
+				if (key_groups_hold.down && data.select < Items.length - 1) data.select++
 				if (key_groups_hold.up && data.select > 0) data.select--
 				if (key_groups_hold.down || key_groups_hold.up) PlaySound("select", "gui");
 
@@ -2078,18 +2439,11 @@ class JsonUI {
 		if (!UIContent.ShowCursor) return;
 
 		switch (UIContent.type) {
-			case "custom":
-				switch (UIContent.renderer) {
-					case "items":
-					case "roles":
-					case "UIOpen":
-					case "config":
-						JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y + data.select * 16 - data.scroll));
-						break;
-					default:
-						JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y));
-						break;
-				}
+			case "list":
+				if (Game.UIListScrollable.includes(UIContent.renderer))
+					JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y + data.select * 16 - data.scroll));
+				else
+					JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y));
 				break;
 			default:
 				JsonUICursor.push(new Vec2(Draw.Offset.x + Draw.CursorOffset.x, Draw.Offset.y + Draw.CursorOffset.y));
@@ -2298,7 +2652,7 @@ function jsonui_variable(rawvalue, UIGroup, UIContent, UIData, UIIndex) {
 }
 
 
-function getJsonuiSelect(UIIndex = JsonUIOpen.length - 1) {
+function loadJsonuiSelect(UIIndex = JsonUIOpen.length - 1) {
 	return JsonUIOpen[UIIndex].select;
 }
 
@@ -2312,7 +2666,7 @@ let JsonUIOpen = new Array();
 let JsonUICursor = new Cursor();
 
 //言語設定
-game.lang = loadedjson.en_us;
+Game.lang = loadedjson.en_us;
 let lang = "en_us";
 
 //json読み込み
@@ -2325,7 +2679,7 @@ function main() {
 	fpsCount();
 	main_proc_time(true);
 
-	game.lang = Object.assign(loadedjson.en_us, loadedjson[lang]);
+	Game.lang = Object.assign(loadedjson.en_us, loadedjson[lang]);
 
 	//キャンバスの初期化
 	ctx.clearRect(0, 0, ScreenWidth, ScreenHeight);
@@ -2334,9 +2688,9 @@ function main() {
 	GamepadUpdate();
 	touch_button_proc();
 
-	if (game.PlayingScreen) GAMEMAIN();
+	if (Game.PlayingScreen) GAMEMAIN();
 
-	if (!game.PlayingScreen) TITLEMAIN();
+	if (!Game.PlayingScreen) TITLEMAIN();
 
 
 	//タイマー
@@ -2362,7 +2716,7 @@ async function game_start_proc() {
 	if (searchParams.get("debug") != null) debug.visible = searchParams.has("debug");
 
 	//タイトル変更
-	document.title = "project 2023 " + game.ver
+	document.title = "project 2023 " + Game.ver
 
 	//コンフィグリセット
 	configReset();
@@ -2379,8 +2733,10 @@ async function game_start_proc() {
 function GAMEMAIN() {
 
 
-	if (!IsLoading) game.map = Object.assign(loadedjson.Map, loadedjson.MapMeta);
+	if (!IsLoading) Game.map = Object.assign(loadedjson.Map, loadedjson.MapMeta);
 	playTime = SavedPlayTime + (new Date() - GameStartedTime);
+
+	level.autoLoadDispose(Cam);
 
 	player_tick();
 
@@ -2647,7 +3003,7 @@ function RandomArray(input) {
 	return input;
 }
 
-function ConvertArray(input) {
+Array.toArray = function (input) {
 	return new Array().concat(input);
 }
 
@@ -2782,7 +3138,7 @@ async function loadingassets() {
 	{
 		let gets = new Array();
 		for (const i in willLoadJson) {
-			gets.push(getJson(willLoadJson[i].src, willLoadJson[i].name, willLoadJson[i].meta === "jsonui"));
+			gets.push(loadJson(willLoadJson[i].src, willLoadJson[i].name, willLoadJson[i].meta === "jsonui"));
 		}
 
 		await Promise.all(gets);
@@ -2822,7 +3178,7 @@ async function loadingassets() {
 			gets.push(dynamicAwait(loadImage, !load.fastLoad || willLoadImg[i].nessesary, willLoadImg[i].src, willLoadImg[i].name));
 		}
 		for (const i in willLoadJson) {
-			gets.push(dynamicAwait(getJson, !load.fastLoad || willLoadJson[i].nessesary, willLoadJson[i].src, willLoadJson[i].name));
+			gets.push(dynamicAwait(loadJson, !load.fastLoad || willLoadJson[i].nessesary, willLoadJson[i].src, willLoadJson[i].name));
 		}
 		for (const i in willLoadSounds) {
 			gets.push(dynamicAwait(loadSound, !load.fastLoad || willLoadSounds[i].nessesary, willLoadSounds[i].src, willLoadSounds[i].name, willLoadSounds[i].meta));
@@ -2905,28 +3261,30 @@ async function dynamicAwait(func, doAwait, ...param) {
 	}
 }
 
-async function getJson(filename, name, useReviver) {
-	//あざす　https://gxy-life.com/2PC/javascript/json_table20220514/
-	let startTime = new Date().getTime();
+async function loadJson(filename, name, useReviver) {
+	try {
+		//あざす　https://gxy-life.com/2PC/javascript/json_table20220514/
+		let startTime = new Date().getTime();
 
-	//取得ここから
-	const response = await fetch(filename);
-	const jsonObject = await response.json();
-	//取得ここまで
+		const response = await fetch(filename)
+		const jsonObject = await response.json();
 
-	let endTime = new Date().getTime();
-	debug.jsonLoadTime[name] = endTime - startTime;
+		let endTime = new Date().getTime();
+		if (name != undefined)
+			debug.jsonLoadTime[name] = endTime - startTime;
 
-	document.getElementById("jsonLoadCount").innerText = String(++load.jsoncount);
-	if (load.ejectLog) console.log('loaded: ' + filename);
+		document.getElementById("jsonLoadCount").innerText = String(++load.jsoncount);
+		if (load.ejectLog)
+			console.log('loaded: ' + filename);
 
-	if (!gamestarted) {
-		ctx.clearRect(0, 0, ScreenWidth, ScreenHeight);
-		ctx.fillText(`loading parameter: ${load.jsoncount}/${willLoadJson.length}`, ScreenWidth / 2, ScreenHeight / 2);
+
+		if (name != undefined)
+			loadedjson[name] = jsonObject;
+
+		return jsonObject;
 	}
+	catch { return null };
 
-	loadedjson[name] = jsonObject;
-	return jsonObject;
 }
 
 //あざす https://pisuke-code.com/js-load-image-synchronously/
@@ -2938,10 +3296,6 @@ async function loadImage(imgUrl, name) {
 		img[name].onload = function () {
 			/// 読み込み完了後...
 			document.getElementById("imgLoadCount").innerText = String(++load.imgcount);
-			if (!gamestarted) {
-				ctx.clearRect(0, 0, ScreenWidth, ScreenHeight);
-				ctx.fillText(`loading images: ${load.imgcount}/${willLoadImg.length}`, ScreenWidth / 2, ScreenHeight / 2);
-			}
 
 			if (load.ejectLog) console.log('loaded: ' + imgUrl);
 			resolve();
@@ -2955,13 +3309,10 @@ async function loadImage(imgUrl, name) {
 }
 
 async function loadSound(url, name, volume) {
-	sounds[name] = new Sound(await loadAudio(url, volume));
+	sounds[name] = await Sound.init(url, volume);
 	document.getElementById("soundLoadCount").innerText = String(++load.soundcount);
-	if (!gamestarted) {
-		ctx.clearRect(0, 0, ScreenWidth, ScreenHeight);
-		ctx.fillText(`loading sounds: ${load.soundcount}/${willLoadSounds.length}`, ScreenWidth / 2, ScreenHeight / 2);
-		if (load.ejectLog) console.log('loaded: ' + url);
-	}
+	if (load.ejectLog) console.log('loaded: ' + url);
+
 	return sounds[name];
 }
 
@@ -3130,7 +3481,7 @@ async function savedataload(dir = true) {
 async function savedatawrite(dir = true) {
 	let obj = new Object();
 
-	obj.metadata = game.savemetadata;
+	obj.metadata = Game.savemetadata;
 	obj.playTime = playTime;
 	obj.LastSavedTime = new Date();
 	obj.player = JSON.parse(JSON.stringify(player));
@@ -3209,7 +3560,7 @@ async function getIP() {
 }
 
 function IsBusy() {
-	return game.saveloadingnow || IsLoading;
+	return Game.saveloadingnow || IsLoading;
 }
 
 function getAllWillLoadLength() {
@@ -3284,16 +3635,16 @@ function easeInExpo(x) {
 	return x === 0 ? 0 : Math.pow(2, 10 * x - 10);
 }
 function replaceTile(id, maplayer, x, y) {
-	game.map[maplayer][y][x] = id;
+	Game.map[maplayer][y][x] = id;
 	return id;
 }
 
 function changeHitbox(bool, x, y) {
-	game.map["hitbox"][y][x] = bool;
+	Game.map["hitbox"][y][x] = bool;
 	return bool;
 }
 function replaceHitboxTile(bool, x, y) {
-	game.map["hitbox"][y][x] = bool;
+	Game.map["hitbox"][y][x] = bool;
 	return bool;
 }
 
@@ -3306,7 +3657,7 @@ function allElemDefined(...elem) {
 //当たり判定
 function hitbox(x, y) {
 
-	let gethitBox = (x, y) => game.getTileID("hitbox", x, y) || (game.getTileID("map1", x, y) == 7)
+	let gethitBox = (x, y) => level.getTile(new pos(x, y))?.hitbox ?? null
 
 	if (gethitBox(Math.floor(x / 16 + 0), Math.floor(y / 16 + 0))) return true;
 	if (gethitBox(Math.floor(x / 16 + 0.95), Math.floor(y / 16 + 0))) return true;
@@ -3333,11 +3684,7 @@ function hitbox_rect(ax, ay, aw, ah, bx, by, bw, bh, color = "black") {
 	let sx = (aw + bw) / 2;
 	let sy = (ah + bh) / 2;
 
-	if (dx < sx && dy < sy) {
-		return true;
-	} else {
-		return false;
-	}
+	return dx < sx && dy < sy;
 }
 
 function hitbox_repo(ax, ay, aw, ah, px, py, color = "black") {
@@ -3346,12 +3693,8 @@ function hitbox_repo(ax, ay, aw, ah, px, py, color = "black") {
 	debug_hitbox_push(ax, ay, aw, ah, color);
 	debug_hitbox_push(px, py, 1, 1, color);
 
-	if (px >= ax && px <= (ax + aw) &&
-		py >= ay && py <= (ay + ay)) {
-		return true;
-	} else {
-		return false;
-	}
+	return (px >= ax && px <= (ax + aw) &&
+		py >= ay && py <= (ay + ay));
 }
 
 function hitbox_reci(ax, ay, aw, ah, bx, by, bw, bh, color = "black") {
@@ -3366,12 +3709,7 @@ function hitbox_reci(ax, ay, aw, ah, bx, by, bw, bh, color = "black") {
 	let ar = 2 / Math.sqrt(2 * Math.max(aw, ah));
 	let br = 2 / Math.sqrt(2 * Math.max(bw, bh));
 
-	if (dc <= ar + br) {
-		return true;
-	}
-	else {
-		return false;
-	}
+	return dc <= ar + br;
 }
 
 function hitbox_enemy_rect(ax, ay, aw, ah, color = "black") {
@@ -3411,7 +3749,7 @@ function hitbox_rema(ax, ay, aw, ah, color = "black", checktile, maplayer) {
 
 			debug_hitbox_push((x + ix) * 16, (y + iy) * 16, 16, 16, color);
 
-			let TileID = game.getTileID(maplayer, x + ix, y + iy)
+			let TileID = level.getTile(new pos(x + ix, y + iy))?.layer1 ?? null;
 
 			let result = {
 				x: x + ix,
@@ -3490,24 +3828,24 @@ function talk_npc(i) {
 }
 
 function mapchange_proc() {
-	for (const i in game.map.warp) {
-		let [x, y, w, h] = [game.map.warp[i].x * 16, game.map.warp[i].y * 16, game.map.warp[i].w * 16, game.map.warp[i].h * 16];
+	for (const i in Game.map.warp) {
+		let [x, y, w, h] = [Game.map.warp[i].x * 16, Game.map.warp[i].y * 16, Game.map.warp[i].w * 16, Game.map.warp[i].h * 16];
 		if (isNaN(w)) w = 16; if (isNaN(h)) h = 16;
 
 		if (hitbox_rect(x, y, w, h, player.x, player.y, 16, 16)) {
 			let [x, y] = [player.x, player.y];
-			if (game.map.warp[i].relpos != undefined) {
-				[x, y] = [game.map.warp[i].relpos?.x * 16 + x, game.map.warp[i].relpos.y * 16 + y];
-				mapchange(game.map.warp[i].to, x, y);
+			if (Game.map.warp[i].relpos != undefined) {
+				[x, y] = [Game.map.warp[i].relpos?.x * 16 + x, Game.map.warp[i].relpos.y * 16 + y];
+				mapchange(Game.map.warp[i].to, x, y);
 				return;
 			}
-			if (game.map.warp[i].abspos != undefined) {
-				[x, y] = [game.map.warp[i].abspos?.x * 16, game.map.warp[i].abspos.y * 16];
-				mapchange(game.map.warp[i].to, x, y);
+			if (Game.map.warp[i].abspos != undefined) {
+				[x, y] = [Game.map.warp[i].abspos?.x * 16, Game.map.warp[i].abspos.y * 16];
+				mapchange(Game.map.warp[i].to, x, y);
 				return;
 			}
 			{
-				mapchange(game.map.warp[i].to);
+				mapchange(Game.map.warp[i].to);
 				return;
 			}
 		}
@@ -3517,7 +3855,7 @@ function mapchange_proc() {
 
 function map_change_proc_check(i, x, y, w = 16, h = 16) {
 	if (hitbox_rect(x, y, w, h, player.x, player.y, 16, 16)) {
-		mapchange(game.map.warp[i].to.mapID, game.map.warp[i].to.x * 16, game.map.warp[i].to.y * 16)
+		mapchange(Game.map.warp[i].to.mapID, Game.map.warp[i].to.x * 16, Game.map.warp[i].to.y * 16)
 	}
 }
 
@@ -3525,8 +3863,8 @@ async function mapchange(ID, x, y, loadonly = false) {
 
 	IsLoading = true; {
 		let gets = new Array();
-		gets.push(getJson(game.map_path[ID], "Map"));
-		gets.push(getJson(game.map_path[ID] + "meta", "MapMeta"));
+		gets.push(loadJson(Game.map_path[ID], "Map"));
+		gets.push(loadJson(Game.map_path[ID] + "meta", "MapMeta"));
 
 		await Promise.all(gets);
 	}
@@ -3535,7 +3873,7 @@ async function mapchange(ID, x, y, loadonly = false) {
 	if (!loadonly) {
 		entities = new Array();//初期化
 		for (let entity of loadedjson.MapMeta.entity ?? []) {
-			new entityClasses[entity.id](entity.x, entity.y, entity.dialogueID);
+			new regEntity[entity.id](entity.x, entity.y, entity.dialogueID);
 		}
 
 		//プレイヤーの場所を移動
@@ -3571,7 +3909,7 @@ function get_item_data_index(i, data) {
 }
 
 function get_item_data(i, data) {
-	return loadedjson.item[PlayerControl.items[i].id][data];
+	return loadedjson.item[Items[i].id][data];
 }
 /**
  * 翻訳後の文字列を返します
@@ -3580,13 +3918,24 @@ function get_item_data(i, data) {
  * @returns 
  */
 function translate(key, ...param) {
-	if (typeof game.lang[key] != "string") return key;
+	if (typeof Game.lang[key] != "string") return key;
 
-	let text = game.lang[key];
+	let text = Game.lang[key];
 	for (let i in param) {
 		text = text.replace("%" + i, param[i]);
 	}
 	return text;
+}
+function translate(key, ...args) {
+	key = key.toString();
+	if (!(key in Game.lang)) return key;
+	let text = Game.lang[key];
+	let formattedText;
+	for (const [i, arg] of args.entries()) {
+		const regExp = new RegExp(`\\{${i}\\}`, 'g');
+		formattedText = text.replace(regExp, arg);
+	}
+	return formattedText;
 }
 
 function entity_tick() {
@@ -3597,7 +3946,7 @@ function entity_tick() {
 
 function enemy_spawn_event() {
 	//沸き上限
-	if (enemy.length >= 50) return;
+	if (Entity.getFamilies(EntityFamilies.Enemy).length >= 50) return;
 
 	for (let i = 0; i < 360; i += 3) {
 		let r = 16;
@@ -3613,16 +3962,16 @@ function enemy_spawn_check(x, y) {
 	if (Random(0, 10) < 9) return;
 
 	//敵をスポーンする場所かを調べる
-	let ID = game.getTileID("enemy", x, y);
+	let ID = level.getTile(new pos(x, y));
 	if (ID == null || typeof ID != "number") return false;
 
 	//敵が既にスポーンされてないか調べる
 	for (const enemy of entities.filter(value => value.hasFamily("Enemy"))) {
 		if (enemy.spawn.x == x * 16 && enemy.spawn.y == y * 16) return false;
 	}
-	if (!entityClasses.hasOwnProperty(ID)) return false;
+	if (!regEntity.hasOwnProperty(ID)) return false;
 
-	new entityClasses[ID](x * 16, y * 16);
+	new regEntity[ID](x * 16, y * 16);
 	return true;
 
 }
@@ -3674,8 +4023,8 @@ function debug_proc() {
 
 	{
 		let draw_text_debug = [
-			`x:${player.x}(${Math.floor(player.x / 16)})`,
-			`y:${player.y}(${Math.floor(player.y / 16)})`,
+			`x:${PlayerControl.pos.x}(${Math.floor(PlayerControl.pos.x / 16)})`,
+			`y:${PlayerControl.pos.y}(${Math.floor(PlayerControl.pos.y / 16)})`,
 
 		]
 
@@ -3769,9 +4118,10 @@ function debug_proc() {
 
 
 	//敵描画
-	for (const i in enemy) {
-		draw_text(enemy[i].hp.toString(), enemy[i].x - Cam.x, enemy[i].y - Cam.y - 16);
-		draw_text(i.toString(), enemy[i].x - Cam.x, enemy[i].y - Cam.y - 8);
+	for (const entity of entities) {
+		let index = entities.indexOf(entity);
+		draw_text(entity.health.toString(), entity.pos.x - Cam.x, entity.pos.y - Cam.y - 16);
+		draw_text(index.toString(), entity.pos.x - Cam.x, entity.pos.y - Cam.y - 8);
 	}
 
 	for (const pause of debug.pause_frame) {
@@ -3779,7 +4129,7 @@ function debug_proc() {
 	}
 
 
-	draw_text("project2023\nbeta build\n" + game.ver, 15 * 16 - 8, 10 * 16 - 8)
+	draw_text("project2023\nbeta build\n" + Game.ver, 15 * 16 - 8, 10 * 16 - 8)
 
 }
 
@@ -3919,7 +4269,7 @@ function draw_texts(text, x, y) {
  * @param {number} endY 
  * @param {"start"|"end"|"left"|"right"|"center"} align 
  */
-function drawTextFont(text, textX, textY, { color = game.colorPallet.black, align = "start", startX, startY, endX, endY }) {
+function drawTextFont(text, textX, textY, { color = Game.colorPallet.black, align = "start", startX, startY, endX, endY }) {
 	ctx.save();
 
 	const Font = DEFAULT_FONT;
@@ -4065,7 +4415,7 @@ function getDrawPosY(pos) {
 
 function game_draw() {
 
-	draw_tiles("map1");
+	draw_tiles("layer1");
 
 	draw_player()
 
@@ -4075,7 +4425,7 @@ function game_draw() {
 
 	draw_entity();
 
-	draw_tiles("map2");
+	draw_tiles("layer2");
 
 }
 //描画
@@ -4110,10 +4460,15 @@ function draw_tiles(maplayer) {
 
 	for (let y = 0; y < 13; y++) {
 		for (let x = 0; x < 21; x++) {
-			let tileID = game.getTileID(maplayer, x + plx, y + ply);
+			let tileID = level.getTile(new pos(x + plx, y + ply))?.[maplayer];
+
+			const drawOffsetFix = value => Math.sign(value) < 0 ? 16 + (1 + value) % 16 : value % 16;
+			const drawOffset = new Vec2(x * 16 - drawOffsetFix(Cam.x), y * 16 - drawOffsetFix(Cam.y));
+			const drawSize = new Vec2(16, 16);
 
 			//軽量化
-			if (!game.DontDrawTIle.includes(tileID)) ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), 16, 16, (x * 16 + (16 - Cam.x % 16) - 16), (y * 16 + (16 - Cam.y % 16) - 16), 16, 16);
+			if (!Game.DontDrawTIle.includes(tileID))
+				ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), ...drawSize, ...drawOffset, ...drawSize);
 
 		}
 	}
@@ -4144,8 +4499,8 @@ function draw_sweep(rotate, x, y) {
 
 	let weapon_offset = {
 		//<$調整$    斜めの時の位置調整                    #斜め検知# ><$調整$>< エフェクトの円周の大きさ調整          $大きさ$>
-		"x": (4 * Math.sign(game.rotate_pos[rotate][0]) * (rotate % 2)) - 8 + (Math.sign(game.rotate_pos[rotate][0]) * 1),
-		"y": (4 * Math.sign(game.rotate_pos[rotate][1]) * (rotate % 2)) - 8 + (Math.sign(game.rotate_pos[rotate][1]) * 1)
+		"x": (4 * Math.sign(Game.rotate_pos[rotate][0]) * (rotate % 2)) - 8 + (Math.sign(Game.rotate_pos[rotate][0]) * 1),
+		"y": (4 * Math.sign(Game.rotate_pos[rotate][1]) * (rotate % 2)) - 8 + (Math.sign(Game.rotate_pos[rotate][1]) * 1)
 	};
 
 	ctx.drawImage(img.sweep, rotate * 32, 0, 32, 32, (x + weapon_offset.x), (y + weapon_offset.y), 32, 32);
@@ -4156,13 +4511,13 @@ function draw_sweep(rotate, x, y) {
 function draw_entity() {
 
 	for (const entity of entities) {
-		entity.draw();
+		if (entity.drawCondition()) entity.draw();
 	}
 }
 function draw_particle() {
 
 	for (let particle of particles) {
-		particle.draw();
+		if (particle.drawCondition()) particle.draw();
 	}
 
 	return;
@@ -4186,12 +4541,12 @@ function title_gui_proc() {
 	//if (IsLoading) return false;
 
 	if (key_groups_down.up && title_gui.item_select > 0) title_gui.item_select--;
-	if (key_groups_down.down && title_gui.item_select < game.title_items.length - 1) title_gui.item_select++;
+	if (key_groups_down.down && title_gui.item_select < Game.title_items.length - 1) title_gui.item_select++;
 
 	if (key_groups_down.confirm || key_groups_down.right) {
-		if (title_gui.item_select == 0) game.NewGame();
+		if (title_gui.item_select == 0) Game.NewGame();
 
-		if (title_gui.item_select == 1) game.LoadGame();
+		if (title_gui.item_select == 1) Game.LoadGame();
 	}
 }
 
@@ -4201,7 +4556,7 @@ function draw_loading_screen() {
 	ctx.fillRect(0, 0, ScreenWidth, ScreenHeight);
 	ctx.fillStyle = "white";
 	ctx.strokeStyle = "white";
-	drawTextFont(`loading:${Math.floor(getAllLoadedCount() / getAllWillLoadLength() * 100)}%\nImage: ${load.jsoncount}/${willLoadJson.length}\nJson: ${load.imgcount}/${willLoadImg.length}\nSound: ${load.soundcount}/${willLoadSounds.length}`, ScreenWidth / 2, ScreenHeight / 2, { color: game.colorPallet.white, align: "center" });
+	drawTextFont(`loading:${Math.floor(getAllLoadedCount() / getAllWillLoadLength() * 100)}%\nImage: ${load.jsoncount}/${willLoadJson.length}\nJson: ${load.imgcount}/${willLoadImg.length}\nSound: ${load.soundcount}/${willLoadSounds.length}`, ScreenWidth / 2, ScreenHeight / 2, { color: Game.colorPallet.white, align: "center" });
 
 	let progressBar = new Rect((ScreenWidth - 128) / 2, ScreenHeight - 16, 128, 8);
 
@@ -4214,7 +4569,7 @@ function title_gui_draw(dx = 64, dy = 64) {
 
 	let cursor = new Array();
 
-	draw_gui_items(game.title_items, undefined, dx, dy, 100, 0, 16, 100);
+	draw_gui_items(Game.title_items, undefined, dx, dy, 100, 0, 16, 100);
 	cursor.push(new Vec2(dx - 16, title_gui.item_select * 16 + dy));
 
 	cursor_draw(cursor);
@@ -4268,7 +4623,7 @@ function item_use_proc() {
 
 async function save_load_proc() {
 	if (menu.visible && !menu.tab_select && (key_groups_down.confirm || key_groups_down.right) && menu.tab == 3 && menu.select_length == 2) {
-		game.saveloadingnow = true;
+		Game.saveloadingnow = true;
 		let result;
 		/*
 		if (menu.item_select[1] === 0) result = await savedatawrite(true);
@@ -4293,19 +4648,20 @@ async function save_load_proc() {
 
 		//failed
 		if (result == undefined && menu.item_select[1] !== 2) {
-			game.saveloadfaliedtime = timer;
-			game.saveloadfaliedtype = menu.item_select[1];
+			Game.saveloadfaliedtime = timer;
+			Game.saveloadfaliedtype = menu.item_select[1];
 		}
 		if (result != undefined) {
-			game.saveloadsuccesstime = timer;
-			game.saveloadsuccesstype = menu.item_select[1];
+			Game.saveloadsuccesstime = timer;
+			Game.saveloadsuccesstype = menu.item_select[1];
 		}
 
-		game.saveloadingnow = false;
+		Game.saveloadingnow = false;
 	}
 }
 
 function configReset() {
+	return
 
 	//コンフィグ初期化
 	for (const configKey of Object.keys(loadedjson.configs)) {
@@ -4319,7 +4675,7 @@ function configReset() {
 
 //あざす https://www.w3schools.com/graphics/game_sound.asp
 function PlaySound(src = "select", group = "other", DoNotStop = false) {
-	if (config[game.soundGroupsConfig[group]]) sounds[src].play(DoNotStop)
+	if (config[Game.soundGroupsConfig[group]]) sounds[src].play(DoNotStop)
 }
 
 //AIマジ感謝

@@ -19,6 +19,18 @@
             "length": 5,
             "type": "offsetx"
         },
+        "menu_animIn_size": {
+            "ease": "easeOutExpo",
+            "size": 64,
+            "length": 10,
+            "type": "sizex"
+        },
+        "menu_animOut_size": {
+            "ease": "easeInExpo",
+            "size": -64,
+            "length": 5,
+            "type": "sizex"
+        },
         "hud_animIn": {
             "ease": "easeOutExpo",
             "size": 64,
@@ -97,10 +109,14 @@
                         "menu"
                     ]
                 ]
+            },
+            "inactiveHidden": {
+                "this": false,
+                "target": false
             }
         },
         {
-            "type": "custom",
+            "type": "list",
             "renderer": "hud_hp",
             "id": "hp",
             "items": {
@@ -165,7 +181,7 @@
                 "right": [
                     [
                         "UseItem",
-                        "$itemIndex",
+                        "$getDataLocal,select",
                         true
                     ],
                     [
@@ -368,13 +384,17 @@
                 "right": [
                     [
                         "open",
-                        "menu_tab_config"
+                        "menu_tab_config",
+                        16,
+                        16
                     ]
                 ],
                 "confirm": [
                     [
                         "open",
-                        "menu_tab_config"
+                        "menu_tab_config",
+                        16,
+                        16
                     ]
                 ]
             }
@@ -443,10 +463,14 @@
             "CanMovePlayer": false,
             "ShowCursor": true,
             "openDelay": 0,
-            "closeDelay": 10
+            "closeDelay": 10,
+            "inactiveHidden": {
+                "this": false,
+                "target": false
+            }
         },
         {
-            "type": "custom",
+            "type": "list",
             "renderer": "items",
             "items": {
                 "icon": {
@@ -533,7 +557,7 @@
                 "right": [
                     [
                         "UseItem",
-                        "$SelectScrollID",
+                        "$getDataLocal,select",
                         false
                     ]
                 ]
@@ -568,10 +592,14 @@
             "CanMovePlayer": false,
             "ShowCursor": true,
             "openDelay": 0,
-            "closeDelay": 10
+            "closeDelay": 10,
+            "inactiveHidden": {
+                "this": false,
+                "target": false
+            }
         },
         {
-            "type": "custom",
+            "type": "list",
             "renderer": "roles",
             "id": "roles",
             "items": {
@@ -636,7 +664,7 @@
                 "right": [
                     [
                         "UseItem",
-                        "$itemIndex",
+                        "$getDataLocal,itemIndex",
                         true
                     ],
                     [
@@ -651,8 +679,8 @@
             "type": "rectangle",
             "id": "bg",
             "offset": [
-                80,
-                32
+                56,
+                8
             ],
             "size": [
                 208,
@@ -674,14 +702,15 @@
             "CanMovePlayer": false,
             "ShowCursor": true,
             "openDelay": 0,
-            "closeDelay": 10
+            "closeDelay": 10,
+            "inactiveToHidden": false
         },
         {
             "type": "tab",
             "id": "config_tab_player",
             "offset": [
-                32,
-                32
+                8,
+                8
             ],
             "size": [
                 48,
@@ -703,8 +732,10 @@
             },
             "openDelay": 0,
             "closeDelay": 10,
+            "inactiveToHidden": false,
             "default_select": 0,
             "CanMovePlayer": false,
+            "tabType": "top",
             "trans": {
                 "default": "trans_close_menu",
                 "down": [
@@ -733,6 +764,11 @@
                     ],
                     [
                         "data",
+                        "selectid",
+                        "$UIContentID"
+                    ],
+                    [
+                        "data",
                         "previous",
                         "$SelectID"
                     ]
@@ -743,8 +779,8 @@
             "type": "tab",
             "id": "config_tab_weapon",
             "offset": [
-                32,
-                48
+                8,
+                24
             ],
             "size": [
                 48,
@@ -766,8 +802,10 @@
             },
             "openDelay": 0,
             "closeDelay": 10,
+            "inactiveToHidden": false,
             "default_select": 0,
             "CanMovePlayer": false,
+            "tabType": "middle",
             "trans": {
                 "default": "trans_close_menu",
                 "down": [
@@ -802,6 +840,11 @@
                     ],
                     [
                         "data",
+                        "selectid",
+                        "$UIContentID"
+                    ],
+                    [
+                        "data",
                         "previous",
                         "$SelectID"
                     ]
@@ -812,8 +855,8 @@
             "type": "tab",
             "id": "config_tab_data",
             "offset": [
-                32,
-                64
+                8,
+                40
             ],
             "size": [
                 48,
@@ -835,8 +878,10 @@
             },
             "openDelay": 0,
             "closeDelay": 10,
+            "inactiveToHidden": false,
             "default_select": 0,
             "CanMovePlayer": false,
+            "tabType": "middle",
             "trans": {
                 "default": "trans_close_menu",
                 "down": [
@@ -871,6 +916,11 @@
                     ],
                     [
                         "data",
+                        "selectid",
+                        "$UIContentID"
+                    ],
+                    [
+                        "data",
                         "previous",
                         "$SelectID"
                     ]
@@ -881,8 +931,8 @@
             "type": "tab",
             "id": "config_tab_control",
             "offset": [
-                32,
-                80
+                8,
+                56
             ],
             "size": [
                 48,
@@ -906,6 +956,7 @@
             "closeDelay": 10,
             "default_select": 0,
             "CanMovePlayer": false,
+            "tabType": "middle",
             "trans": {
                 "default": "trans_close_menu",
                 "down": [
@@ -940,6 +991,11 @@
                     ],
                     [
                         "data",
+                        "selectid",
+                        "$UIContentID"
+                    ],
+                    [
+                        "data",
                         "previous",
                         "$SelectID"
                     ]
@@ -950,8 +1006,8 @@
             "type": "tab",
             "id": "config_tab_sound",
             "offset": [
-                32,
-                96
+                8,
+                72
             ],
             "size": [
                 48,
@@ -973,8 +1029,10 @@
             },
             "openDelay": 0,
             "closeDelay": 10,
+            "inactiveToHidden": false,
             "default_select": 0,
             "CanMovePlayer": false,
+            "tabType": "middle",
             "trans": {
                 "default": "trans_close_menu",
                 "down": [
@@ -1009,6 +1067,11 @@
                     ],
                     [
                         "data",
+                        "selectid",
+                        "$UIContentID"
+                    ],
+                    [
+                        "data",
                         "previous",
                         "$SelectID"
                     ]
@@ -1019,8 +1082,8 @@
             "type": "tab",
             "id": "config_tab_other",
             "offset": [
-                32,
-                112
+                8,
+                88
             ],
             "size": [
                 48,
@@ -1042,8 +1105,10 @@
             },
             "openDelay": 0,
             "closeDelay": 10,
+            "inactiveToHidden": false,
             "default_select": 0,
             "CanMovePlayer": false,
+            "tabType": "middle",
             "trans": {
                 "default": "trans_close_menu",
                 "down": [
@@ -1078,6 +1143,11 @@
                     ],
                     [
                         "data",
+                        "selectid",
+                        "$UIContentID"
+                    ],
+                    [
+                        "data",
                         "previous",
                         "$SelectID"
                     ]
@@ -1088,8 +1158,8 @@
             "type": "tab",
             "id": "config_tab_debug",
             "offset": [
-                32,
-                128
+                8,
+                104
             ],
             "size": [
                 48,
@@ -1111,8 +1181,10 @@
             },
             "openDelay": 0,
             "closeDelay": 10,
+            "inactiveToHidden": false,
             "default_select": 0,
             "CanMovePlayer": false,
+            "tabType": "middle",
             "trans": {
                 "default": "trans_close_menu",
                 "up": [
@@ -1141,6 +1213,11 @@
                     ],
                     [
                         "data",
+                        "selectid",
+                        "$UIContentID"
+                    ],
+                    [
+                        "data",
                         "previous",
                         "$SelectID"
                     ]
@@ -1148,7 +1225,7 @@
             }
         },
         {
-            "type": "custom",
+            "type": "list",
             "renderer": "config",
             "items": {
                 "configName": {
@@ -1161,12 +1238,23 @@
                         16
                     ],
                     "tag": "ConfigName"
+                },
+                "configValue": {
+                    "offset": [
+                        192,
+                        0
+                    ],
+                    "size": [
+                        16,
+                        16
+                    ],
+                    "tag": "ConfigValue"
                 }
             },
             "id": "configRender",
             "offset": [
-                80,
-                32
+                56,
+                8
             ],
             "size": [
                 208,
@@ -1189,7 +1277,7 @@
                 "right": [
                     [
                         "ChangeConfig",
-                        "$SelectScrollID",
+                        "$data,tab",
                         false
                     ]
                 ],
@@ -1231,7 +1319,7 @@
             "closeDelay": 1
         },
         {
-            "type": "custom",
+            "type": "list",
             "renderer": "UIOpen",
             "id": "UIOpen",
             "items": {

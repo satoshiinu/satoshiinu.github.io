@@ -62,7 +62,7 @@ let scroll = {
 }
 
 let select = {
-    layer: "map1",
+    layer: "layer1",
     tile: 0
 }
 
@@ -88,6 +88,130 @@ let alpha = {
     enemy: 0.5
 }
 
+class Size {
+    constructor(width = 0, height = 0) {
+        this.w = width;
+        this.h = height;
+    }
+    toString() {
+        return `w${this.w}_h${this.h}`;
+    }
+    [Symbol.iterator] = function* () {
+        yield this.w;
+        yield this.h;
+    }
+}
+class Vec2 {
+    constructor(x = 0, y = 0) {
+        this.x = x;
+        this.y = y;
+    }
+    toString() {
+        return `x${this.x}_y${this.y}`;
+    }
+    [Symbol.iterator] = function* () {
+        yield this.x;
+        yield this.y;
+    }
+}
+
+class pos extends Vec2 {
+    isChunkPos = false;
+    getChunkPos() {
+        return new cpos(Math.floor(this.x / chunkSize.w), Math.floor(this.y / chunkSize.h));
+    }
+    getInChunkPos() {
+        return new cpos(Math.abs(this.x % chunkSize.w), Math.abs(this.y % chunkSize.h));
+    }
+    getInChunkIndex() {
+        return this.getInChunkPos(this).x + this.getInChunkPos(this).y * chunkSize.w;
+    }
+}
+class cpos extends Vec2 {
+    isChunkPos = true;
+    getChunkPos() {
+        return this;
+    }
+}
+const chunkSize = new Size(256, 256);
+
+class Level {
+    rawData = null;
+    chunks = new Object();
+    levelName = "test";
+    async chunkLoad(cpos) {
+        return this.chunks[cpos.getChunkPos().toString()] = await ChunkLevel.load(level, cpos, this.levelName);
+    }
+    async chunkCreate(cpos) {
+        return this.chunks[cpos.getChunkPos().toString()] = await ChunkLevel.create(level, cpos, this.levelName);
+    }
+    toString() {
+
+    }
+    getTile(pos) {
+        if (pos.isChunkPos) throw new Error("is cpos");
+        return this.getChunk(pos)?.getTile(pos) ?? new Tile;
+    }
+    setTile(pos, value) {
+        return Object.assign(this.getTile(pos), value);
+    }
+    getChunk(pos) {
+        return this.chunks[pos.getChunkPos().toString()] ?? null;
+    }
+}
+
+const level = new Level;
+
+class ChunkLevel {
+    constructor(rawObj, cpos = console.error("error")) {
+        if (rawObj === null) rawObj = ChunkLevel.getDefaultValue();
+        this.cData = rawObj.cData.map(value => new Tile(...value));
+        this.cpos = cpos;
+    }
+    init(cpos) {
+        this.cpos = cpos;
+    }
+    dispose(level) {
+        const index = level.chunk.indexOf(this);
+        delete level.chunk;
+    }
+    static create(level, cpos) {
+        return new ChunkLevel(this.getDefaultValue(), cpos);
+    }
+    static async load(level, cpos, levelName) {
+        //return new ChunkLevel(level.rawData.chunks[pos.x][pos.y]);
+        return new ChunkLevel(await loadJson(`/maps/${levelName}/${cpos.toString()}.json`) ?? null, cpos);
+    }
+    static getDefaultValue() {
+        const chunk = new Object;
+        chunk.cData = new Array(chunkSize.w * chunkSize.h).fill(Array.from(new Tile(0, 0, 0, 0)));
+        return chunk;
+    }
+    toString() {
+        const thisCopy = Object.assign({}, this);
+        thisCopy.cData = thisCopy.cData.map(value => Array.from(value))
+        return JSON.stringify(thisCopy);
+    }
+    getTile(pos) {
+        return this.cData[pos.getInChunkIndex()];
+    }
+}
+
+class Tile {
+    constructor(layer1 = null, layer2 = null, hitbox = null, enemy = null) {
+        this.layer1 = layer1;
+        this.layer2 = layer2;
+        this.hitbox = hitbox;
+        this.enemy = enemy;
+    }
+    [Symbol.iterator] = function* () {
+        yield this.layer1;
+        yield this.layer2;
+        yield this.hitbox;
+        yield this.enemy;
+    }
+}
+
 class key {
     static code = new Object();
     static group = {
@@ -107,32 +231,22 @@ class key {
 }
 
 class fill {
-    static pos1 = {
-        x: null,
-        y: null
-    }
-    static pos2 = {
-        x: null,
-        y: null
-    }
+    static pos1 = new pos(null, null);
+    static pos2 = new pos(null, null);
     static reset() {
-        this.pos1 = {
-            x: null,
-            y: null
-        }
-        this.pos2 = {
-            x: null,
-            y: null
-        }
+        this.pos1 = new pos(null, null);
+        this.pos2 = new pos(null, null);
     }
-    static do(ID = select.tile) {
-        this.fillAbs(this.pos1.x, this.pos1.y, this.pos2.x - this.pos1.x, this.pos2.y - this.pos1.y, ID);
+    static do(tileId = select.tile, layer = select.layer) {
+        this.fillAbs(this.pos1.x, this.pos1.y, this.pos2.x - this.pos1.x, this.pos2.y - this.pos1.y, tileId, layer);
         this.reset();
     }
-    static fillAbs(posx, posy, width, height, ID) {
+    static fillAbs(posx, posy, width, height, tileId, layer) {
         for (let y = 0; y <= Math.abs(height); y++) {
             for (let x = 0; x <= Math.abs(width); x++) {
-                replaceTile(ID, select.layer, posx + x * Math.sign(width), posy + y * Math.sign(height));
+                const settile = new Object;
+                settile[layer] = tileId;
+                level.setTile(new pos(posx + x * Math.sign(width), posy + y * Math.sign(height)), settile);
             }
         }
     }
@@ -174,8 +288,8 @@ function main() {
     scrollMove();
     //auto_zoom();
 
-    drawTiles("map1");
-    drawTiles("map2");
+    drawTiles("layer1");
+    drawTiles("layer2");
     drawTiles("enemy");
     drawTiles("hitbox");
     fill.draw();
@@ -186,8 +300,7 @@ function main() {
 requestAnimationFrame(main);
 
 function drawTiles(maplayer) {
-    if (!mapData) return;
-    if (!draw[maplayer]) return;
+
     ctx.save();
 
     ctx.globalAlpha = alpha[maplayer];
@@ -197,19 +310,23 @@ function drawTiles(maplayer) {
 
     for (let y = 0; y <= Math.ceil(ScreenHeight / 16); y++) {
         for (let x = 0; x <= Math.ceil(ScreenWidth / 16); x++) {
-            let tileID = getTileID(maplayer, x + plx, y + ply);
+            let tileID = level.getTile(new pos(x + plx, y + ply))[maplayer];
+
+            const drawOffsetFix = value => Math.sign(value) < 0 ? -16 : 0;
+            const drawOffset = new Vec2(x * 16 - scroll.x % 16 + drawOffsetFix(scroll.x), y * 16 - scroll.y % 16 + drawOffsetFix(scroll.y));
+            const drawSize = new Vec2(16, 16);
 
             switch (maplayer) {
-                case "map1":
-                case "map2":
-                    ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), 16, 16, (x * 16 + (16 - scroll.x % 16) - 16), (y * 16 + (16 - scroll.y % 16) - 16), 16, 16);
+                case "layer1":
+                case "layer2":
+                    ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), ...drawSize, ...drawOffset, ...drawSize);
                     break;
                 case "enemy":
-                    if (!!tileID) ctx.drawImage(img.enemy, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), 16, 16, (x * 16 + (16 - scroll.x % 16) - 16), (y * 16 + (16 - scroll.y % 16) - 16), 16, 16);
+                    if (!!tileID) ctx.drawImage(img.enemy, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), ...drawSize, ...drawOffset, ...drawSize);
                     break;
                 case "hitbox":
                     ctx.fillStyle = "#dd0000";
-                    if (!!tileID) ctx.fillRect((x * 16 + (16 - scroll.x % 16) - 16), (y * 16 + (16 - scroll.y % 16) - 16), 16, 16);
+                    if (!!tileID) ctx.fillRect(...drawOffset, ...drawSize);
                     break;
                 default:
                     throw new Error("undefined maplayer:" + maplayer);
@@ -271,8 +388,8 @@ function scrollMove() {
     scroll.x += scroll.xspd;
     scroll.y += scroll.yspd;
 
-    scroll.x = limit(scroll.x, 0, (mapData?.map1?.[0]?.length ?? Infinity) * 16 - ScreenWidth);
-    scroll.y = limit(scroll.y, 0, (mapData?.map1?.length ?? Infinity) * 16 - ScreenHeight);
+    //scroll.x = limit(scroll.x, 0, (mapData?.map1?.[0]?.length ?? Infinity) * 16 - ScreenWidth);
+    //scroll.y = limit(scroll.y, 0, (mapData?.map1?.length ?? Infinity) * 16 - ScreenHeight);
 }
 
 
@@ -376,6 +493,13 @@ async function fileDownloadBlob(fileName = "Default", saveBlob) {
 async function dataSave() {
     let savejson = JSON.stringify(mapData);
     await fileDownloadBlob(mapDataFileName, new Blob([savejson], { type: 'plain/text' }));
+}
+
+async function dataSave() {
+    for (const chunk of Object.values(level.chunks)) {
+        let savejson = chunk?.toString() ?? (console.error("cannot chunk to string"));
+        await fileDownloadBlob(chunk.cpos.toString() + ".json", new Blob([savejson], { type: 'plain/text' }));
+    }
 }
 
 function newMapLayer(width = 100, height = 100, value = 0) {
@@ -495,14 +619,29 @@ function newMap(width, height) {
 }
 
 function tile_click({ x, y }) {
-    replaceTile(select.tile, select.layer, x, y);
+    const tilePos = new pos(x, y);
+    const layer = select.layer;
+    const tileId = select.tile;
+    const settile = new Object;
+
+    if (level.getChunk(tilePos) === null) {
+        if (confirm(`create/loadChunk at: ${tilePos.getChunkPos()}?`)) {
+            level.chunkLoad(new pos(x, y).getChunkPos());
+            return;
+        } else {
+            return;
+        }
+    }
+
+    settile[layer] = tileId;
+    level.setTile(tilePos, settile);
 }
 
 function tile_click_up({ x, y }) {
 }
 
 function tile_middleclick({ x, y }) {
-    tile_pick(x, y)
+    tile_pick(x, y);
 }
 
 function tile_middleclick_up({ x, y }) {
@@ -535,4 +674,24 @@ function updateCanvasSize(width, height) {
     canvas.width = ScreenWidth * zoomX;
     canvas.height = ScreenHeight * zoomY;
     ctx.scale(zoomX, zoomY);
+}
+
+async function loadJson(filename, name, useReviver) {
+    try {
+        //あざす　https://gxy-life.com/2PC/javascript/json_table20220514/
+        let startTime = new Date().getTime();
+
+        //取得ここから
+        const response = await fetch(filename);
+        const jsonObject = await response.json();
+        //取得ここまで
+
+        let endTime = new Date().getTime();
+
+
+
+        return jsonObject;
+    } catch {
+        return null;
+    }
 }
