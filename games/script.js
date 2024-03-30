@@ -75,7 +75,7 @@ let willLoadImg = [
 	["img/misc/sweep.png", "sweep", false],
 	["img/players/item_models.png", "item_model", false],
 	["img/gui/gui.png", "gui", true],
-	["img/gui/message.png", "gui_message", true],
+	//["img/gui/message.png", "gui_message", true],
 	["img/gui/prompt.png", "gui_prompt", true],
 	["img/gui/prompt2.png", "gui_prompt_more", true],
 	["img/gui/tab_select.png", "gui_tab_select", true],
@@ -85,7 +85,7 @@ let willLoadImg = [
 //Object.freeze(willLoadImg);
 
 let willLoadJson = [
-	["param/atlas.json", "atlas", true],
+	//["param/atlas.json", "atlas", true],
 	//["param/enemy.json", "enemy", true],
 	//["param/particle.json", "particle", true],
 	["param/item.json", "item", true],
@@ -127,17 +127,20 @@ willLoadSounds = willLoadSounds.map(x => new willLoadContent(...x));
 let JsonUIContent = new Array();
 
 
-class Keys {
-	constructor() {
-		this.press = false;
-		this.pressLag = false;
-		this.down = false;
-		this.hold = false;
-		this.timer = -1;
-		this.time = -1;
-		this.timen = -1;
-		this.presstime = -1;
-	}
+class KeyData {
+	press = false;
+	pressLag = false;
+	down = false;
+	hold = false;
+	timer = -1;
+	time = -1;
+	timen = -1;
+	presstime = -1;
+
+}
+class TouchData {
+	time = 0;
+	pos = 0;
 }
 
 class Vec2 {
@@ -269,65 +272,17 @@ new ConfigBool("AttackRotateRock", "player", true);
 
 new ConfigBool("AutoAim", "weapon", true);
 
-/*
-class Item {
-	constructor(ID, count = 99) {
-		this.id = ID;
-		this.count = count;
-	}
-	use(isRoleSelect, playerIndex = 0) {
-		const index = Items.indexOf(this);
-		if (index > Items.length - 1) return false;
 
-		//誰が使いますか画面を出す
-		if (get_item_data(index, "role_select") && !isRoleSelect) {
-			jsonui_open("item_role_select", 128, 64, undefined, index)
-			return;
-		}
-
-		//アイテム使用
-		if (!get_item_data(index, "role_select") || isRoleSelect) {
-
-			item_use(index, players[playerIndex]);
-		}
-		//menu.role_select = false;
-
-		//アイテムの数を減らす
-		this.count--;
-		//アイテムの数が0だったら消す
-		if (this.count == 0) Items.splice(index, 1);
-
-		return true;
-
-	}
-}
-function item_use(i, player) {//i = itemselectINDEX
-
-	if (get_item_data(i, "efficacy") == "health") player.heal(menu.who_use, get_item_data(i, "heal_power"));
-}*/
-
-class FamilyUtil {
-	hasFamily(value) {
-		return this.family.includes(value);
-	}
-	addFamily(value) {
-		this.family.push(value);
-	}
-	static getFamilies(value) {
-		return entities.filter(v => v.hasFamily(value));
-	}
-}
-
-class ItemProperties extends FamilyUtil {
+class ItemProperties {
 	type = null;
 	icon = null;
 	name = null;
 	constructor(prop) {
-		super();
 		if (prop === undefined) return;
 		this.type = prop.type;
 		this.icon = prop.icon;
 		this.name = prop.name;
+		this.healPower = prop.healPower;
 		this.registerName = prop.registerName;
 	}
 	static of() {
@@ -343,6 +298,10 @@ class ItemProperties extends FamilyUtil {
 	}
 	setName(name) {
 		this.name = name;
+		return this;
+	}
+	setHealPower(healPower) {
+		this.healPower = healPower;
 		return this;
 	}
 	setRegisterName(name) {
@@ -362,26 +321,25 @@ class Item extends ItemProperties {
 
 		Items.push(this);
 	}
+	static init() {
+		Item.register("apple", ItemHealable, ItemProperties.of().setIcon(0).setHealPower(20));
+	}
 	mayUse(isRoleSelect, playerIndex = 0) {
 		const index = this.getIndex;
 		const player = players[playerIndex];
-		if (index > Items.length - 1) return false;
 
-		//誰が使いますか画面を出す
-		if (this.roleSelectAble && !isRoleSelect) {
-			jsonui_open("item_role_select", 128, 64, undefined, index)
-			return;
-		}
 
 		//アイテム使用
 		if (!this.roleSelectAble || isRoleSelect) {
 			if (this.use(player)) {
 				this.decrementStack(1);
+				return true;
 			}
+			return false;
 		}
-
-
-		return true;
+		//誰が使いますか画面を出す
+		jsonui_open("item_role_select", 128, 64, undefined, index)
+		return 2;
 
 	}
 	use(player) {
@@ -405,7 +363,10 @@ class Item extends ItemProperties {
 		return translate(`item.${this.registerName}.name`);
 	}
 	getDisplayEfficacy() {
-		return [translate("none")];
+		return translate("none");
+	}
+	getDisplayEfficacyIcon() {
+		return null;
 	}
 
 }
@@ -419,13 +380,15 @@ class ItemHealable extends ItemRoleSelectAble {
 		return player.heal(this.healPower);
 	}
 	getDisplayEfficacy() {
-		return [translate("none")];
+		return translate("none");
+	}
+	getDisplayEfficacyIcon() {
+		return Sprite.itemHealIcon;
 	}
 }
 
 let Items = new Array();
 
-Item.register("apple", ItemHealable, ItemProperties.of().setIcon(0).setHealPower(20));
 
 
 class Cam {
@@ -748,8 +711,8 @@ class Weapon {
 			if (this.time <= 12 && (hit_enemy.length == 0 || !Game.weapon_canlock) && config.weapon_auto_aiming) {
 				let x = this.start.x;
 				let y = this.start.y;
-				if (getNearestEntityDistance(x, y, "Enemy") < 100) {
-					let entity = getNearestEntity(x, y, "Enemy");
+				if (getNearestEntityDistance(x, y, EntityEnemy) < 100) {
+					let entity = getNearestEntity(x, y, EntityEnemy);
 					let width = entity.size.w;
 					let height = entity.size.h;
 					this.autoAim.x += Math.sign((entity.pos.x + width / 2 - this.pos.x + 16) / 32) * 2;
@@ -797,23 +760,12 @@ players[0] = new Players(0);
 //事前に埋めとく
 player_movelog_reset();
 
-class EntityFamilies {
-	static register(name) {
-		this[name] = Symbol(name);
-	}
-}
-EntityFamilies.register("Default");
-EntityFamilies.register("Enemy");
-EntityFamilies.register("Neutral");
-EntityFamilies.register("Slime");
-
 let entities = new Array();
 
 
-class EntityProperties extends FamilyUtil {
+class EntityProperties {
 	type = null;
 	constructor(prop) {
-		super();
 		if (prop === undefined) return;
 		this.type = prop.type;
 		this.registerName = prop.registerName;
@@ -834,7 +786,6 @@ class Entity extends EntityProperties {
 	pos = new Vec2();
 	speed = new Vec2();
 	spawn = new Vec2();
-	family = new Array();
 	wasMoved = false;
 
 	moveSpeed = 0.25;
@@ -850,9 +801,11 @@ class Entity extends EntityProperties {
 		this.spawn.y = spawnY;
 		this.pos.y = spawnY;
 
-		this.addFamily(EntityFamilies.Default);
 
 		entities.push(this);
+	}
+	static init() {
+		Entity.register("slimeBlue", EntitySlime, EntityProperties.of().setType(EntitySlime.typeBlue));
 	}
 	tick() {
 		this.move();
@@ -1000,7 +953,6 @@ class EntityEnemy extends Entity {
 	}
 	constructor() {
 		super(...arguments);
-		this.addFamily(EntityFamilies.Enemy);
 	}
 }
 
@@ -1085,7 +1037,6 @@ class EntityEnemyNeutralBasic extends EntityEnemy {
 	}
 	constructor() {
 		super(...arguments);
-		this.addFamily(EntityFamilies.Neutral);
 	}
 }
 
@@ -1112,7 +1063,6 @@ class EntitySlime extends EntityEnemyNeutralBasic {
 	}
 	constructor() {
 		super(...arguments);
-		this.addFamily(EntityFamilies.Slime);
 	}
 	animationTick() {
 
@@ -1194,7 +1144,6 @@ function register(obj, name, clas, prop) {
 		return new clas(prop, ...arg);
 	}
 }
-Entity.register("slimeBlue", EntitySlime, EntityProperties.of().setType(EntitySlime.typeBlue));
 
 
 let particles = new Array();
@@ -1398,7 +1347,7 @@ class Tile {
 }
 
 class Game {
-	static ver = "23m03w1";
+	static ver = "24m03w5";
 
 	static saveloadingnow = false;
 	static saveloadfaliedtime = -1;
@@ -1681,7 +1630,7 @@ class Cursor {
 
 		if (IsBusy()) cursorOfseX = 0;
 
-		let busyCorsor = `cursor_busy_${timer / 8 % 8 >= 6 ? 0 : 1}`;
+		let busyCorsor = `cursorBusy${timer / 8 % 8 >= 6 ? 0 : 1}`;
 
 		if (this.CursorNeedUpdate) {
 			let cursor = this.cursors[this.cursors.length - 1];
@@ -1700,9 +1649,9 @@ class Cursor {
 
 		for (let i in this.cursors) {
 			let cursor = this.cursors[i];
-			if (i != this.cursors.length - 1) draw("cursor_uns", cursor.x, cursor.y);
+			if (i != this.cursors.length - 1) Sprite.cursorUns.draw(cursor.x, cursor.y);
 
-			if (i == this.cursors.length - 1) draw(IsBusy() ? busyCorsor : "cursor", Math.round(this.CursorOldPos.x + cursorOfseX), this.CursorOldPos.y);
+			if (i == this.cursors.length - 1) Sprite[IsBusy() ? busyCorsor : "cursor"].draw(Math.round(this.CursorOldPos.x + cursorOfseX), this.CursorOldPos.y);
 		}
 
 		this.cursors = new Array();//初期化
@@ -1874,16 +1823,19 @@ let MainProcTime = 0;
 
 
 //キーの変数の作成
-let key = new Object();
 
-let keys = new Array();
+let keyList = Array.from(new Array(255)).map(() => new KeyData());
 
-for (let i = 0; i < 255; i++) {
-	keys.push(new Keys())
+class KeyGroup {
+	press = false;
+	down = false;
+	hold = false;
 }
+
 let key_groups = new Object();
 let key_groups_down = new Object();
 let key_groups_hold = new Object();
+let keyGroups = new KeyGroup();
 
 let key_groups_list = {
 	"up": [38, 87],
@@ -1937,6 +1889,7 @@ canvas.addEventListener("touchmove", function (event) {
 })
 canvas.addEventListener("touchcancel", function (event) { updateTouch(event) })
 
+const touchList = new Array();
 const touchpos = new Array();
 const touchButton = new Array();
 const touchButtonDown = new Array();
@@ -2059,6 +2012,72 @@ let title_gui = {
 }
 
 let MenuTabSelect = 0;
+
+class Sprite {
+	static register(name, imgobj, drawX, drawY, drawWidth, drawHeight) {
+
+		this[name] = new Object();
+		this[name].img = imgobj;
+		this[name].drawX = drawX;
+		this[name].drawY = drawY;
+		this[name].drawWidth = drawWidth;
+		this[name].drawHeight = drawHeight;
+
+		this[name][Symbol.iterator] = function* () {
+			yield this.img;
+			yield this.drawX;
+			yield this.drawY;
+			yield this.drawWidth;
+			yield this.drawHeight;
+		}
+		this[name].draw = (x, y, ox = 0, oy = 0, ow = 0, oh = 0) => {
+			//console.log(this[name].img, this[name].drawX + ox, this[name].drawY + oy, this[name].drawWidth + ow, this[name].drawHeight + oh, Math.round(x), Math.round(y))
+			drawImg(this[name].img, this[name].drawX + ox, this[name].drawY + oy, this[name].drawWidth + ow, this[name].drawHeight + oh, Math.round(x), Math.round(y));
+		}
+
+
+	}
+	static registerNineSlice(name, imgobj, nineSliceSize, baseSizeWidth, baseSizeHeight) {
+
+		this[name] = new Object();
+		this[name].img = imgobj;
+		this[name].nineSliceSize = nineSliceSize;
+		this[name].baseSizeWidth = baseSizeWidth;
+		this[name].baseSizeHeight = baseSizeHeight;
+
+		this[name].draw = (x, y, w, h) => {
+			const baseSize = new Size(this[name].baseSizeWidth, this[name].baseSizeHeight);
+			const drawBox = new Rect(x, y, w, h);
+			const slices = [
+				[0, 0, nineSliceSize, nineSliceSize, drawBox.x - nineSliceSize, drawBox.y - nineSliceSize, nineSliceSize, nineSliceSize],
+				[nineSliceSize, 0, baseSize.w, nineSliceSize, drawBox.x, drawBox.y - nineSliceSize, drawBox.w, nineSliceSize],
+				[nineSliceSize + baseSize.w, 0, nineSliceSize, nineSliceSize, drawBox.x + drawBox.w, drawBox.y - nineSliceSize, nineSliceSize, nineSliceSize],
+				[0, nineSliceSize, nineSliceSize, baseSize.h, drawBox.x - nineSliceSize, drawBox.y, nineSliceSize, drawBox.h],
+				[nineSliceSize, nineSliceSize, baseSize.w, baseSize.h, drawBox.x, drawBox.y, drawBox.w, drawBox.h],
+				[nineSliceSize + baseSize.w, nineSliceSize, nineSliceSize, baseSize.h, drawBox.x + drawBox.w, drawBox.y, nineSliceSize, drawBox.h],
+				[0, nineSliceSize + baseSize.h, nineSliceSize, nineSliceSize, drawBox.x - nineSliceSize, drawBox.y + drawBox.h, nineSliceSize, nineSliceSize],
+				[nineSliceSize, nineSliceSize + baseSize.h, baseSize.w, nineSliceSize, drawBox.x, drawBox.y + drawBox.h, drawBox.w, nineSliceSize],
+				[nineSliceSize + baseSize.w, nineSliceSize + baseSize.h, nineSliceSize, nineSliceSize, drawBox.x + drawBox.w, drawBox.y + drawBox.h, nineSliceSize, nineSliceSize],
+			]
+			for (const slice of slices) {
+				drawImg(this[name].img, ...slice);
+			}
+
+		}
+	}
+	static init() {
+		Sprite.register("hp", img.gui, 48, 0, 16, 8);
+		Sprite.register("toggleOn", img.gui, 0, 16, 16, 8);
+		Sprite.register("toggleOff", img.gui, 0, 24, 16, 8);
+		Sprite.register("cursor", img.gui, 32, 0, 8, 8);
+		Sprite.register("cursorUns", img.gui, 32, 8, 8, 8);
+		Sprite.register("cursorBusy0", img.gui, 40, 0, 8, 8);
+		Sprite.register("cursorBusy1", img.gui, 40, 8, 8, 8);
+		Sprite.register("itemHealIcon", img.gui, 224, 0, 32, 0);
+		Sprite.registerNineSlice("prompt", img.gui_prompt, 8, 8, 8);
+	}
+
+}
 
 class JsonUI {
 	constructor(type, x = 0, y = 0, select = undefined, param) {
@@ -2230,17 +2249,13 @@ class JsonUI {
 		switch (renderer) {
 			case "items":
 				return Items;
-				break;
 			case "roles":
 			case "hud_hp":
 				return players;
-				break;
 			case "UIOpen":
 				return Object.keys(loadedjson.jsonui);
-				break;
 			case "config":
 				return getConfigsGroup(this.data.tab);
-				break;
 		}
 	}
 	listRenderer(UIContent, Draw) {
@@ -2312,7 +2327,7 @@ class JsonUI {
 								break;
 							case "ItemEfficacy":
 								drawTextTempl(drawItem.getDisplayEfficacy, "start", "black", 32, 0);
-
+								drawImageTempl(...drawItem.getDisplayEfficacyIcon());
 								break;
 							case "ConfigName":
 								drawTextTempl(translate(drawItem.name));
@@ -2341,7 +2356,7 @@ class JsonUI {
 								break;
 							case "img":
 							case "image":
-								AtlasDrawImage(UIContent.items[key].img, Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, 0, -ObjOut.top, 0, ObjOut.bottom + ObjOut.top - itemSize.y);
+								Sprite[UIContent.items[key].img].draw(Math.min(itemOffset.x, Draw.size.x) + Draw.Offset.x, Math.min(DrawOffset, Draw.size.y) + Draw.Offset.y + itemOffset.y - ObjOut.top, 0, -ObjOut.top, 0, ObjOut.bottom + ObjOut.top - itemSize.y);
 								break;
 							case "uilist":
 								drawTextTempl(drawItem, "_purple");
@@ -2355,6 +2370,7 @@ class JsonUI {
 	control() {
 		let UIContent = this.getUIContent(this.select);
 
+		//アロー関数だとthisが使える
 		let trigger = (array) => {
 			for (const trans of array) {
 				transition(...trans);
@@ -2385,6 +2401,7 @@ class JsonUI {
 					});
 					break;
 				case "UseItem":
+					if (!(param[0] in Items)) break;
 					Items[param[0]].mayUse(param[1]);
 					break;
 				case "data":
@@ -2665,6 +2682,51 @@ let JsonUIOpen = new Array();
 
 let JsonUICursor = new Cursor();
 
+class RioxUiMain {
+	static main() {
+		{
+			const ui = this.uiList[this.uiList.length - 1];
+			//for()
+		}
+		for (const ui of this.uiList) {
+			ui.drawMain();
+		}
+	}
+	static uiList = new Array();
+
+}
+
+class RioxUiBase {
+	openUi() {
+		RioxUiMain.uiList.push(this);
+	}
+	drawMain(drawPos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}) {
+	}
+	static drawMainInit(pos) {
+		this.post = pos
+	}
+	drawChild(arg, child, relpos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight)) {
+		const [posPar = new pos(0, 0), sizePar = new Size(ScreenWidth, ScreenHeight), variablePar = {}] = arg;
+		child.drawMain(new pos(posPar.x + relpos.x, posPar.y + relpos.y), size, variablePar);
+	}
+	keyPressed(keyGroup, type) {
+
+	}
+}
+
+class RioxUiButtonBase extends RioxUiBase {
+	drawMain(drawPos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}) {
+		Sprite.prompt.draw(...drawPos, ...size);
+	}
+}
+
+class RioxUiHud extends RioxUiBase {
+	testButton = new RioxUiButtonBase;
+	drawMain(drawPos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}) {
+		this.drawChild(arguments, this.testButton, new pos(8, 8), new Size(40, 8));
+	}
+}
+
 //言語設定
 Game.lang = loadedjson.en_us;
 let lang = "en_us";
@@ -2691,6 +2753,8 @@ function main() {
 	if (Game.PlayingScreen) GAMEMAIN();
 
 	if (!Game.PlayingScreen) TITLEMAIN();
+
+	//Sprite.hp.draw(0, 0)
 
 
 	//タイマー
@@ -2721,7 +2785,13 @@ async function game_start_proc() {
 	//コンフィグリセット
 	configReset();
 
-	jsonui_open("hud")
+	Item.init();
+	Sprite.init();
+	Entity.init();
+
+	jsonui_open("hud");
+	new RioxUiHud().openUi();
+
 
 	//アンロード時に確認メッセージを表示する
 	if (config.beforeunload) beforeUnloadEnventID = setTimeout(beforeUnloadOn, 1000 * 10);
@@ -2756,6 +2826,8 @@ function GAMEMAIN() {
 
 	jsonui_main();
 
+	RioxUiMain.main();
+
 
 	//デバッグ
 	if (debug.visible) debug_proc();
@@ -2770,12 +2842,12 @@ function keydownfunc(parameter) {
 	touchmode = false;
 
 	let key_code = parameter.keyCode;
-	if (keys[key_code].press) keys[key_code].pressLag = true;
-	keys[key_code].press = true;
-	keys[key_code].timer++;
-	keys[key_code].timen = timer;
-	if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].time = timer;
-	if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].timer = timer;
+	if (keyList[key_code].press) keyList[key_code].pressLag = true;
+	keyList[key_code].press = true;
+	keyList[key_code].timer++;
+	keyList[key_code].timen = timer;
+	if (keyList[key_code].press && !keyList[key_code].pressLag) keyList[key_code].time = timer;
+	if (keyList[key_code].press && !keyList[key_code].pressLag) keyList[key_code].timer = timer;
 
 	if (key_arrow.includes(key_code)) parameter.preventDefault();
 
@@ -2785,9 +2857,9 @@ function keydownfunc(parameter) {
 
 function keyupfunc(parameter) {
 	let key_code = parameter.keyCode
-	keys[key_code].press = false;
-	keys[key_code].pressLag = false;
-	keys[key_code].timer = 0;
+	keyList[key_code].press = false;
+	keyList[key_code].pressLag = false;
+	keyList[key_code].timer = 0;
 
 
 	if (debug.visible && key_code == 80) { OneFrameOnly = false; requestAnimationFrame(main); };
@@ -2801,14 +2873,15 @@ function updateTouch(event) {
 	let y = clientRect.top;
 
 	let i = 0;
-	touchpos.splice(0, Infinity)
+	touchList.splice(0, Infinity)
 	for (const touch of event.touches) {
+		//console.log(touch)
 		let obj = {
 			"x": touch.clientX - clientRect.left,
 			"y": touch.clientY - clientRect.top,
 			"timer": timer
 		}
-		touchpos[i] = obj;
+		touchList[i] = obj;
 		i++;
 	}
 
@@ -2882,59 +2955,35 @@ function touch_button_proc() {
 function keycheck() {
 
 
-	for (const i in keys) {
-		keys[i].timer == timer ? keys[i].down = true : keys[i].down = false;
-		keys[i].presstime == 0 || keys[i].presstime > 10 && keys[i].presstime % 2 == 0 ? keys[i].hold = true : keys[i].hold = false;
-		keys[i].press ? keys[i].presstime++ : keys[i].presstime = -1;
+	for (const key of keyList) {
+		key.down = key.timer == timer;
+		key.hold = key.presstime == 0 || key.presstime > 10 && key.presstime % 2 == 0;
+		key.press ? key.presstime++ : key.presstime = -1;
 	}
 
 	for (const i in touchpos) {
-		if (typeof touchtime[i] === "undefined") touchtime[i] = 0;
+		touchtime[i] ??= 0;
 		touchtime[i]++;
 	}
 	for (const i in touchtime) {
-		if (typeof touchpos[i] === "undefined") touchtime[i] = 0;
+		touchtime[i] ??= 0;
 	}
 
 
 
 	for (const i in key_groups_list) {
-		/*
-		if (typeof key_groups[i] == "undefined") key_groups[i] = {
-			"press": false,
-			"down": false
-		}
-		let press_triggered = false;
-		let down_triggered = false;
-		let hold_triggered = false;
-			    
-		for (const j in key_groups_list[i]) {
-			if (keys[key_groups_list[i][j]].press) key_groups[i] = true;
-			if (keys[key_groups_list[i][j]].press) press_triggered = true;
-			if (!press_triggered) key_groups[i] = false;
-			    
-			if (keys[key_groups_list[i][j]].down) key_groups_down[i] = true;
-			if (keys[key_groups_list[i][j]].down) down_triggered = true;
-			if (!down_triggered) key_groups_down[i] = false;
-			    
-			if (keys[key_groups_list[i][j]].hold) key_groups_hold[i] = true;
-			if (keys[key_groups_list[i][j]].hold) hold_triggered = true;
-			if (!hold_triggered) key_groups_hold[i] = false;
-		}
-				*/
 		key_groups[i] = false;
 		key_groups_down[i] = false;
 		key_groups_hold[i] = false;
 		for (const j in key_groups_list[i]) {
-			if (keys[key_groups_list[i][j]].press) key_groups[i] = true;
+			if (keyList[key_groups_list[i][j]].press) key_groups[i] = true;
 
-			if (keys[key_groups_list[i][j]].down) key_groups_down[i] = true;
+			if (keyList[key_groups_list[i][j]].down) key_groups_down[i] = true;
 
-			if (keys[key_groups_list[i][j]].hold) key_groups_hold[i] = true;
+			if (keyList[key_groups_list[i][j]].hold) key_groups_hold[i] = true;
 		}
 
 		for (const j in touchButton) {
-
 			if (touchButton[i]) key_groups[i] = true;
 			if (touchButton[i] && touchButtonDown[i]) key_groups_down[i] = true;
 			if (touchButton[i] && touchButtonHold[i]) key_groups_hold[i] = true;
@@ -3576,18 +3625,18 @@ function calcAngleDegrees(x, y) {
 	return Math.atan2(y, x) * 180 / Math.PI;
 }
 
-function getNearestEntityDistance(x, y, family) {
+function getNearestEntityDistance(x, y, instance) {
 	let distance = new Array();
-	for (const entity of entities.filter(value => value.hasFamily(family))) {
+	for (const entity of getInstanceOf(entities, instance)) {
 		distance.push(getDistance(x, y, entity.pos.x, entity.pos.y));
 	}
 	return Math.min.apply(null, distance);
 
 }
-function getNearestEntity(x, y, family) {
+function getNearestEntity(x, y, instance) {
 	//if (typeof d == "undefined") d = false;
 	let distance = new Array();
-	for (const entity of entities.filter(value => value.hasFamily(family))) {
+	for (const entity of getInstanceOf(entities, instance)) {
 		distance.push(getDistance(x, y, entity.pos.x, entity.pos.y));
 	}
 	return distance.indexOf(Math.min.apply(null, distance));
@@ -3601,7 +3650,7 @@ function getDistance(ax, ay, bx, by) {
 //数字のindex番目取得
 function NumberofIndex(num, index, shinsu = 10) {
 	//if (typeof shinsu == "undefined") shinsu = 10;
-	return (String(num.toString(shinsu))[index]);
+	return num.toString(shinsu)[index];
 }
 
 //アニメーションいろいろ(0.0～1.0)
@@ -3725,11 +3774,11 @@ function hitbox_enemy_rect(ax, ay, aw, ah, color = "black") {
 	return hit;
 }
 
-function hitbox_entity_rect(ax, ay, aw, ah, family, color = "black") {
+function hitbox_entity_rect(ax, ay, aw, ah, instance, color = "black") {
 
 	let hit = new Array();
 
-	for (const entity of entities.filter(value => value.hasFamily(family))) {
+	for (const entity of entities.filter(value => instance === undefined ? true : value instanceof instance)) {
 		if (hitbox_rect(entity.pos.x, entity.pos.y, entity.size.w, entity.size.h, ax, ay, aw, ah, color))
 			hit.push(entity);
 	}
@@ -3946,7 +3995,7 @@ function entity_tick() {
 
 function enemy_spawn_event() {
 	//沸き上限
-	if (Entity.getFamilies(EntityFamilies.Enemy).length >= 50) return;
+	if (getInstanceOf(entities, EntityEnemy).length >= 50) return;
 
 	for (let i = 0; i < 360; i += 3) {
 		let r = 16;
@@ -3966,7 +4015,7 @@ function enemy_spawn_check(x, y) {
 	if (ID == null || typeof ID != "number") return false;
 
 	//敵が既にスポーンされてないか調べる
-	for (const enemy of entities.filter(value => value.hasFamily("Enemy"))) {
+	for (const enemy of entities.filter(value => value instanceof EntityEnemy)) {
 		if (enemy.spawn.x == x * 16 && enemy.spawn.y == y * 16) return false;
 	}
 	if (!regEntity.hasOwnProperty(ID)) return false;
@@ -3985,10 +4034,10 @@ function particle_proc() {
 }
 
 function debug_proc() {
-	if (keys[75].press) debug.camy++;
-	if (keys[73].press) debug.camy--;
-	if (keys[76].press) debug.camx++;
-	if (keys[74].press) debug.camx--;
+	if (keyList[75].press) debug.camy++;
+	if (keyList[73].press) debug.camy--;
+	if (keyList[76].press) debug.camx++;
+	if (keyList[74].press) debug.camx--;
 
 
 	//当たり判定描画の色設定
@@ -4013,8 +4062,8 @@ function debug_proc() {
 			`FPS:${fps}`,
 			`m:${MainProcTime}ms`,
 			`t:${timer}`,
-			`e:${enemy.length}`,
-			`p:${particle.length}`
+			`e:${entities.length}`,
+			`p:${particles.length}`
 
 		]
 
@@ -4073,8 +4122,8 @@ function debug_proc() {
 
 
 	//キー表示
-	for (let i = 0, j = 0; i < keys.length; i++) {
-		if (keys[i].press) {
+	for (let i = 0, j = 0; i < keyList.length; i++) {
+		if (keyList[i].press) {
 			drawTextFont(String.fromCharCode(i), 78 * 4, j * 8, {});
 			drawTextFont(`${i}`, 74 * 4, j * 8, {});
 			j++;
@@ -4437,6 +4486,12 @@ function AtlasDrawImage(i, x, y, ox = 0, oy = 0, ow = 0, oh = 0) {
 	let Get = e => loadedjson.atlas[i].atlas[e];
 	drawImg(img[loadedjson.atlas[i].img], Get(0) + ox, Get(1) + oy, Get(2) + ow, Get(3) + oh, Math.round(x), Math.round(y));
 }
+function DrawSprite(i, x, y, ox = 0, oy = 0, ow = 0, oh = 0) {
+	let sprite = Sprite[i];
+	console.log(sprite)
+	drawImg(sprite.img, sprite.drawX + ox, sprite.drawY + oy, sprite.width + ow, sprite.height + oh, Math.round(x), Math.round(y));
+}
+
 /**
  * 描画します　ctx.drawImageに似ていますかzoomはいりません　sWidth,sHeightとdWidth,dHeightは同じになります
  * @param  {number} image
@@ -4449,8 +4504,8 @@ function AtlasDrawImage(i, x, y, ox = 0, oy = 0, ow = 0, oh = 0) {
  * 
  */
 function drawImg(...img) {
-	let get = i => Math.floor(img[i])
-	ctx.drawImage(img[0], get(1), get(2), get(3), get(4), get(5), get(6), get(3), get(4))
+	let get = i => img[i] === undefined ? undefined : Math.floor(img[i]);
+	ctx.drawImage(img[0], get(1), get(2), get(3), get(4), get(5), get(6), get(7) ?? get(3), get(8) ?? get(4))
 }
 
 function draw_tiles(maplayer) {
@@ -4725,4 +4780,8 @@ function fontIsloaded(fontFamily) {
 	// 読み込みされていない場合はfalseを返します           //
 	// なんか動くのでヨシ!                               //ずれんな
 	return isCharacterSupportedByFont("a", fontFamily);
+}
+
+function getInstanceOf(array, instance) {
+	return array.filter(value => instance === undefined ? true : value instanceof instance);
 }
