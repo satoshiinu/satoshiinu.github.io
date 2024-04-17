@@ -1,0 +1,34 @@
+{
+    "type": "mapmeta",
+    "warp": [
+        {
+            "x": 4,
+            "y": 3,
+            "to":  "VillageAround",
+            "abspos":{
+                "x":4,
+                "y":3
+            }
+
+        },
+        {
+            "x": 8,
+            "y": 3,
+            "to": "LvSpot"
+            
+        },
+        {
+            "x": 5,
+            "y": 5,
+            "to":  "LvSpot"
+        }
+    ],
+    "npc": [
+        {
+            "x": 5,
+            "y": 3,
+            "id": 0,
+            "dialogueID":"test"
+        }
+    ]
+}

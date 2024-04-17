@@ -1,0 +1,993 @@
+{
+    "_default": {
+        "default_anim": {
+            "ease": "easeOutExpo",
+            "offset": 0,
+            "size": 0,
+            "length": 0,
+            "type": "offsetx"
+        },
+        "tab_animIn": {
+            "ease": "easeOutExpo",
+            "size": 64,
+            "length": 10,
+            "type": "offsetx"
+        },
+        "tab_animOut": {
+            "ease": "easeInExpo",
+            "size": -64,
+            "length": 5,
+            "type": "offsetx"
+        },
+        "hud_animIn": {
+            "ease": "easeOutExpo",
+            "size": 64,
+            "length": 10,
+            "type": "offsety"
+        },
+        "hud_animOut": {
+            "ease": "easeOutExpo",
+            "size": 64,
+            "length": 10,
+            "type": "offsety"
+        },
+        "trans_close": {
+            "left": [
+                [
+                    "close"
+                ]
+            ]
+        }
+    },
+    "hud": [
+        {
+            "type": "rectangle",
+            "id": "bg",
+            "offset": [
+                8,
+                8
+            ],
+            "size": [
+                48,
+                8
+            ],
+            "size_overload": "",
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "default_select": 0,
+            "CanMovePlayer": true,
+            "ShowCursor": false,
+            "openDelay": 0,
+            "closeDelay": 10,
+            "animIn": {
+                "default": "hud_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "hud_animOut",
+                "offset": 0
+            }
+        },
+        {
+            "type": "custom",
+            "renderer": "hud_hp",
+            "id": "hp",
+            "items": {
+                "role_icon": {
+                    "offset": [
+                        0,
+                        0
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "role_icon"
+                },
+                "role_hp_img": {
+                    "offset": [
+                        8,
+                        0
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "img",
+                    "img": "hp"
+                },
+                "role_hp": {
+                    "offset": [
+                        24,
+                        0
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "role_hp"
+                }
+            },
+            "offset": [
+                8,
+                8
+            ],
+            "size": [
+                64,
+                64
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "animIn": {
+                "default": "hud_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "hud_animOut",
+                "offset": 0
+            },
+            "ShowCursor": true,
+            "trans": {
+                "default": "trans_close",
+                "right": [
+                    [
+                        "UseItem",
+                        "$itemIndex",
+                        true
+                    ],
+                    [
+                        "close"
+                    ]
+                ]
+            }
+        }
+    ],
+    "menu": [
+        {
+            "type": "tab",
+            "id": "menu_tab_party",
+            "offset": [
+                16,
+                16
+            ],
+            "size": [
+                48,
+                8
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "party",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "openDelay": 0,
+            "closeDelay": 10,
+            "default_select": 0,
+            "CanMovePlayer": false,
+            "trans": {
+                "default": "trans_close",
+                "down": [
+                    [
+                        "select_abs",
+                        1
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "tab",
+            "id": "menu_tab_items",
+            "offset": [
+                16,
+                32
+            ],
+            "size": [
+                48,
+                8
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "items",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 1
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 1
+            },
+            "trans": {
+                "default": "trans_close",
+                "down": [
+                    [
+                        "select_abs",
+                        2
+                    ]
+                ],
+                "up": [
+                    [
+                        "select_abs",
+                        0
+                    ]
+                ],
+                "right": [
+                    [
+                        "close",
+                        -1
+                    ],
+                    [
+                        "open",
+                        "menu_tab_items"
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "tab",
+            "id": "menu_tab_equip",
+            "offset": [
+                16,
+                48
+            ],
+            "size": [
+                48,
+                8
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "equip",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 2
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 2
+            },
+            "trans": {
+                "default": "trans_close",
+                "down": [
+                    [
+                        "select_abs",
+                        3
+                    ]
+                ],
+                "up": [
+                    [
+                        "select_abs",
+                        1
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "tab",
+            "id": "menu_tab_config",
+            "offset": [
+                16,
+                64
+            ],
+            "size": [
+                48,
+                8
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "config",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 3
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 3
+            },
+            "trans": {
+                "default": "trans_close",
+                "down": [
+                    [
+                        "select_abs",
+                        4
+                    ]
+                ],
+                "up": [
+                    [
+                        "select_abs",
+                        2
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "tab",
+            "id": "menu_tab_save",
+            "offset": [
+                16,
+                80
+            ],
+            "size": [
+                48,
+                8
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "save",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 4
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 4
+            },
+            "trans": {
+                "default": "trans_close",
+                "up": [
+                    [
+                        "select_abs",
+                        3
+                    ]
+                ]
+            }
+        }
+    ],
+    "menu_tab_items": [
+        {
+            "type": "rectangle",
+            "id": "bg",
+            "offset": [
+                64,
+                32
+            ],
+            "size": [
+                224,
+                128
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "default_select": 1,
+            "CanMovePlayer": false,
+            "ShowCursor": true,
+            "openDelay": 0,
+            "closeDelay": 10
+        },
+        {
+            "type": "custom",
+            "renderer": "items",
+            "items": {
+                "icon": {
+                    "offset": [
+                        0,
+                        0
+                    ],
+                    "size": [
+                        16,
+                        16
+                    ],
+                    "tag": "ItemRender"
+                },
+                "itemName": {
+                    "offset": [
+                        16,
+                        0
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "ItemName"
+                },
+                "itemCountX": {
+                    "offset": [
+                        128,
+                        0
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "text",
+                    "text": "X"
+                },
+                "itemCount": {
+                    "offset": [
+                        136,
+                        0
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "ItemCount"
+                },
+                "ItemEfficacyImg": {
+                    "offset": [
+                        16,
+                        8
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "ItemEfficacy"
+                }
+            },
+            "id": "itemsRender",
+            "offset": [
+                64,
+                32
+            ],
+            "size": [
+                224,
+                128
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "trans": {
+                "left": [
+                    [
+                        "close",
+                        -1
+                    ],
+                    [
+                        "open",
+                        "menu",
+                        0,
+                        0,
+                        "$TabSelectID",
+                        "$SelectScrollID"
+                    ]
+                ],
+                "right": [
+                    [
+                        "UseItem",
+                        "$SelectScrollID",
+                        false
+                    ]
+                ]
+            }
+        }
+    ],
+    "item_role_select": [
+        {
+            "type": "rectangle",
+            "id": "bg",
+            "offset": [
+                0,
+                0
+            ],
+            "size": [
+                64,
+                64
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "default_select": 1,
+            "CanMovePlayer": false,
+            "ShowCursor": true,
+            "openDelay": 0,
+            "closeDelay": 10
+        },
+        {
+            "type": "custom",
+            "renderer": "roles",
+            "id": "roles",
+            "items": {
+                "role_icon": {
+                    "offset": [
+                        0,
+                        0
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "role_icon"
+                },
+                "role_hp_img": {
+                    "offset": [
+                        0,
+                        8
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "img",
+                    "img": "hp"
+                },
+                "role_hp": {
+                    "offset": [
+                        16,
+                        8
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "role_hp"
+                }
+            },
+            "offset": [
+                0,
+                0
+            ],
+            "size": [
+                64,
+                64
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "ShowCursor": true,
+            "trans": {
+                "default": "trans_close",
+                "right": [
+                    [
+                        "UseItem",
+                        "$itemIndex",
+                        true
+                    ],
+                    [
+                        "close"
+                    ]
+                ]
+            }
+        }
+    ],
+    "menu_tab_config": [
+        {
+            "type": "rectangle",
+            "id": "bg",
+            "offset": [
+                80,
+                32
+            ],
+            "size": [
+                208,
+                128
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "default_select": 1,
+            "CanMovePlayer": false,
+            "ShowCursor": true,
+            "openDelay": 0,
+            "closeDelay": 10
+        },
+        {
+            "type": "tab",
+            "id": "config_tab_player",
+            "offset": [
+                32,
+                32
+            ],
+            "size": [
+                48,
+                8
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "player",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "openDelay": 0,
+            "closeDelay": 10,
+            "default_select": 0,
+            "CanMovePlayer": false,
+            "trans": {
+                "default": "trans_close",
+                "down": [
+                    [
+                        "select_rel",
+                        1
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "tab",
+            "id": "config_tab_player",
+            "offset": [
+                32,
+                48
+            ],
+            "size": [
+                48,
+                8
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "player",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "openDelay": 0,
+            "closeDelay": 10,
+            "default_select": 0,
+            "CanMovePlayer": false,
+            "trans": {
+                "default": "trans_close",
+                "down": [
+                    [
+                        "select_rel",
+                        1
+                    ]
+                ],
+                "up": [
+                    [
+                        "select_rel",
+                        -1
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "tab",
+            "id": "config_tab_player",
+            "offset": [
+                32,
+                64
+            ],
+            "size": [
+                48,
+                8
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "player",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "openDelay": 0,
+            "closeDelay": 10,
+            "default_select": 0,
+            "CanMovePlayer": false,
+            "trans": {
+                "default": "trans_close",
+                "down": [
+                    [
+                        "select_rel",
+                        1
+                    ]
+                ],
+                "up": [
+                    [
+                        "select_rel",
+                        -1
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "tab",
+            "id": "config_tab_player",
+            "offset": [
+                32,
+                80
+            ],
+            "size": [
+                48,
+                8
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "player",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "openDelay": 0,
+            "closeDelay": 10,
+            "default_select": 0,
+            "CanMovePlayer": false,
+            "trans": {
+                "default": "trans_close",
+                "down": [
+                    [
+                        "select_rel",
+                        1
+                    ]
+                ],
+                "up": [
+                    [
+                        "select_rel",
+                        -1
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "custom",
+            "renderer": "config",
+            "items": {
+                "configName": {
+                    "offset": [
+                        0,
+                        0
+                    ],
+                    "size": [
+                        16,
+                        16
+                    ],
+                    "tag": "ConfigName"
+                }
+            },
+            "id": "configRender",
+            "offset": [
+                80,
+                32
+            ],
+            "size": [
+                208,
+                128
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "trans": {
+                "left": [
+                    [
+                        "close",
+                        -1
+                    ],
+                    [
+                        "open",
+                        "menu",
+                        0,
+                        0,
+                        "$TabSelectID",
+                        "$SelectScrollID"
+                    ]
+                ],
+                "right": [
+                    [
+                        "ChangeConfig",
+                        "$SelectScrollID",
+                        false
+                    ]
+                ]
+            }
+        }
+    ],
+    "DebugUIOpener": [
+        {
+            "type": "rectangle",
+            "id": "bg",
+            "offset": [
+                32,
+                32
+            ],
+            "size": [
+                256,
+                128
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "default_select": 1,
+            "CanMovePlayer": false,
+            "ShowCursor": true,
+            "openDelay": 0,
+            "closeDelay": 1
+        },
+        {
+            "type": "custom",
+            "renderer": "UIOpen",
+            "id": "UIOpen",
+            "items": {
+                "uiselect": {
+                    "offset": [
+                        0,
+                        0
+                    ],
+                    "size": [
+                        8,
+                        8
+                    ],
+                    "tag": "uilist"
+                }
+            },
+            "offset": [
+                32,
+                32
+            ],
+            "size": [
+                256,
+                128
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "trans": {
+                "default": "trans_close",
+                "right": [
+                    [
+                        "open",
+                        "$selectUI"
+                    ],
+                    [
+                        "close"
+                    ]
+                ]
+            }
+        }
+    ],
+    "DebugJaText": [
+        {
+            "type": "rectangle",
+            "id": "bg",
+            "offset": [
+                16,
+                16
+            ],
+            "size": [
+                256,
+                128
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "party",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 0
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 0
+            },
+            "openDelay": 0,
+            "closeDelay": 10,
+            "default_select": 0,
+            "CanMovePlayer": false
+        },
+        {
+            "type": "text",
+            "id": "text",
+            "offset": [
+                16,
+                16
+            ],
+            "size": [
+                256,
+                128
+            ],
+            "offset_type": [
+                "left",
+                "top"
+            ],
+            "ShowCursor": true,
+            "text": "debug.jaText",
+            "animIn": {
+                "default": "tab_animIn",
+                "offset": 1
+            },
+            "animOut": {
+                "default": "tab_animOut",
+                "offset": 1
+            }
+        }
+    ]
+}

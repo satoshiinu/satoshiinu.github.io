@@ -1,0 +1,38 @@
+[
+  {
+
+  },
+  {
+    "hp": 200,
+    "width": 16,
+    "height": 16,
+    "name":"blue_slime",
+    "behavior":"slime",
+    "type":"slime",
+    "exp":[
+      10,10
+    ]
+  },
+  {
+    "hp": 9999,
+    "width": 16,
+    "height": 24,
+    "name":"dummy",
+    "behavior":"dummy",
+    "type":"other",
+    "exp":[
+      10,10
+    ]
+  },
+  {
+    "hp": 99,
+    "width": 32,
+    "height": 32,
+    "name":"gorilla",
+    "behavior":"gorilla",
+    "type":"gorilla",
+    "exp":[
+      10,10
+    ]
+  }
+]

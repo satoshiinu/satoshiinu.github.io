@@ -1,0 +1,16 @@
+{
+	"type": "mapmeta",
+	"warp": [
+		{
+			"x": 99,
+			"y": 25,
+			"w":1,
+			"h":3,
+			"to": "VillageAround",
+			"relpos":{
+				"x":-93,
+				"y":0
+			}
+		}
+	]
+}
