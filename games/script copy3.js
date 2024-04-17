@@ -47,12 +47,6 @@ let LEGACY_MODE = false;
 
 let DEFAULT_FONT = "Proj23Fon";
 
-//久しぶりのあざす　https://blog.oimo.io/2021/06/06/adjust-fps/
-const UPDATE_LOAD_COEFF = 0.5;
-
-let targetInterval = 1000 / 60;
-let prevTime = Date.now() - targetInterval;
-
 //その他の変数の作成
 let timer = 0;
 let loopID = 0;
@@ -133,6 +127,19 @@ willLoadSounds = willLoadSounds.map(x => new willLoadContent(...x));
 let JsonUIContent = new Array();
 
 
+class Keys {
+	constructor() {
+		this.press = false;
+		this.pressLag = false;
+		this.down = false;
+		this.hold = false;
+		this.timer = -1;
+		this.time = -1;
+		this.timen = -1;
+		this.presstime = -1;
+	}
+}
+
 class Vec2 {
 	constructor(x = 0, y = 0) {
 		this.x = x;
@@ -145,7 +152,6 @@ class Vec2 {
 		yield this.x;
 		yield this.y;
 	}
-	classType = "vec2";
 
 }
 
@@ -161,7 +167,6 @@ class Size {
 		yield this.w;
 		yield this.h;
 	}
-	classType = "size";
 }
 
 class Rect {
@@ -180,7 +185,6 @@ class Rect {
 		yield this.w;
 		yield this.h;
 	}
-	classType = "rect";
 }
 
 class Range {
@@ -194,128 +198,6 @@ class Range {
 	[Symbol.iterator] = function* () {
 		yield this.min;
 		yield this.max;
-	}
-	classType = "range";
-}
-
-class StartEnd {
-	constructor(startX, startY, endX, endY) {
-		this.startX = startX;
-		this.startY = startY;
-		this.endX = endX;
-		this.endY = endY;
-	}
-	toString() {
-		return `startX${this.startX}_startY${this.startY}_endX${this.endX}_endY${this.endY}`;
-	}
-	[Symbol.iterator] = function* () {
-		yield this.startX;
-		yield this.startY;
-		yield this.endX;
-		yield this.endY;
-	}
-	classType = "startend";
-}
-class pos extends Vec2 {
-	getTilePos() {
-		return new cpos(Math.floor(this.x / 16), Math.floor(this.y / 16));
-	}
-
-}
-class tpos extends Vec2 {
-	isChunkPos = false;
-	getChunkPos() {
-		return new cpos(Math.floor(this.x / chunkSize.w), Math.floor(this.y / chunkSize.h));
-	}
-	getInChunkPos() {
-		return new cpos(Math.abs(this.x % chunkSize.w), Math.abs(this.y % chunkSize.h));
-	}
-	getInChunkIndex() {
-		return this.getInChunkPos(this).x + this.getInChunkPos(this).y * chunkSize.w;
-	}
-	classType = "pos";
-}
-class cpos extends Vec2 {
-	isChunkPos = true;
-	getChunkPos() {
-		return this;
-	}
-	classType = "cpos";
-}
-
-class Hitbox {
-}
-
-class AABB {
-	constructor(x0, y0, x1, y1) {
-		this.x0 = x0;
-		this.y0 = y0;
-		this.x1 = x1;
-		this.y1 = y1;
-	}
-	expand(xa, ya) {
-		let _x0 = this.x0;
-		let _y0 = this.y0;
-		let _x1 = this.x1;
-		let _y1 = this.y1;
-		if (xa < 0)
-			_x0 + xa;
-		if (xa > 0)
-			_x1 + xa;
-		if (ya < 0)
-			_y0 + ya;
-		if (ya > 0)
-			_y1 + ya;
-		return new AABB(_x0, _y0, _x1, _y1);
-	}
-	move(xa, ya) {
-		this.x0 += xa;
-		this.y0 += ya;
-		this.x1 += xa;
-		this.y1 += ya;
-	}
-	clipXCollide(c, xa) {
-		if (c.y1 <= this.y0 || c.y0 >= this.y1)
-			return xa;
-
-		if (xa > 0.0 && c.x1 <= this.x0) {
-			let max = this.x0 - c.x1;
-			if (max < xa)
-				xa = max;
-		}
-		if (xa < 0.0 && c.x0 >= this.x1) {
-			let max = this.x1 - c.x0;
-			if (max > xa)
-				xa = max;
-		}
-		return xa;
-	}
-	clipYCollide(c, ya) {
-		if (c.x1 <= this.x0 || c.x0 >= this.x1)
-			return ya;
-
-		if (ya > 0.0 && c.y1 <= this.y0) {
-			let max = this.y0 - c.y1;
-			if (max < ya)
-				ya = max;
-		}
-		if (ya < 0.0 && c.y0 >= this.y1) {
-			let max = this.y1 - c.y0;
-			if (max > ya)
-				ya = max;
-		}
-		return ya;
-	}
-	simpleOverlap(aabb) {
-		return (this.x0 < aabb.x1 && this.x1 > aabb.x0 && this.y0 < aabb.y1 && this.y1 > aabb.y0);
-	}
-}
-
-class Debug {
-	static hitboxesTile = new Array;
-	static tpsChange(tps = 60) {
-		targetInterval = 1000 / tps;
-		prevTime = Date.now() - targetInterval;
 	}
 }
 
@@ -387,129 +269,30 @@ new ConfigBool("AttackRotateRock", "player", true);
 
 new ConfigBool("AutoAim", "weapon", true);
 
-class Direction {
-	static rotateKey = new Array;
-	static facingKey = new Array;
-	static rotate = new Array;
-	static facing = new Array;
-	static {
-		this.register("down", 0, 1, { rotateIndex: 0, facingIndex: 0, weaponOffset: new Vec2(0, 0) });//　          ↓
-		this.register("downleft", -1, 1, { rotateIndex: 1, facingIndex: null, weaponOffset: new Vec2(-8, 0) });//    ↙
-		this.register("left", -1, 0, { rotateIndex: 2, facingIndex: 1, weaponOffset: new Vec2(-16, 0) });//           ←
-		this.register("upleft", -1, -1, { rotateIndex: 3, facingIndex: null, weaponOffset: new Vec2(-8, -8) });//     ↖
-		this.register("up", 0, -1, { rotateIndex: 4, facingIndex: 2, weaponOffset: new Vec2(0, -16) });//             ↑
-		this.register("upright", 1, -1, { rotateIndex: 5, facingIndex: null, weaponOffset: new Vec2(0, -8) });//     ↗
-		this.register("right", 1, 0, { rotateIndex: 6, facingIndex: 3, weaponOffset: new Vec2(0, 0) }); //          →
-		this.register("downright", 1, 1, { rotateIndex: 7, facingIndex: null, weaponOffset: new Vec2(0, 0) });//   ↘
-
-		this.registerRotateKey([1, 0, 0, 0], this.up);
-		this.registerRotateKey([0, 1, 0, 0], this.down);
-		this.registerRotateKey([0, 0, 1, 0], this.left);
-		this.registerRotateKey([0, 0, 0, 1], this.right);
-		this.registerRotateKey([1, 0, 1, 0], this.upleft);
-		this.registerRotateKey([1, 0, 0, 1], this.upright);
-		this.registerRotateKey([0, 1, 1, 0], this.downleft);
-		this.registerRotateKey([0, 1, 0, 1], this.downright);
-		this.registerRotateKey([1, 0, 1, 1], this.up);
-		this.registerRotateKey([0, 1, 1, 1], this.down);
-		this.registerRotateKey([1, 1, 1, 0], this.left);
-		this.registerRotateKey([1, 1, 0, 1], this.right);
-
-		this.registerFacingKey([1, 0, 0, 0], this.up);
-		this.registerFacingKey([0, 1, 0, 0], this.down);
-		this.registerFacingKey([0, 0, 1, 0], this.left);
-		this.registerFacingKey([0, 0, 0, 1], this.right);
-		this.registerFacingKey([1, 0, 1, 0], this.left);
-		this.registerFacingKey([1, 0, 0, 1], this.right);
-		this.registerFacingKey([0, 1, 1, 0], this.left);
-		this.registerFacingKey([0, 1, 0, 1], this.right);
-		this.registerFacingKey([1, 0, 1, 1], this.up);
-		this.registerFacingKey([0, 1, 1, 1], this.down);
-		this.registerFacingKey([1, 1, 1, 0], this.left);
-		this.registerFacingKey([1, 1, 0, 1], this.right);
+class FamilyUtil {
+	hasFamily(value) {
+		return this.family.includes(value);
 	}
-	static register(name, dx, dy, { rotateIndex, facingIndex, weaponOffset } = {}) {
-		class DirectionChild {
-			name = name;
-			type = null;
-			dx = dx;
-			dy = dy;
-			rotateIndex = rotateIndex;
-			facingIndex = facingIndex;
-			weaponOffset = weaponOffset;
-			toRotate() {
-				const valueOf = () => this.rotateIndex;
-				return Object.assign(Object.create(Object.getPrototypeOf(this)), this, { valueOf: valueOf });
-			}
-			toFacing() {
-				const valueOf = () => this.facingIndex;
-				return Object.assign(Object.create(Object.getPrototypeOf(this)), this, { valueOf: valueOf });
-			}
-		}
-		const directionChild = new DirectionChild();
-		this[name] = directionChild;
-		this.rotate[rotateIndex] = directionChild.toRotate();
-		this.facing[facingIndex] = directionChild.toFacing();
+	addFamily(value) {
+		this.family.push(value);
 	}
-	static registerRotateKey([up, down, right, left], direction) {
-		class RotateKey {
-			up = Boolean(up);
-			down = Boolean(down);
-			right = Boolean(right);
-			left = Boolean(left);
-			direction = direction.toRotate();
-		}
-		this.rotateKey.push(new RotateKey());
+	static getFamilies(value) {
+		return entities.filter(v => v.hasFamily(value));
 	}
-	static registerFacingKey([up, down, right, left], direction) {
-		class FacingKey {
-			up = Boolean(up);
-			down = Boolean(down);
-			right = Boolean(right);
-			left = Boolean(left);
-			direction = direction.toFacing();
-		}
-		this.facingKey.push(new FacingKey());
-	}
-	static getRotateByKey(up, down, right, left) {
-		for (let key of this.rotateKey) {
-			if (key.up === up)
-				if (key.down === down)
-					if (key.right === right)
-						if (key.left === left)
-							return key.direction;
-		}
-		return null;
-	}
-	static getFacingByKey(up, down, right, left) {
-		for (let key of this.facingKey) {
-			if (key.up === up)
-				if (key.down === down)
-					if (key.right === right)
-						if (key.left === left)
-							return key.direction;
-		}
-		return null;
-	}
-	static getRotateByIndex(index) {
-		return this.rotate[index];
-	}
-	static getFacingByIndex(index) {
-		return this.facing[index];
-	}
-
 }
 
-class ItemProperties {
+class ItemProperties extends FamilyUtil {
 	type = null;
 	icon = null;
 	name = null;
 	constructor(prop) {
+		super();
 		if (prop === undefined) return;
 		this.type = prop.type;
 		this.icon = prop.icon;
 		this.name = prop.name;
 		this.healPower = prop.healPower;
+		this.registerName = prop.registerName;
 	}
 	static of() {
 		return new ItemProperties();
@@ -530,6 +313,9 @@ class ItemProperties {
 		this.healPower = healPower;
 		return this;
 	}
+	setRegisterName(name) {
+		this.registerName = name;
+	}
 }
 
 let regItems = new Array();
@@ -539,6 +325,7 @@ class Item extends ItemProperties {
 	roleSelectAble = false;
 	constructor(prop, count) {
 		super(...arguments);
+		console.trace(...arguments)
 		this.count = count;
 
 		Items.push(this);
@@ -581,11 +368,8 @@ class Item extends ItemProperties {
 	static register() {
 		register(regItems, ...arguments);
 	}
-	getRegisterName() {
-		return Object.entries(regEntity).find(([key, value]) => value.constructor === this.constructor)?.[0];
-	}
 	getDisplayName() {
-		return translate(`item.${this.getRegisterName()}.name`);
+		return translate(`item.${this.registerName}.name`);
 	}
 	getDisplayEfficacy() {
 		return translate("none");
@@ -634,46 +418,14 @@ class Cam {
 		if (this.y > 1420) this.y = 1420;
 	}
 }
-
-class Phys {
-	//thanks mc
-	static move(xa, ya) {
-		if (Math.abs(xa) < 1)
-			xa = 0;
-		if (Math.abs(ya) < 1)
-			ya = 0;
-		const xaOrg = xa;
-		const yaOrg = ya;
-		let aabbs = level.getCubes(this.bb.expand(xa, ya));
-		Debug.hitboxesTile.push(...aabbs);
-		for (let aabb of aabbs) {
-			xa = aabb.clipXCollide(this.bb, xa);
-		}
-		this.bb.move(xa, 0);
-		for (let aabb of aabbs) {
-			ya = aabb.clipYCollide(this.bb, ya);
-		}
-		this.bb.move(0, ya);
-		this.pos.x = Math.round((this.bb.x0 + this.bb.x1) / 2);
-		this.pos.y = Math.round((this.bb.y0 + this.bb.y1) / 2);
-	}
-	static setPos(x, y) {
-		this.bb = new AABB(x - this.size.w / 2, y - this.size.h / 2, x + this.size.w / 2, y + this.size.h / 2);
-	}
-}
 //プレイヤーの変数の作成
 //let player = new PlayerControl();
+let players = new Array();
+
 
 class Players {
 	constructor(ID = 0) {
-		this.pos = new pos();
-		this.size = new Size(15, 15);
-		this.bb = new AABB();
-		this.setPos(0, 0);
-		this.speed = new Vec2();
-		this.moveTimer = 0;
-		this.facing = 0;
-		this.rotate = 0;
+
 		this.weapon = new Weapon();
 		this.maxHealth = 500;
 		this.health = this.maxHealth;
@@ -687,22 +439,17 @@ class Players {
 
 	}
 	tick() {
-
-		if (canPlayerMoveForOpenGui()) {
-			this.moveBase();
-		}
 		this.weaponTick();
 		this.deathCheck();
-		if (this.isPlayer()) PlayerControl = this;
 
 		this.damage_cooldown--;
 	}
 	weaponTick() {
 		if (canPlayerMoveForOpenGui()) {
-			if (keyGroups.attack.down && this.weapon.time > 0)
+			if (key_groups_down.attack && this.weapon.time > 0)
 				this.weapon.speed++;
 
-			if (keyGroups.attack.press && (this.weapon.time <= 0 || this.weapon.time >= 20))
+			if (key_groups.attack && (this.weapon.time <= 0 || this.weapon.time >= 20))
 				this.weapon.attack();
 		}
 
@@ -745,32 +492,81 @@ class Players {
 		return subplayery(this.getIndex);
 	}
 	draw() {
-		let drawOffset = new Vec2(-8, -16);
-		drawImg(img.players, this.getAnimFlame() * 16, this.facing * 32, 16, 24, this.getPosX + drawOffset.x - Cam.x, this.getPosY + drawOffset.y - Cam.y);
-	}
-	getAnimFlame() {
-		if (this.wasMoved) {
-			switch (Math.floor(this.moveTimer % 4)) {
-				case 0:
-					return 0;
-				case 1:
-					return 2;
-				case 2:
-					return 1;
-				case 3:
-					return 2;
-
-			}
-		}
-		else {
-			return 2;
-		}
+		ctx.drawImage(img.players, PlayerControl.getAnimFlame() * 16, PlayerControl.facing * 32, 16, 24, getDrawPosX(this.getPosX), getDrawPosY(this.getPosY) - 8, 16, 24);
 	}
 	knockback(x, y) {
-		this.speed.x += x;
-		this.speed.y += y;
+		PlayerControl.speed.x += x;
+		PlayerControl.speed.y += y;
 	}
-	moveBase() {
+}
+
+
+class PlayerControl {
+	static pos = new Vec2();
+	static speed = new Vec2();
+	static mapID = "";
+	static key = {
+		up: false,
+		down: false,
+		right: false,
+		left: false
+	}
+
+	static drawx = 0
+	static drawy = 0;
+	static anim = 0;
+	static rotate = 0
+	static facing = 0;
+	static canRotate = true;
+	static isMoveing = false
+	static wasMoved = false;
+	static moveTimer = 0;
+	static movelog = new Array();
+
+	static alive = true;
+	static tick() {
+
+		if (canPlayerMoveForOpenGui()) {
+			this.moveTick();
+			this.NpcTalkTick();
+		}
+		this.getAnimFlame()
+		this.mapChangeCheck();
+	}
+	static moveTick() {
+
+		//移動キー判定
+		this.key.up = key_groups.up;
+		this.key.down = key_groups.down;
+		this.key.right = key_groups.right;
+		this.key.left = key_groups.left;
+
+
+		if (this.canRotate && (!key_groups.attack || !getConfigValue("AttackRotateRock"))) {
+			this.facing = getFacing(this.key.up, this.key.down, this.key.right, this.key.left) ?? this.facing;
+			this.rotate = getRotate(this.key.up, this.key.down, this.key.right, this.key.left) ?? this.rotate;
+		}
+
+		//移動判定
+		if (this.key.up || this.key.down || this.key.right || this.key.left) {
+			this.isMoveing = true;
+		} else {
+			this.isMoveing = false;
+		}
+		if (Math.abs(this.speed.x + this.speed.y) >= 1) {
+			this.wasMoved = true;
+		} else {
+			this.wasMoved = false;
+		}
+
+		//アニメーションに使用(値を変更すると速度が変わる)
+		if (this.wasMoved) this.moveTimer += 0.12;
+
+
+		//上限(64)を超えたら削除
+		this.movelog.splice(64, Infinity);
+
+
 		//速度調整
 		if (this.speed.x > 0) {
 			this.speed.x = Math.floor(this.speed.x * 0.85 * 1000) / 1000;
@@ -783,63 +579,87 @@ class Players {
 			this.speed.y = Math.ceil(this.speed.y * 0.85 * 1000) / 1000;
 		}
 
-		this.speedCalc();
-
-		if (Math.abs(this.speed.x) + Math.abs(this.speed.y) >= 1) {
-			this.wasMoved = true;
-		} else {
-			this.wasMoved = false;
-		}
-
-		//アニメーションに使用(値を変更すると速度が変わる)
-		if (this.wasMoved) this.moveTimer += 0.12;
-
-		this.move(this.speed.x, this.speed.y, true);
+		//速度移動
+		if (this.key.up) this.speed.y -= 0.5;
+		if (this.key.down) this.speed.y += 0.5;
+		if (this.key.right) this.speed.x += 0.5;
+		if (this.key.left) this.speed.x -= 0.5;
 
 		//プレイヤー移動
+		this.move(this.speed.x, this.speed.y, true);
 	}
-	speedCalc() {
+	static move(mvx, mvy, checkhitbox) {
+		for (let i = 0; i < Math.round(Math.abs(mvx)); i++) {
+			this.pos.x += Math.sign(mvx);
 
-		//移動キー判定
-		let key = new Object;
-		if (this.isPlayer()) {
-			key.up = keyGroups.up.press;
-			key.down = keyGroups.down.press;
-			key.right = keyGroups.right.press;
-			key.left = keyGroups.left.press;
-		} else {
+			if (hitbox(this.pos.x, this.pos.y) && checkhitbox) this.pos.x -= Math.sign(mvx);
+
+
+			if (i > Game.move_limit) break;
+		}
+		for (let i = 0; i < Math.round(Math.abs(mvy)); i++) {
+			this.pos.y += Math.sign(mvy);
+
+			if (hitbox(this.pos.x, this.pos.y) && checkhitbox) this.pos.y -= Math.sign(mvy);
+
+			if (i > Game.move_limit) break;
+		}
+	}
+	static mapChangeCheck() {
+		for (const i in Game.map.warp) {
+			let [x, y, w, h] = [Game.map.warp[i].x * 16, Game.map.warp[i].y * 16, Game.map.warp[i].w * 16, Game.map.warp[i].h * 16];
+			if (isNaN(w)) w = 16; if (isNaN(h)) h = 16;
+
+			if (hitbox_rect(x, y, w, h, this.pos.x, this.pos.y, 16, 16)) {
+				let [x, y] = [this.pos.x, this.pos.y];
+				if (Game.map.warp[i].relpos != undefined) {
+					[x, y] = [Game.map.warp[i].relpos?.x * 16 + x, Game.map.warp[i].relpos.y * 16 + y];
+					mapchange(Game.map.warp[i].to, x, y);
+					return;
+				}
+				if (Game.map.warp[i].abspos != undefined) {
+					[x, y] = [Game.map.warp[i].abspos?.x * 16, Game.map.warp[i].abspos.y * 16];
+					mapchange(Game.map.warp[i].to, x, y);
+					return;
+				}
+				{
+					mapchange(Game.map.warp[i].to);
+					return;
+				}
+			}
 
 		}
+	}
+	static NpcTalkTick() {
+		return;//後で直す
 
+		for (let i in npc) {
+			let it = npc[i];
+			let facing = new Vec2(Game.facing_pos[player.facing][0], Game.facing_pos[player.facing][1]);
 
-		if ((!keyGroups.attack.press || !getConfigValue("AttackRotateRock"))) {
-			this.facing = Direction.getFacingByKey(key.up, key.down, key.left, key.right) ?? this.facing;
-			this.rotate = Direction.getRotateByKey(key.up, key.down, key.left, key.right) ?? this.rotate;
+			if (key_groups_down.confirm) {
+				if (hitbox_rect(it.x, it.y, 16, 16, player.x + 4 + facing.x * 16, player.y + 4 + facing.y * 16, 8, 8)) {
+					talk_npc(i); return;
+				}
+			}
 		}
-
-		//移動判定
-		if (key.up || key.down || key.right || key.left) {
-			this.isMoving = true;
-		} else {
-			this.isMoving = false;
+	}
+	static getAnimFlame() {
+		if (this.wasMoved) {
+			switch (Math.floor(this.moveTimer % 4)) {
+				case 0:
+					return 0;
+				case 1:
+					return 2;
+				case 2:
+					return 1;
+				case 3:
+					return 2;
+			}
 		}
-
-
-
-		//速度移動
-		if (key.up) this.speed.y -= 0.425;
-		if (key.down) this.speed.y += 0.425;
-		if (key.right) this.speed.x += 0.425;
-		if (key.left) this.speed.x -= 0.425;
-	}
-	move(xa, ya) {
-		Phys.move.call(this, xa, ya);
-	}
-	setPos(xa, ya) {
-		Phys.setPos.call(this, xa, ya);
-	}
-	isPlayer() {
-		return players.indexOf(this) === 0;
+		else {
+			return 2;
+		}
 	}
 }
 class Weapon {
@@ -861,10 +681,10 @@ class Weapon {
 	}
 	attack() {
 		this.time = 1;
-		this.pos = new Vec2(...this.getPlayer.pos);
-		this.start = new Vec2(...this.getPlayer.pos);
+		this.pos = new Vec2();
+		this.start = new Vec2(this.getPlayer.getPosX, this.getPlayer.getPosY);
 		this.autoAim = new Vec2();
-		this.rotate = this.getPlayer.rotate;
+		this.rotate = new Vec2(...Game.rotate_pos[PlayerControl.rotate]);
 		this.speed = 1;
 	}
 	tick() {
@@ -874,7 +694,7 @@ class Weapon {
 			let hit_enemy = new Array();
 			hit_enemy = hitbox_entity_rect(this.pos.x - 8, this.pos.y - 8, 32, 32, "Enemy");
 			for (const entity of hit_enemy) {
-				const facing = new Vec2(this.getPlayer.facing.dx, this.getPlayer.facing.dy);
+				const facing = new Vec2(...Game.facing_pos[PlayerControl.facing]);
 				const knockbackPower = 2.5;
 				const attackPower = 10;
 				entity.damage(attackPower, facing.x * knockbackPower, facing.y * knockbackPower, true);
@@ -900,8 +720,8 @@ class Weapon {
 			if (this.time <= 12 && (hit_enemy.length == 0 || !Game.weapon_canlock) && config.weapon_auto_aiming) {
 				let x = this.start.x;
 				let y = this.start.y;
-				if (getNearestEntityDistance(x, y, EntityEnemy) < 100) {
-					let entity = getNearestEntity(x, y, EntityEnemy);
+				if (getNearestEntityDistance(x, y, "Enemy") < 100) {
+					let entity = getNearestEntity(x, y, "Enemy");
 					let width = entity.size.w;
 					let height = entity.size.h;
 					this.autoAim.x += Math.sign((entity.pos.x + width / 2 - this.pos.x + 16) / 32) * 2;
@@ -914,10 +734,8 @@ class Weapon {
 			}
 
 			//剣の座標の計算
-			const attackTime = 12;
-			const attackSize = 64;
-			this.pos.x = Math.floor(this.rotate.dx * (Math.sin(Math.PI / 2 * this.time / attackTime) * attackSize) + this.autoAim.x + this.getPlayer.getPosX - 8);
-			this.pos.y = Math.floor(this.rotate.dy * (Math.sin(Math.PI / 2 * this.time / attackTime) * attackSize) + this.autoAim.y + this.getPlayer.getPosY - 8);
+			this.pos.x = Math.floor(this.rotate.x * (Math.sin(Math.PI / 2 * this.time / 12) * 64) + this.autoAim.x + this.getPlayer.getPosX);
+			this.pos.y = Math.floor(this.rotate.y * (Math.sin(Math.PI / 2 * this.time / 12) * 64) + this.autoAim.y + this.getPlayer.getPosY);
 
 			//カウントアップ
 			if (hit_enemy.length == 0 || !Game.weapon_canlock) this.time += this.speed;
@@ -932,50 +750,47 @@ class Weapon {
 	draw() {
 
 		if (this.time <= 0) {
-			let temptime = this.time.limit(-20, Infinity);
+			let temptime = limit(this.time, -20, Infinity);
 
-			this.draw_weapon(Direction.down, this.getPlayer.getPosX + Math.floor(make_slip_animation(Math.asin(-temptime / 10 / Math.PI)) * 16) - Cam.x, this.getPlayer.getPosY + make_slip_animation(Math.asin(-temptime / 10 / Math.PI)) * Math.floor(Math.sin(-this.time / 50) * 8 - 32) - Cam.y);
+			draw_weapon(0, this.getPlayer.getPosX + Math.floor(make_slip_animation(Math.asin(-temptime / 10 / Math.PI)) * 16) - Cam.x, this.getPlayer.getPosY + make_slip_animation(Math.asin(-temptime / 10 / Math.PI)) * Math.floor(Math.sin(-this.time / 50) * 8 - 32) - Cam.y);
 		} else {
 			const animationSpeed = 1;
 			const frameCount = 8;
-			let weapon_rotation = Direction.getRotateByIndex(Math.floor((this.time / animationSpeed) % frameCount));
+			let weapon_rotation = Math.floor((this.time / animationSpeed) % frameCount);
 
-			this.draw_weapon(weapon_rotation, this.pos.x - Cam.x, this.pos.y - Cam.y);
-			this.draw_sweep(weapon_rotation, this.pos.x - Cam.x, this.pos.y - Cam.y);
+			draw_weapon(weapon_rotation, this.pos.x - Cam.x, this.pos.y - Cam.y);
+			draw_sweep(weapon_rotation, this.pos.x - Cam.x, this.pos.y - Cam.y);
 
 		}
 	}
-	draw_weapon(rotate, drawX, drawY) {
-		drawImg(img.item_model, rotate * 32, 0, 32, 32, drawX + rotate.weaponOffset.x, drawY + rotate.weaponOffset.y);
-
-	}
-	draw_sweep(rotate, drawX, drawY) {
-		const size = 7;
-		let offset = new Vec2(
-			4 * Math.sign(rotate.dx) * (rotate % 2) - 8 + Math.sign(rotate.dx) * size,
-			4 * Math.sign(rotate.dy) * (rotate % 2) - 8 + Math.sign(rotate.dy) * size
-		);
-
-		drawImg(img.sweep, rotate * 32, 0, 32, 32, drawX + offset.x, drawY + offset.y);
-	}
-
 }
 
-//事前に埋めとく
-//player_movelog_reset();
-
-let players = new Array();
 players[0] = new Players(0);
-let PlayerControl = players[0];
+//事前に埋めとく
+player_movelog_reset();
+
+class EntityFamilies {
+	static register(name) {
+		this[name] = Symbol(name);
+	}
+	static init() {
+		EntityFamilies.register("Default");
+		EntityFamilies.register("Enemy");
+		EntityFamilies.register("Neutral");
+		EntityFamilies.register("Slime");
+	}
+}
 
 let entities = new Array();
 
 
-class EntityProperties {
+class EntityProperties extends FamilyUtil {
 	type = null;
 	constructor(prop) {
+		super();
 		if (prop === undefined) return;
 		this.type = prop.type;
+		this.registerName = prop.registerName;
 	}
 	static of() {
 		return new EntityProperties();
@@ -984,12 +799,16 @@ class EntityProperties {
 		this.type = type;
 		return this;
 	}
+	setRegisterName(name) {
+		this.registerName = name;
+	}
 }
 
 class Entity extends EntityProperties {
 	pos = new Vec2();
 	speed = new Vec2();
 	spawn = new Vec2();
+	family = new Array();
 	wasMoved = false;
 
 	moveSpeed = 0.25;
@@ -1005,7 +824,7 @@ class Entity extends EntityProperties {
 		this.spawn.y = spawnY;
 		this.pos.y = spawnY;
 
-		this.setPos(spawnX, spawnY);
+		this.addFamily(EntityFamilies.Default);
 
 		entities.push(this);
 	}
@@ -1013,9 +832,9 @@ class Entity extends EntityProperties {
 		Entity.register("slimeBlue", EntitySlime, EntityProperties.of().setType(EntitySlime.typeBlue));
 	}
 	tick() {
-		this.moveBase();
+		this.move();
 	}
-	moveBase() {
+	move() {
 
 		//スピード調整
 		if (this.speed.x > 0) {
@@ -1030,22 +849,25 @@ class Entity extends EntityProperties {
 		}
 
 		//動き替える
-		this.speedCalc();
-		this.move(this.speed.x, this.speed.y)
+		this.moveScript();
 
+		//移動 当たり判定
+		for (let i = 0; i < Math.round(Math.abs(this.speed.x)); i++) {
+			this.pos.x += Math.sign(this.speed.x);
+			if (hitbox(this.pos.x, this.pos.y)) this.pos.x -= Math.sign(this.speed.x);
+			if (i > Game.move_limit) break;
+		}
+		for (let i = 0; i < Math.round(Math.abs(this.speed.y)); i++) {
+			this.pos.y += Math.sign(this.speed.y);
+			if (hitbox(this.pos.x, this.pos.y)) this.pos.y -= Math.sign(this.speed.y);
+			if (i > Game.move_limit) break;
+		}
 	}
-	move(xa, ya) {
-		Phys.move.call(this, xa, ya);
-	}
-	setPos(xa, ya) {
-		Phys.setPos.call(this, xa, ya);
-	}
-	speedCalc() {
+	moveScript() {
 
 	}
 	draw() {
-		let drawOffset = new Vec2(-8, -8);
-		drawImg(img.enemy, 0, 0, 16, 16, this.pos.x + drawOffset.x - Cam.x, this.pos.y + drawOffset.y - Cam.y);
+		drawImg(img.enemy, 0, 0, 16, 16, this.pos.x - Cam.x, this.pos.y - Cam.y);
 	}
 	drawCondition() {
 		return Game.onScreenArea(new Rect(this.pos.x, this.pos.y, this.size.w, this.size.h));
@@ -1065,22 +887,6 @@ class Entity extends EntityProperties {
 	}
 	static register() {
 		register(regEntity, ...arguments);
-	}
-	getRegisterName() {
-		return Object.entries(regEntity).find(([key, value]) => value.constructor === this.constructor)?.[0];
-	}
-	dataConvert() {
-		let obj = new Object();
-		Object.assign(obj, this);
-		obj.registerName = this.getRegisterName()
-
-		return obj;
-	}
-	dataRestore(obj) {
-		Object.assign(this, structuredClone(obj));
-	}
-	static dataRestore(obj) {
-		regEntity[obj.registerName](0, 0).dataRestore();
 	}
 }
 
@@ -1124,7 +930,7 @@ class EntityEnemy extends Entity {
 		//playerid
 		let i = 0;
 
-		if (this.bb.simpleOverlap(PlayerControl.bb)) {
+		if (hitbox_rect(this.pos.x, this.pos.y, this.size.w, this.size.h, subplayerx(i), subplayery(i), 16, 16)) {
 			if (this.attack.coolDown <= 0) {
 				this.attack.coolDown = 50
 				this.attack.animFlag = true;
@@ -1171,6 +977,7 @@ class EntityEnemy extends Entity {
 	}
 	constructor() {
 		super(...arguments);
+		this.addFamily(EntityFamilies.Enemy);
 	}
 }
 
@@ -1198,7 +1005,7 @@ class EntityEnemyNeutralBasic extends EntityEnemy {
 			this.hostilityDelay--;
 
 	}
-	speedCalc() {
+	moveScript() {
 		if (this.hostility) {
 
 			let dis = getDistance(this.pos.x, this.pos.y, subplayerx(0), subplayery(0));
@@ -1207,7 +1014,7 @@ class EntityEnemyNeutralBasic extends EntityEnemy {
 				return;
 			}
 
-			let r = calcAngleDegrees(subplayerx(0) + PlayerControl.facing - this.pos.x, subplayery(0) + PlayerControl.facing - this.pos.y);
+			let r = calcAngleDegrees(subplayerx(0) + Game.facing_pos[PlayerControl.facing][0] - this.pos.x, subplayery(0) + Game.facing_pos[PlayerControl.facing][1] - this.pos.y);
 			this.speed.x += this.moveSpeed * Math.cos(r);
 			this.speed.y += this.moveSpeed * Math.sin(r);
 
@@ -1255,6 +1062,7 @@ class EntityEnemyNeutralBasic extends EntityEnemy {
 	}
 	constructor() {
 		super(...arguments);
+		this.addFamily(EntityFamilies.Neutral);
 	}
 }
 
@@ -1273,15 +1081,15 @@ class EntitySlime extends EntityEnemyNeutralBasic {
 		super.tick();
 	}
 	draw() {
-		let srcOffset = new Vec2(0, 0);
-		let drawOffset = new Vec2(-8, -8);
+		let DrawOffset = new Vec2(0, 0);
 
-		const srcPos = this.getAnimationFlame();
-		drawImg(img.enemy, srcOffset.x + srcPos.x, srcOffset.y + srcPos.y, 16, 16, this.pos.x + drawOffset.x - Cam.x, this.pos.y + drawOffset.y - Cam.y - make_jump_animation(this.attack.animTime / 20) * 5);
+		const drawPos = this.getAnimationFlame();
+		drawImg(img.enemy, DrawOffset.x + drawPos.x, DrawOffset.y + drawPos.y, 16, 16, this.pos.x - Cam.x, this.pos.y - Cam.y - make_jump_animation(this.attack.animTime / 20) * 5);
 		this.drawDamageEffect();
 	}
 	constructor() {
 		super(...arguments);
+		this.addFamily(EntityFamilies.Slime);
 	}
 	animationTick() {
 
@@ -1358,10 +1166,10 @@ class EntityNpcBasic extends Entity {
 }
 const regEntity = {};
 function register(obj, name, clas, prop) {
+	prop.setRegisterName(name);
 	obj[name] = (...arg) => {
 		return new clas(prop, ...arg);
 	}
-	obj[name].constructor = clas;
 }
 
 
@@ -1437,6 +1245,24 @@ class smokeParticle extends Particle {
 
 const chunkSize = new Size(256, 256);
 
+class pos extends Vec2 {
+	isChunkPos = false;
+	getChunkPos() {
+		return new cpos(Math.floor(this.x / chunkSize.w), Math.floor(this.y / chunkSize.h));
+	}
+	getInChunkPos() {
+		return new cpos(Math.abs(this.x % chunkSize.w), Math.abs(this.y % chunkSize.h));
+	}
+	getInChunkIndex() {
+		return this.getInChunkPos(this).x + this.getInChunkPos(this).y * chunkSize.w;
+	}
+}
+class cpos extends Vec2 {
+	isChunkPos = true;
+	getChunkPos() {
+		return this;
+	}
+}
 
 class Level {
 	rawData = null;
@@ -1473,7 +1299,7 @@ class Level {
 		return false;
 	}
 	autoLoadDispose(ppos) {
-		const pcpos = new tpos(ppos.x / 16, ppos.y / 16).getChunkPos()
+		const pcpos = new pos(ppos.x / 16, ppos.y / 16).getChunkPos()
 		const loadcpos = [
 			new cpos(pcpos.x + 1, pcpos.y + 1),
 			new cpos(pcpos.x + 0, pcpos.y + 1),
@@ -1493,21 +1319,6 @@ class Level {
 			if (!loadcpos.map(value => value.toString()).includes(chunk))
 				delete this.chunks[chunk];
 		}
-	}
-	getCubes(aabb) {
-		let aabbs = new Array;
-		let x0 = Math.floor(aabb.x0 / 16 - 1);
-		let x1 = Math.ceil(aabb.x1 / 16 + 1);
-		let y0 = Math.floor(aabb.y0 / 16 - 1);
-		let y1 = Math.ceil(aabb.y1 / 16 + 1);
-		for (let x = x0; x < x1; x++) {
-			for (let y = y0; y < y1; y++) {
-				if (this.getTile(new tpos(Math.floor(x), Math.floor(y))).hitbox)
-					aabbs.push(new AABB(Math.floor(x) * 16, Math.floor(y) * 16, Math.floor(x) * 16 + 16, Math.floor(y) * 16 + 16));
-
-			}
-		}
-		return aabbs;
 	}
 }
 
@@ -1562,65 +1373,8 @@ class Tile {
 	}
 }
 
-class SaveGame {
-	static reviver(key, value) {
-		switch (value.classType) {
-			case "vec2":
-				return new Vec2(value.x, value.y);
-			case "size":
-				return new Vec2(value.w, value.h);
-			case "rect":
-				return new Vec2(value.x, value.y, value.w, value.h);
-			case "range":
-				return new Vec2(value.min, value.max);
-			case "startend":
-				return new Vec2(value.startX, value.startY, value.endX, value.endY);
-			case "pos":
-				return new Vec2(value.x, value.y);
-			case "cpos":
-				return new Vec2(value.x, value.y);
-			case undefined:
-				break;
-			default:
-				throw new Error("unknown classType: " + value.classType)
-		}
-		return value;
-	}
-	static restoreSaveData(obj) {
-		for (const entityData of obj.entities) {
-			Entity.dataRestore(entityData);
-		}
-	}
-	static convertSaveData() {
-		let obj = new Object;
-		obj.entities = new Array;
-		for (const entity of entities) {
-			obj.entities.push(entity.dataConvert());
-		}
-
-		return obj;
-	}
-	static initialize() {
-		entities = new Array();
-
-	}
-	static saveBeforeMain() {
-		SaveGame.convertSaveData()
-
-	}
-	static loadAfterMain(json) {
-		//same 
-		SaveGame.initialize();
-		SaveGame.restoreSaveData(JSON.parse(json, SaveGame.reviver));
-
-	}
-}
-
 class Game {
 	static ver = "24m03w5";
-
-	static sessionTime = 0;
-	static isRelease = false;
 
 	static saveloadingnow = false;
 	static saveloadfaliedtime = -1;
@@ -1652,6 +1406,32 @@ class Game {
 		"Default": "param/maps/Map.map"
 	}
 
+	static rotate_pos = [
+		[0, 1],//　 ↓
+		[-1, 1],//  ↙
+		[-1, 0],//  ←
+		[-1, -1],// ↖
+		[0, -1],//  ↑
+		[1, -1],//  ↗　
+		[1, 0],//　 →
+		[1, 1],//　 ↘
+	]
+
+	static facing_pos = [
+		[0, 1],//　 ↓
+		[-1, 0],//  ←
+		[0, -1],//  ↑
+		[1, 0],//　 →
+	]
+
+	static tab_offset = [
+		64, 128, 128, 128
+	]
+
+	static gui_item_count = [
+		15, 7, 15, 7
+	]
+
 	static breakableTile = [
 		9, 10, 11
 	]
@@ -1677,7 +1457,7 @@ class Game {
 		}
 	}
 
-	static DontDrawTile = [
+	static DontDrawTIle = [
 		0
 	]
 
@@ -1763,7 +1543,6 @@ class Game {
 					return Game.map[maplayer][y][x];
 	}
 	static async NewGame() {
-		if (Game.PlayingScreen) return false;
 
 		//コンフィグリセット
 		configReset();
@@ -1771,21 +1550,15 @@ class Game {
 		//マップDefault(placeholder)
 		await mapchange("Default");
 
-		Game.StartGame();
+		Game.PlayingScreen = true;
+		gamestarted = true;
 	}
 	static async LoadGame() {
-		if (Game.PlayingScreen) return false;
 
 		await savedataload();
 
-		Game.StartGame();
-	}
-	static async StartGame() {
-		if (Game.PlayingScreen) return false;
-
-		new RioxUiHud().openUi();
-
 		Game.PlayingScreen = true;
+		gamestarted = true;
 	}
 	static onScreenArea(size) {
 		let ax = Cam.x;
@@ -1810,7 +1583,6 @@ class Game {
 
 		return dx < sx && dy < sy;
 	}
-	static characterCheck = false;//文字のことです
 }
 
 class Message {
@@ -1898,8 +1670,8 @@ class Cursor {
 			let cursor = this.cursors[this.cursors.length - 1];
 			this.CursorOldPos.x += (cursor.x - this.CursorOldPos.x) / 2;
 			this.CursorOldPos.y += (cursor.y - this.CursorOldPos.y) / 2;
-			this.CursorOldPos.x = this.CursorOldPos.x.limit(0, Infinity);
-			this.CursorOldPos.y = this.CursorOldPos.y.limit(0, Infinity);
+			this.CursorOldPos.x = limit(this.CursorOldPos.x, 0, Infinity);
+			this.CursorOldPos.y = limit(this.CursorOldPos.y, 0, Infinity);
 		}
 
 		for (let i in this.cursors) {
@@ -2014,8 +1786,7 @@ ctx.font = '20px sans-serif';
 //デバッグ用の変数の作成
 let debug = new Object();
 debug.hitboxes = new Array();
-debug.hitboxesTile = new Array();
-debug.hitbox_visible = false;
+debug.hitbox_visible = true;
 debug.visible = false;
 debug.about_visible = false;
 
@@ -2075,76 +1846,31 @@ let MainProcEndTime = 0;
 let MainProcTime = 0;
 
 
+
+
+
 //キーの変数の作成
+let key = new Object();
 
+let keys = new Array();
 
-class KeyData {
-	press = false;
-	wasPress = false;
-	down = false;
-	hold = false;
-	time = -1;
-	now = -1;
-	change(isDown) {
-		this.wasPress = this.press;
-		this.press = isDown;
-		//isDown ? this.time++ : this.time = 0;
-		//this.now = Game.sessionTime;
-	}
-	tick() {
-		const [holdStartDelay, holdRepeatDelay] = [30, 2]
-		this.press ? this.time++ : this.time = -1;
-		this.down = this.time == 0;
-		this.hold = this.time == 0 || this.time > holdStartDelay && this.time % holdRepeatDelay == 0;
-		this.wasPress = this.press;
-	}
-	hasChanged() {
-		return this.press !== this.wasPress;
-	}
+for (let i = 0; i < 255; i++) {
+	keys.push(new Keys())
 }
-let keyList = Array.from(new Array(255)).map(() => new KeyData());
+let key_groups = new Object();
+let key_groups_down = new Object();
+let key_groups_hold = new Object();
 
-class TouchData {
-	time = -1;
-	pos = null;
+let key_groups_list = {
+	"up": [38, 87],
+	"down": [40, 83],
+	"left": [37, 65],
+	"right": [39, 68],
+	"attack": [32],
+	"confirm": [90],
+	"cancel": [88],
+	"menu": [67]
 }
-
-class KeyGroup {
-	constructor(keyCodes, touchBtns, gamepadBtns) {
-		this.keyCodes = keyCodes;
-		this.touchBtns = touchBtns;
-		this.gamepadBtns = gamepadBtns;
-	}
-	tick() {
-		this.press = false;
-		this.down = false;
-		this.hold = false;
-		for (const keyCode of this.keyCodes) {
-			const keyData = keyList[keyCode];
-			if (keyData.press) this.press ||= true;
-			if (keyData.down) this.down ||= true;
-			if (keyData.hold) this.hold ||= true;
-		}
-	}
-	press = false;
-	down = false;
-	hold = false;
-}
-class KeyGroups {
-	static register(groupname, keycode, touchButton, gamepadButton) {
-		keyGroups[groupname] = new KeyGroup(keycode, touchButton, gamepadButton);
-	}
-}
-let keyGroups = new Object();
-KeyGroups.register("up", [38, 87]);
-KeyGroups.register("down", [40, 83]);
-KeyGroups.register("left", [37, 65]);
-KeyGroups.register("right", [39, 68]);
-KeyGroups.register("attack", [32]);
-KeyGroups.register("confirm", [90]);
-KeyGroups.register("cancel", [88]);
-KeyGroups.register("menu", [67]);
-
 
 let key_arrow = [
 	37,
@@ -2167,7 +1893,6 @@ addEventListener("keydown", keydownfunc);
 // ------------------------------------------------------------
 window.addEventListener("gamepadconnected", function (e) {
 	var gamepad = e.gamepad;
-	console.log(e)
 });
 
 // ------------------------------------------------------------
@@ -2175,7 +1900,6 @@ window.addEventListener("gamepadconnected", function (e) {
 // ------------------------------------------------------------
 window.addEventListener("gamepaddisconnected", function (e) {
 	var gamepad = e.gamepad;
-	console.log(e)
 });
 
 //タッチ操作
@@ -2189,7 +1913,6 @@ canvas.addEventListener("touchmove", function (event) {
 })
 canvas.addEventListener("touchcancel", function (event) { updateTouch(event) })
 
-const touchList = new Array();
 const touchpos = new Array();
 const touchButton = new Array();
 const touchButtonDown = new Array();
@@ -2207,111 +1930,131 @@ let touchButtons = [
 	{ "x": 15 * 16, "y": 8 * 16, "type": "attack", "width": 32, "height": 16 }
 ]
 
-class TouchButton {
-	constructor(posx, posy, width, height) {
-		this.posx = posx;
-		this.posy = posy;
-		this.width = width;
-		this.height = height;
-	}
-	press = false;
-	time = 0;
-}
-
 let touchmode = false;
 
 
+//フォント
+img.font = new Object();
+
+//読み込みやつ
+let uni = {
+	"00": true,
+	"20": true,
+	"30": true
+}
+
+//フォント読み込み 没になった感じ？
+/*
+for (let i in uni) {
+	if (uni[('00' + i.toString(16)).slice(-2)]) {
+		img.font["uni_" + ('00' + i.toString(16)).slice(-2)] = new Image();
+		img.font["uni_" + ('00' + i.toString(16)).slice(-2)].src = "img/font/uni_" + ('00' + i.toString(16)).slice(-2) + ".png";
+	}
+}
+
+img.font.uni_00_purple = new Image();
+img.font.uni_00_purple.src = "img/font/uni_00_purple.png";
+*/
+
+//タイルの設定
+let tile_image_list = [img.empty, img.tile, img.tile2];
+
+let tile_collision = [false, true, false, true];
+
+
+//テクスチャーアトラスの設定
+let atlas = new Object();
+
+
+//剣の設定
+let weapon = new Object();
+
+weapon.atlas = [
+	[0, 0, 32, 32],
+	[32, 0, 32, 32],
+	[64, 0, 32, 32],
+	[96, 0, 32, 32],
+	[128, 0, 32, 32],
+	[160, 0, 32, 32],
+	[192, 0, 32, 32],
+	[224, 0, 32, 32],
+]
+
+weapon.offset = [
+	[0, 0, true],
+	[-8, 0, true],
+	[-16, 0, true],
+	[-8, -8, true],
+	[0, -16, true],
+	[0, -8, true],
+	[0, 0, true],
+	[0, 0, true]
+]
+
+//メニューの変数の作成
+let menu = {
+	"tab": 0,
+	"tab_select": true,
+	"item_select": [0],
+	"select_length": 1,
+	"role_select": false,
+	"who_use": 0,
+	"scroll": [0],
+	"system_select": 0,
+	"CursorOldPos": { "x": 0, "y": 0 },
+	"CursorNeedUpdate": false,
+	"visible": false,
+	"cursor_time": 0,
+	"mode": "Default",
+	"config_num": {
+		"timer": -1,
+		"mode": -1
+	}
+}
+//承認ウィンドウの変数の作成
+let window_comfirm = {
+	"visible": false,
+	"selected": false,
+	"func_ok": () => { },
+	"func_cancel": () => { },
+	"text": "",
+	"title": "",
+	"pos": { "x": 0, "y": 0 }
+}
+
+//承認ウィンドウの変数の作成
+let MapNameText = {
+	"active": false,
+	"time": 0,
+	"text": "",
+	"title": ""
+}
+
+let title_gui = {
+	"item_select": 0
+}
+
+let MenuTabSelect = 0;
 
 class Sprite {
-	static drawByAtlas(imgObj, srcX, srcY, srcWidth, srcHeight, drawX, drawY, erea = {}) {
-		ctx.save();
-
-		Sprite.drawEreaInit(erea.x, erea.y, erea.w, erea.h);
-
-		drawImg(imgObj, srcX, srcY, srcWidth, srcHeight, Math.round(drawX), Math.round(drawY));
-
-		ctx.restore();
-	}
-	static register(name, imgObj, srcX, srcY, srcWidth, srcHeight) {
-
-		this[name] = new Object();
-		this[name].img = imgObj;
-		this[name].srcX = srcX;
-		this[name].srcY = srcY;
-		this[name].srcWidth = srcWidth;
-		this[name].srcHeight = srcHeight;
-
-		this[name][Symbol.iterator] = function* () {
-			yield this.img;
-			yield this.srcX;
-			yield this.srcY;
-			yield this.srcWidth;
-			yield this.srcHeight;
-		}
-		this[name].draw = (x, y, ox = 0, oy = 0, ow = 0, oh = 0) => {
-			//console.log(this[name].img, this[name].drawX + ox, this[name].drawY + oy, this[name].drawWidth + ow, this[name].drawHeight + oh, Math.round(x), Math.round(y))
-			drawImg(this[name].img, this[name].drawX + ox, this[name].drawY + oy, this[name].srcWidth + ow, this[name].srcHeight + oh, Math.round(x), Math.round(y));
-		}
-		this[name].draw = (drawX, drawY, erea = {}) => {
-			ctx.save();
-			Sprite.drawEreaInit(erea.x, erea.y, erea.w, erea.h);
-
-			drawImg(this[name].img, this[name].srcX, this[name].srcY, this[name].srcWidth, this[name].srcHeight, Math.round(drawX), Math.round(drawY));
-
-			ctx.restore();
-
-		}
-	}
-	static registerNineSlice(name, imgobj, nineSliceSize, baseSizeWidth, baseSizeHeight) {
+	static register(name, imgobj, drawX, drawY, drawWidth, drawHeight) {
 
 		this[name] = new Object();
 		this[name].img = imgobj;
-		this[name].nineSliceSize = nineSliceSize;
-		this[name].baseSizeWidth = baseSizeWidth;
-		this[name].baseSizeHeight = baseSizeHeight;
+		this[name].drawX = drawX;
+		this[name].drawY = drawY;
+		this[name].drawWidth = drawWidth;
+		this[name].drawHeight = drawHeight;
 
-		this[name].draw = (dx, dy, dw, dh, erea = {}) => {
-			ctx.save();
-			Sprite.drawEreaInit(erea.x, erea.y, erea.w, erea.h);
-
-			const baseSize = new Size(this[name].baseSizeWidth, this[name].baseSizeHeight);
-			const drawBox = new Rect(dx, dy, dw, dh);
-			const slices = [
-				[0, 0, nineSliceSize, nineSliceSize, drawBox.x - nineSliceSize, drawBox.y - nineSliceSize, nineSliceSize, nineSliceSize],
-				[nineSliceSize, 0, baseSize.w, nineSliceSize, drawBox.x, drawBox.y - nineSliceSize, drawBox.w, nineSliceSize],
-				[nineSliceSize + baseSize.w, 0, nineSliceSize, nineSliceSize, drawBox.x + drawBox.w, drawBox.y - nineSliceSize, nineSliceSize, nineSliceSize],
-				[0, nineSliceSize, nineSliceSize, baseSize.h, drawBox.x - nineSliceSize, drawBox.y, nineSliceSize, drawBox.h],
-				[nineSliceSize, nineSliceSize, baseSize.w, baseSize.h, drawBox.x, drawBox.y, drawBox.w, drawBox.h],
-				[nineSliceSize + baseSize.w, nineSliceSize, nineSliceSize, baseSize.h, drawBox.x + drawBox.w, drawBox.y, nineSliceSize, drawBox.h],
-				[0, nineSliceSize + baseSize.h, nineSliceSize, nineSliceSize, drawBox.x - nineSliceSize, drawBox.y + drawBox.h, nineSliceSize, nineSliceSize],
-				[nineSliceSize, nineSliceSize + baseSize.h, baseSize.w, nineSliceSize, drawBox.x, drawBox.y + drawBox.h, drawBox.w, nineSliceSize],
-				[nineSliceSize + baseSize.w, nineSliceSize + baseSize.h, nineSliceSize, nineSliceSize, drawBox.x + drawBox.w, drawBox.y + drawBox.h, nineSliceSize, nineSliceSize],
-			]
-			for (const slice of slices) {
-				drawImg(this[name].img, ...slice);
-				ctx.restore();
-			}
-
+		this[name][Symbol.iterator] = function* () {
+			yield this.img;
+			yield this.drawX;
+			yield this.drawY;
+			yield this.drawWidth;
+			yield this.drawHeight;
 		}
-	}
-	static drawEreaInit(x, y, startX, startY, endX, endY) {
-		const drawX = x + startX;
-		const drawY = y + startY;
-		const width = endX - startX;
-		const height = endY - startY;
-
-
-		if (allElemDefined(startX, startY, endX, endY)) {
-			ctx.beginPath();
-			ctx.rect(drawX, drawY, width, height);
-			ctx.clip();
-		}
-	}
-	static drawEreaInit(X, Y, width, height) {
-		if (allElemDefined(X, Y, width, height)) {
-			ctx.beginPath();
-			ctx.rect(X, Y, width, height);
-			ctx.clip();
+		this[name].draw = (x, y, ox = 0, oy = 0, ow = 0, oh = 0) => {
+			drawImg(this[name].img, this[name].drawX + ox, this[name].drawY + oy, this[name].drawWidth + ow, this[name].drawHeight + oh, Math.round(x), Math.round(y));
 		}
 	}
 	static init() {
@@ -2323,7 +2066,6 @@ class Sprite {
 		Sprite.register("cursorBusy0", img.gui, 40, 0, 8, 8);
 		Sprite.register("cursorBusy1", img.gui, 40, 8, 8, 8);
 		Sprite.register("itemHealIcon", img.gui, 224, 0, 32, 0);
-		Sprite.registerNineSlice("prompt", img.gui_prompt, 8, 8, 8);
 	}
 
 }
@@ -2448,6 +2190,8 @@ class JsonUI {
 		if (this.ShouldCloseAnim(this.index)) this.inactiveTime++;
 		if (this.openTime >= this.openDelay) this.opened = true;
 		if (this.closeTime >= this.closeDelay) this.closed = true;
+
+		this.draw();
 	}
 	draw() {
 
@@ -2667,8 +2411,8 @@ class JsonUI {
 
 		if (UIContent.trans !== undefined) {
 			if (UIContent.trans.tickBefore !== undefined) trigger(UIContent.trans.tickBefore);
-			for (let transkey of Object.keys(KeyGroups).filter((key) => key in UIContent.trans)) {
-				if (KeyGroups[transkey]) trigger(UIContent.trans[transkey]);
+			for (let transkey of Object.keys(key_groups).filter((key) => key in UIContent.trans)) {
+				if (key_groups_hold[transkey]) trigger(UIContent.trans[transkey]);
 			}
 			if (UIContent.trans.tickAfter !== undefined) trigger(UIContent.trans.tickAfter);
 
@@ -2676,17 +2420,17 @@ class JsonUI {
 		if (UIContent.type === "list" && Game.UIListScrollable.includes(UIContent?.renderer)) {
 			let data = this.data[UIContent.id];
 			if (true) {
-				if (keyGroups.down.hold && data.select < Items.length - 1) data.select++
-				if (keyGroups.up.hold && data.select > 0) data.select--
-				if (keyGroups.down.hold || keyGroups.up) PlaySound("select", "gui");
+				if (key_groups_hold.down && data.select < Items.length - 1) data.select++
+				if (key_groups_hold.up && data.select > 0) data.select--
+				if (key_groups_hold.down || key_groups_hold.up) PlaySound("select", "gui");
 
 				if (data.select * 16 - data.scroll <= 0)
 					data.scroll += Math.floor((data.select * 16 - data.scroll) / 2);
 				if (data.select * 16 - data.scroll + 16 > new Vec2(...UIContent.size).y)
 					data.scroll += Math.ceil((data.select * 16 - data.scroll + 16 - new Vec2(...UIContent.size).y) / 2);
 			} else {
-				if (keyGroups.down.hold) data.scroll++;
-				if (keyGroups.up.hold) data.scroll--;
+				if (key_groups_hold.down) data.scroll++;
+				if (key_groups_hold.up) data.scroll--;
 			}
 		}
 
@@ -2859,15 +2603,10 @@ function jsonui_main() {
 		UIData.closeCheck();
 	}
 	JsonUIOpen[JsonUIOpen.length - 1].control();
-
-}
-function jsonui_draw() {
-	for (let UIData of JsonUIOpen) {
-		UIData.draw();
-	}
 	JsonUIOpen[JsonUIOpen.length - 1].cursorTick();
 
 	JsonUICursor.draw();
+
 }
 
 function jsonui_active(UIIndex) {
@@ -2934,323 +2673,13 @@ let JsonUIOpen = new Array();
 
 let JsonUICursor = new Cursor();
 
-class RioxUiMain {
-	static tickmain() {
-		this.keyPress();
-		for (const ui of this.uiList) {
-			ui.tick();
-		}
-	}
-	static drawmain() {
-		for (const ui of this.uiList) {
-			ui.drawMain();
-		}
-		this.drawCursor();
-	}
-	static keyPress() {
-		const ui = this.uiList.findLast((element) => !element.exited);
-		for (const [key, value] of Object.entries(keyGroups)) {
-			if (value.press) ui.keyPressed(key, "press");
-			if (value.down) ui.keyPressed(key, "down");
-			if (value.hold) ui.keyPressed(key, "hold");
-		}
-	}
-	static getUiof(index) {
-		return RioxUiMain.uiList[index];
-	}
-	static uiList = new Array();
-	static cursor = new Cursor();
-	static drawCursor() {
-		const ui = this.uiList.findLast((element) => !element.exited);
-		const cursorPos = ui.getCursorPos();
-		if (cursorPos) this.cursor.push(cursorPos);
-		this.cursor.draw();
-	}
-
-}
-
-class RioxUiAnim {
-	/**
-	 * 
-	 * @param {second} second 
-	 * @param {number} size 
-	 * @param {number} offset 
-	 * @param {second} delay 
-	 * @param {RioxUiAnimType} type 
-	 * @param {Easings} easing 
-	 */
-	loop = false;
-	constructor(second, size, offset, delay, type, easing) {
-		this.second = second;
-		this.size = size;
-		this.offset = offset;
-		this.delay = delay;
-		this.type = type;
-		this.easing = easing;
-		this.now = Date.now() / 1000;
-	}
-	get end() {
-		return this.now + this.second;
-	}
-	getProgress() {
-		return (1 - (this.end - Date.now() / 1000 + this.delay) / this.second).limit(0, 1);
-	}
-	getAnimationValue() {
-		return (-1 + this.easing(this.getProgress())) * this.size + this.offset;
-	}
-	animatedPos(pos) {
-		switch (this.type) {
-			case RioxUiAnimType.posX:
-				pos.x += this.getAnimationValue();
-				break;
-			case RioxUiAnimType.posY:
-				pos.y += this.getAnimationValue();
-				break;
-		}
-		return pos;
-	}
-	static animatedPos(pos, anims) {
-		anims = Array.toArray(anims);
-		for (const anim of anims) {
-			pos = anim.animatedPos(pos);
-		}
-		return pos;
-	}
-}
-class RioxUiAnimType {
-	static register(name) {
-		RioxUiAnimType[name] = Symbol(name);
-	}
-}
-RioxUiAnimType.register("posX");
-RioxUiAnimType.register("posY");
-
-class Easings {
-	static none(x) {
-		return x;
-	}
-	static easeOutElastic(x) {
-		const c4 = (2 * Math.PI) / 3;
-
-		return x === 0
-			? 0
-			: x === 1
-				? 1
-				: Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
-	}
-	static easeOutExpo(x) {
-		return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
-	}
-	static easeInExpo(x) {
-		return x === 0 ? 0 : Math.pow(2, 10 * x - 10);
-	}
-}
-
-class RioxUiBase {
-	exited = false;
-	static openUi() {
-		return new this().openUi();
-	}
-	openUi() {
-		return RioxUiMain.uiList.push(this);
-	}
-	drawMain(drawPos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}, animations = []) {
-	}
-	drawChild(arg, child, relpos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}, animations = []) {
-		const [posPar = new pos(0, 0), sizePar = new Size(ScreenWidth, ScreenHeight), variablePar = {}, animationsPar = []] = arg;
-		child.drawMain(new pos(posPar.x + relpos.x, posPar.y + relpos.y), size, variable, animations);
-	}
-	keyPressed(keyGroup, type) {
+class RioxUiTemplate {
+	constructor() {
 
 	}
-	tick() {
-		if (this.exited && this.exitCondition()) this.exit();
-	}
-	exitCondition() {
-		return true;
-	}
-	mayExitCondition() {
-		return true;
-	}
-	exit() {
-		RioxUiMain.uiList.splice(this.getIndex(), 1);
-	}
-	getIndex() {
-		return RioxUiMain.uiList.indexOf(this);
-	}
-	mayExit() {
-		if (!this.mayExitCondition()) return false;
-		this.exited = true;
-		return true;
-	}
-	getCursorPos() {
-		return false;
-	}
-}
-
-class RioxUiLavelBase extends RioxUiBase {
-	drawMain(drawPos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}, animations = []) {
-		drawPos = RioxUiAnim.animatedPos(drawPos, animations);
-		drawTextFont(variable.text ?? "", drawPos.x / 2, drawPos.y / 2, Object.assign({}, variable.textColor ?? undefined));
-	}
-}
-class RioxUiButtonBase extends RioxUiBase {
-	lavel = new RioxUiLavelBase;
-	drawMain(drawPos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}, animations = []) {
-		drawPos = RioxUiAnim.animatedPos(drawPos, animations);
-		Sprite.prompt.draw(...drawPos, ...size, new StartEnd(0, 0, 0, 0));
-		if (variable.text !== undefined)
-			this.drawChild(arguments, this.lavel, drawPos, size, variable, animations);
-	}
-}
-
-class RioxUiHud extends RioxUiBase {
-	testButton = new RioxUiButtonBase;
-	buttonAnim = new RioxUiAnim(0.1, 10, null, 0, RioxUiAnimType.posY, Easings.easeInExpo);
-	drawMain(drawPos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}, animations = []) {
-		this.drawChild(arguments, this.testButton, new pos(8, 8), new Size(48, 8), { text: "placeholder and test" }, this.buttonAnim);
-	}
-	keyPressed(keyGroup, type) {
-		switch (keyGroup) {
-			case "menu":
-				if (type === "down")
-					new RioxUiMenu().openUi();
-				break;
-			default:
-				break;
-		}
-	}
-}
-
-class RioxUiMenu extends RioxUiBase {
-	menuTabParty = new RioxUiButtonBase;
-	menuTabPartyAnim = new RioxUiAnim(0.1, 64, 0, 0.0, RioxUiAnimType.posX, Easings.easeOutExpo);
-	menuTabItems = new RioxUiButtonBase;
-	menuTabItemsAnim = new RioxUiAnim(0.1, 64, 0, 0.015, RioxUiAnimType.posX, Easings.easeOutExpo);
-	menuTabEquip = new RioxUiButtonBase;
-	menuTabEquipAnim = new RioxUiAnim(0.1, 64, 0, 0.030, RioxUiAnimType.posX, Easings.easeOutExpo);
-	menuTabConfig = new RioxUiButtonBase;
-	menuTabConfigAnim = new RioxUiAnim(0.1, 64, 0, 0.045, RioxUiAnimType.posX, Easings.easeOutExpo);
-	menuTabSave = new RioxUiButtonBase;
-	menuTabSaveAnim = new RioxUiAnim(0.1, 64, 0, 0.060, RioxUiAnimType.posX, Easings.easeOutExpo);
-	selectTabIndex = 0;
-	tabs = [this.menuTabParty, this.menuTabItems, this.menuTabEquip, this.menuTabConfig, this.menuTabSave];
-	drawMain(drawPos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}, animations = []) {
-		this.drawChild(arguments, this.menuTabParty, new pos(16, 16), new Size(48, 8), Object.assign({}, variable, { text: "Party" }), this.menuTabPartyAnim);
-		this.drawChild(arguments, this.menuTabItems, new pos(16, 32), new Size(48, 8), Object.assign({}, variable, { text: "Items" }), this.menuTabItemsAnim);
-		this.drawChild(arguments, this.menuTabEquip, new pos(16, 48), new Size(48, 8), Object.assign({}, variable, { text: "Equip" }), this.menuTabEquipAnim);
-		this.drawChild(arguments, this.menuTabConfig, new pos(16, 64), new Size(48, 8), Object.assign({}, variable, { text: "Config" }), this.menuTabConfigAnim);
-		this.drawChild(arguments, this.menuTabSave, new pos(16, 80), new Size(48, 8), Object.assign({}, variable, { text: "Save" }), this.menuTabSaveAnim);
-	}
-	keyPressed(keyGroup, type) {
-		if (type === "hold") {
-			switch (keyGroup) {
-				case "up":
-					this.selectTabIndexMoveBy(-1);
-					break;
-				case "down":
-					this.selectTabIndexMoveBy(1);
-					break;
-				case "right":
-				case "confirm":
-					this.tabClick(this.selectTab);
-				default:
-					break;
-			}
-		}
-		if (keyGroup === "menu" || keyGroup === "left" || keyGroup === "cancel")
-			if (type === "down")
-				this.mayExit();
+	drawMain() {
 
 	}
-	mayExit() {
-		if (!this.mayExitCondition()) return false;
-		super.mayExit();
-		this.menuTabPartyAnim = new RioxUiAnim(0.1, -64, -64, 0.0, RioxUiAnimType.posX, Easings.easeInExpo);
-		this.menuTabItemsAnim = new RioxUiAnim(0.1, -64, -64, 0.015, RioxUiAnimType.posX, Easings.easeInExpo);
-		this.menuTabEquipAnim = new RioxUiAnim(0.1, -64, -64, 0.030, RioxUiAnimType.posX, Easings.easeInExpo);
-		this.menuTabConfigAnim = new RioxUiAnim(0.1, -64, -64, 0.045, RioxUiAnimType.posX, Easings.easeInExpo);
-		this.menuTabSaveAnim = new RioxUiAnim(0.1, -64, -64, 0.060, RioxUiAnimType.posX, Easings.easeInExpo);
-	}
-	exitCondition() {
-		return this.menuTabSaveAnim.getProgress() >= 1;
-	}
-	selectTabIndexMoveBy(value) {
-		const beforeIndex = this.selectTabIndex;
-		this.selectTabIndex += value;
-		this.selectTabIndex = this.selectTabIndex.limit(0, this.tabs.length - 1);
-		return beforeIndex !== this.selectTabIndex;
-	}
-	selectTabIndexMoveTo(value) {
-		const beforeIndex = this.selectTabIndex;
-		this.selectTabIndex = value.limit(0, this.tabs.length - 1);//Array.prototype.lastIndex??? 
-		return beforeIndex !== this.selectTabIndex;
-	}
-	get selectTab() {
-		return this.tabs[this.selectTabIndex];
-	}
-	tabClick(tab) {
-		switch (tab) {
-			case this.menuTabItems:
-				RioxUiMenuTabItems.openUi();
-			default:
-			//console.warn(tab);
-		}
-	}
-	getCursorPos() {
-		return new pos(8, this.selectTabIndex * 16 + 16);
-	}
-}
-
-class RioxUiInventoryItem extends RioxUiBase {
-	drawMain(drawPos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}, animations = []) {
-		drawPos = RioxUiAnim.animatedPos(drawPos, animations);
-		Sprite.drawByAtlas(img.items, getTileAtlasXY(variable.icon, 0), getTileAtlasXY(variable.icon, 1), 16, 16, ...drawPos, variable.erea);
-	}
-}
-
-class RioxUiMenuTabItems extends RioxUiBase {
-	rootPanel = new RioxUiButtonBase;
-	rootPanelAnim = new RioxUiAnim(0.1, 64, 0, 0.0, RioxUiAnimType.posX, Easings.easeOutExpo);
-	item = new RioxUiInventoryItem;
-	drawMain(drawPos = new pos(0, 0), size = new Size(ScreenWidth, ScreenHeight), variable = {}, animations = []) {
-		this.drawChild(arguments, this.rootPanel, new pos(24, 24), new Size(240, 144), Object.assign({}, variable), this.rootPanelAnim);
-		for (const index in Items) {
-			const item = Items[index];
-			variable = Object.assign({}, variable, { erea: new Rect(24, 24, 240, 144) });
-			this.drawChild(arguments, this.item, new pos(24, index * 16 + 24), new Size(16, 16), Object.assign({}, variable, { icon: item.icon }), this.rootPanelAnim);
-		}
-	}
-	keyPressed(keyGroup, type) {
-		if (type === "hold") {
-			switch (keyGroup) {
-				case "up":
-					this.selectTabIndexMoveBy(-1);
-					break;
-				case "down":
-					this.selectTabIndexMoveBy(1);
-					break;
-				case "right":
-				case "confirm":
-					this.tabClick(this.selectTab);
-				default:
-					break;
-			}
-		}
-		if (keyGroup === "menu" || keyGroup === "left" || keyGroup === "cancel")
-			if (type === "down")
-				this.mayExit();
-
-	}
-	mayExit() {
-		if (!this.mayExitCondition()) return false;
-		super.mayExit();
-		this.rootPanelAnim = new RioxUiAnim(0.1, -64, -64, 0.0, RioxUiAnimType.posX, Easings.easeInExpo);
-	}
-	exitCondition() {
-		return this.rootPanelAnim.getProgress() >= 1;
-	}
-
 }
 
 //言語設定
@@ -3261,43 +2690,22 @@ let lang = "en_us";
 document.addEventListener("readystatechange", loadingassets)
 loadingScreenMain();
 
-
-function loop() {
-	let currentTime = Date.now();
-	let updated = false;
-	while (currentTime - prevTime > targetInterval * 0.5) {
-		MAIN();
-		updated = true;
-		prevTime += targetInterval;
-		const now = Date.now();
-		const updateTime = now - currentTime;
-		if (updateTime > targetInterval * UPDATE_LOAD_COEFF) {
-			// overloaded
-			if (prevTime < now - targetInterval) {
-				// do not accumulate too much
-				prevTime = now - targetInterval;
-			}
-			break;
-		}
-	}
-	if (updated) {
-		DRAW();
-	}
-	loopID = requestAnimationFrame(loop);
-}
-
-
-function MAIN() {
+function main() {
 
 	//FPS計測
+	fpsCount();
+	main_proc_time(true);
 
 	Game.lang = Object.assign(loadedjson.en_us, loadedjson[lang]);
+
+	//キャンバスの初期化
+	ctx.clearRect(0, 0, ScreenWidth, ScreenHeight);
 
 	keycheck();
 	GamepadUpdate();
 	touch_button_proc();
 
-	if (Game.PlayingScreen) PLAYMAIN();
+	if (Game.PlayingScreen) GAMEMAIN();
 
 	if (!Game.PlayingScreen) TITLEMAIN();
 
@@ -3305,22 +2713,11 @@ function MAIN() {
 
 
 	//タイマー
-	Game.sessionTime++;
-
-}
-
-function DRAW() {
-	fpsCount();
-	main_proc_time(true);
-
-	ctx.clearRect(0, 0, ScreenWidth, ScreenHeight);
-
-	if (Game.PlayingScreen) PLAYDRAW();
-
-	if (!Game.PlayingScreen) TITLEDRAW();
+	timer++;
 
 	main_proc_time(false);
-
+	//ループ
+	if (!OneFrameOnly) loopID = requestAnimationFrame(main);
 }
 
 function loadingScreenMain() {
@@ -3345,10 +2742,10 @@ async function game_start_proc() {
 
 	Item.init();
 	Sprite.init();
+	EntityFamilies.init();
 	Entity.init();
 
-	// jsonui_open("hud");
-
+	jsonui_open("hud")
 
 	//アンロード時に確認メッセージを表示する
 	if (config.beforeunload) beforeUnloadEnventID = setTimeout(beforeUnloadOn, 1000 * 10);
@@ -3357,7 +2754,8 @@ async function game_start_proc() {
 	gamestarted = true;
 }
 
-function PLAYMAIN() {
+function GAMEMAIN() {
+
 
 	if (!IsLoading) Game.map = Object.assign(loadedjson.Map, loadedjson.MapMeta);
 	playTime = SavedPlayTime + (new Date() - GameStartedTime);
@@ -3372,50 +2770,51 @@ function PLAYMAIN() {
 
 	enemy_spawn_event();
 
-	//jsonui_main();
 
-	RioxUiMain.tickmain();
-
-}
-
-function PLAYDRAW() {
 	Cam.tick();
+
 
 	game_draw();
 
-	//jsonui_draw();
 
-	RioxUiMain.drawmain();
+
+	jsonui_main();
 
 
 	//デバッグ
-	if (!Game.isRelease) debug_proc();
+	if (debug.visible) debug_proc();
 }
 
 function TITLEMAIN() {
 	title_gui_proc();
-}
-function TITLEDRAW() {
 	title_gui_draw();
 }
 
-function keydownfunc(e) {
+function keydownfunc(parameter) {
 	touchmode = false;
 
-	keyList[e.keyCode].change(true);
+	let key_code = parameter.keyCode;
+	if (keys[key_code].press) keys[key_code].pressLag = true;
+	keys[key_code].press = true;
+	keys[key_code].timer++;
+	keys[key_code].timen = timer;
+	if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].time = timer;
+	if (keys[key_code].press && !keys[key_code].pressLag) keys[key_code].timer = timer;
 
-	if (key_arrow.includes(e.keyCode)) e.preventDefault();
+	if (key_arrow.includes(key_code)) parameter.preventDefault();
 
-	if (debug.visible && e.keyCode == 80) cancelAnimationFrame(loopID);
-	if (debug.visible && e.keyCode == 79) { OneFrameOnly = true; requestAnimationFrame(loop); };
+	if (debug.visible && key_code == 80) cancelAnimationFrame(loopID);
+	if (debug.visible && key_code == 79) { OneFrameOnly = true; requestAnimationFrame(main); };
 }
 
-function keyupfunc(e) {
-	keyList[e.keyCode].change(false);
+function keyupfunc(parameter) {
+	let key_code = parameter.keyCode
+	keys[key_code].press = false;
+	keys[key_code].pressLag = false;
+	keys[key_code].timer = 0;
 
 
-
-	if (debug.visible && e.keyCode == 80) { OneFrameOnly = false; requestAnimationFrame(loop); };
+	if (debug.visible && key_code == 80) { OneFrameOnly = false; requestAnimationFrame(main); };
 }
 
 function updateTouch(event) {
@@ -3426,15 +2825,14 @@ function updateTouch(event) {
 	let y = clientRect.top;
 
 	let i = 0;
-	touchList.splice(0, Infinity)
+	touchpos.splice(0, Infinity)
 	for (const touch of event.touches) {
-		//console.log(touch)
 		let obj = {
 			"x": touch.clientX - clientRect.left,
 			"y": touch.clientY - clientRect.top,
 			"timer": timer
 		}
-		touchList[i] = obj;
+		touchpos[i] = obj;
 		i++;
 	}
 
@@ -3506,44 +2904,61 @@ function touch_button_proc() {
 }
 
 function keycheck() {
-	for (const key of keyList) {
-		key.tick();
-	}
-	for (const keyGroup of Object.values(keyGroups)) {
-		keyGroup.tick();
-	}
 
-	return
 
-	for (const key of keyList) {
-		key.down = key.timer == timer;
-		key.hold = key.presstime == 0 || key.presstime > 10 && key.presstime % 2 == 0;
-		key.press ? key.presstime++ : key.presstime = -1;
+	for (const i in keys) {
+		keys[i].timer == timer ? keys[i].down = true : keys[i].down = false;
+		keys[i].presstime == 0 || keys[i].presstime > 10 && keys[i].presstime % 2 == 0 ? keys[i].hold = true : keys[i].hold = false;
+		keys[i].press ? keys[i].presstime++ : keys[i].presstime = -1;
 	}
 
 	for (const i in touchpos) {
-		touchtime[i] ??= 0;
+		if (typeof touchtime[i] === "undefined") touchtime[i] = 0;
 		touchtime[i]++;
 	}
 	for (const i in touchtime) {
-		touchtime[i] ??= 0;
+		if (typeof touchpos[i] === "undefined") touchtime[i] = 0;
 	}
 
 
 
 	for (const i in key_groups_list) {
+		/*
+		if (typeof key_groups[i] == "undefined") key_groups[i] = {
+			"press": false,
+			"down": false
+		}
+		let press_triggered = false;
+		let down_triggered = false;
+		let hold_triggered = false;
+			    
+		for (const j in key_groups_list[i]) {
+			if (keys[key_groups_list[i][j]].press) key_groups[i] = true;
+			if (keys[key_groups_list[i][j]].press) press_triggered = true;
+			if (!press_triggered) key_groups[i] = false;
+			    
+			if (keys[key_groups_list[i][j]].down) key_groups_down[i] = true;
+			if (keys[key_groups_list[i][j]].down) down_triggered = true;
+			if (!down_triggered) key_groups_down[i] = false;
+			    
+			if (keys[key_groups_list[i][j]].hold) key_groups_hold[i] = true;
+			if (keys[key_groups_list[i][j]].hold) hold_triggered = true;
+			if (!hold_triggered) key_groups_hold[i] = false;
+		}
+				*/
 		key_groups[i] = false;
 		key_groups_down[i] = false;
 		key_groups_hold[i] = false;
 		for (const j in key_groups_list[i]) {
-			if (keyList[key_groups_list[i][j]].press) key_groups[i] = true;
+			if (keys[key_groups_list[i][j]].press) key_groups[i] = true;
 
-			if (keyList[key_groups_list[i][j]].down) key_groups_down[i] = true;
+			if (keys[key_groups_list[i][j]].down) key_groups_down[i] = true;
 
-			if (keyList[key_groups_list[i][j]].hold) key_groups_hold[i] = true;
+			if (keys[key_groups_list[i][j]].hold) key_groups_hold[i] = true;
 		}
 
 		for (const j in touchButton) {
+
 			if (touchButton[i]) key_groups[i] = true;
 			if (touchButton[i] && touchButtonDown[i]) key_groups_down[i] = true;
 			if (touchButton[i] && touchButtonHold[i]) key_groups_hold[i] = true;
@@ -3583,14 +2998,12 @@ function getPlayerAtlasXY(id, xy) {
 	return playerAtlas[id] * 16
 }
 
-/*
 function ElemId(id) {
 	return document.getElementById(id);
 }
 function ElemIdRepText(id, text) {
 	return document.getElementById(id).innerText = String(text);
 }
-*/
 /**
  * 
  * @param {number} min 
@@ -3660,14 +3073,12 @@ function zeroPadding(NUM, LEN) {
 	return (Array(LEN).join('0') + NUM).slice(-LEN);
 }
 
-
 /**
  * @function 切り捨てます
  * @param {*} num 切り捨てる数値
  * @param {*} k 切り捨てる桁 e.g. 8.161, -2= 8.16
  * @returns 切り捨てた数値
  */
-/*
 function floor(num, k = 0) {
 	if (Math.sign(k) === 1) return Math.floor(num / 10 ** k) * 10 ** k;
 
@@ -3675,7 +3086,7 @@ function floor(num, k = 0) {
 
 	if (k == 0) return Math.floor(num);
 }
-*/
+
 /**
  * 範囲制限します
  * @param {number} input
@@ -3683,11 +3094,9 @@ function floor(num, k = 0) {
  * @param {number} max 
  * @returns 範囲制限した数値
  */
-/*
 function limit(input, min, max) {
 	return Math.min(Math.max(min, input), max);
 }
-*/
 
 function hsv2rgb(hsv) {// あざす https://lab.syncer.jp/Web/JavaScript/Snippet/67/
 	let h = hsv[0] / 60;
@@ -3806,7 +3215,7 @@ async function loadingassets() {
 
 	if (load.ejectLog) console.log("game is starting");
 	game_start_proc();
-	loopID = requestAnimationFrame(loop);
+	loopID = requestAnimationFrame(main);
 
 	return;
 	//よしゃあああaaikrretataaaaaaaaa　2023/08/07 20:38
@@ -3882,7 +3291,6 @@ async function loadJson(filename, name, useReviver) {
 		let startTime = new Date().getTime();
 
 		const response = await fetch(filename)
-
 		const jsonObject = await response.json();
 
 		let endTime = new Date().getTime();
@@ -4088,7 +3496,7 @@ async function savedataload(dir = true) {
 	config = obj.config;
 	LastSavedTime = new Date(obj.LastSavedTime);
 	GameStartedTime = new Date();
-	//player_movelog_reset()
+	player_movelog_reset()
 	mapchange(player.mapID, player.x, player.y, false)
 
 	return LastSavedFileData;
@@ -4192,20 +3600,18 @@ function calcAngleDegrees(x, y) {
 	return Math.atan2(y, x) * 180 / Math.PI;
 }
 
-function getNearestEntityDistance(x, y, instance) {
+function getNearestEntityDistance(x, y, family) {
 	let distance = new Array();
-	for (const entity of entities) {
-		if (!entity instanceof instance) continue;
+	for (const entity of entities.filter(value => value.hasFamily(family))) {
 		distance.push(getDistance(x, y, entity.pos.x, entity.pos.y));
 	}
 	return Math.min.apply(null, distance);
 
 }
-function getNearestEntity(x, y, instance) {
+function getNearestEntity(x, y, family) {
 	//if (typeof d == "undefined") d = false;
 	let distance = new Array();
-	for (const entity of entities) {
-		if (!entity instanceof instance) continue;
+	for (const entity of entities.filter(value => value.hasFamily(family))) {
 		distance.push(getDistance(x, y, entity.pos.x, entity.pos.y));
 	}
 	return distance.indexOf(Math.min.apply(null, distance));
@@ -4219,7 +3625,7 @@ function getDistance(ax, ay, bx, by) {
 //数字のindex番目取得
 function NumberofIndex(num, index, shinsu = 10) {
 	//if (typeof shinsu == "undefined") shinsu = 10;
-	return num.toString(shinsu)[index];
+	return (String(num.toString(shinsu))[index]);
 }
 
 //アニメーションいろいろ(0.0～1.0)
@@ -4267,9 +3673,9 @@ function replaceHitboxTile(bool, x, y) {
 }
 
 function allElemDefined(...elem) {
-	if (elem === undefined || elem === null) return false;
+	if (elem == undefined) return false;
 
-	return elem.every(element => element !== undefined && element !== null);
+	return elem.every(element => element !== undefined);
 }
 
 //当たり判定
@@ -4343,11 +3749,11 @@ function hitbox_enemy_rect(ax, ay, aw, ah, color = "black") {
 	return hit;
 }
 
-function hitbox_entity_rect(ax, ay, aw, ah, instance, color = "black") {
+function hitbox_entity_rect(ax, ay, aw, ah, family, color = "black") {
 
 	let hit = new Array();
 
-	for (const entity of entities.filter(value => allElemDefined(instance) ? true : value instanceof instance)) {
+	for (const entity of entities.filter(value => value.hasFamily(family))) {
 		if (hitbox_rect(entity.pos.x, entity.pos.y, entity.size.w, entity.size.h, ax, ay, aw, ah, color))
 			hit.push(entity);
 	}
@@ -4367,7 +3773,7 @@ function hitbox_rema(ax, ay, aw, ah, color = "black", checktile, maplayer) {
 
 			debug_hitbox_push((x + ix) * 16, (y + iy) * 16, 16, 16, color);
 
-			let TileID = level.getTile(new tpos(x + ix, y + iy))?.layer1 ?? null;
+			let TileID = level.getTile(new pos(x + ix, y + iy))?.layer1 ?? null;
 
 			let result = {
 				x: x + ix,
@@ -4385,13 +3791,12 @@ function hitbox_rema(ax, ay, aw, ah, color = "black", checktile, maplayer) {
 function player_tick() {
 
 	if (IsLoading) return;
-	//PlayerControl.tick();
+	PlayerControl.tick();
 
 	for (const player of players) {
 		player.tick();
 	}
 
-	return
 	if (PlayerControl.pos.x != PlayerControl.movelog[0].x || PlayerControl.pos.y != PlayerControl.movelog[0].y)
 		PlayerControl.movelog.unshift(new Vec2(PlayerControl.pos.x, PlayerControl.pos.y));
 }
@@ -4515,14 +3920,6 @@ function subplayery(i) {
 	return PlayerControl.movelog[i * 16].y;
 }
 
-function subplayerx(i) {
-	return players[i].pos.x;
-}
-
-function subplayery(i) {
-	return players[i].pos.y;
-}
-
 function subplayerdrawx(i) {
 	return subplayerx(i) - Cam.x;
 }
@@ -4573,7 +3970,7 @@ function entity_tick() {
 
 function enemy_spawn_event() {
 	//沸き上限
-	//if (getInstanceOf(entities, EntityEnemy).length >= 50) return;
+	if (Entity.getFamilies(EntityFamilies.Enemy).length >= 50) return;
 
 	for (let i = 0; i < 360; i += 3) {
 		let r = 16;
@@ -4589,11 +3986,11 @@ function enemy_spawn_check(x, y) {
 	if (Random(0, 10) < 9) return;
 
 	//敵をスポーンする場所かを調べる
-	let ID = level.getTile(new tpos(x, y));
+	let ID = level.getTile(new pos(x, y));
 	if (ID == null || typeof ID != "number") return false;
 
 	//敵が既にスポーンされてないか調べる
-	for (const enemy of entities.filter(value => value instanceof EntityEnemy)) {
+	for (const enemy of entities.filter(value => value.hasFamily("Enemy"))) {
 		if (enemy.spawn.x == x * 16 && enemy.spawn.y == y * 16) return false;
 	}
 	if (!regEntity.hasOwnProperty(ID)) return false;
@@ -4612,12 +4009,10 @@ function particle_proc() {
 }
 
 function debug_proc() {
-	if (!debug.visible) return;
-
-	if (keyList[75].press) debug.camy++;
-	if (keyList[73].press) debug.camy--;
-	if (keyList[76].press) debug.camx++;
-	if (keyList[74].press) debug.camx--;
+	if (keys[75].press) debug.camy++;
+	if (keys[73].press) debug.camy--;
+	if (keys[76].press) debug.camx++;
+	if (keys[74].press) debug.camx--;
 
 
 	//当たり判定描画の色設定
@@ -4634,8 +4029,6 @@ function debug_proc() {
 	}
 	debug.hitboxes.splice(0);
 
-	ctx.strokeRect(PlayerControl.bb.x0 - Cam.x, PlayerControl.bb.y0 - Cam.y, PlayerControl.bb.x1 - PlayerControl.bb.x0, PlayerControl.bb.y1 - PlayerControl.bb.y0)
-
 
 	//文字描画
 	draw_texts(debug.info, 64, 64)
@@ -4644,8 +4037,8 @@ function debug_proc() {
 			`FPS:${fps}`,
 			`m:${MainProcTime}ms`,
 			`t:${timer}`,
-			`e:${entities.length}`,
-			`p:${particles.length}`
+			`e:${enemy.length}`,
+			`p:${particle.length}`
 
 		]
 
@@ -4662,6 +4055,20 @@ function debug_proc() {
 		draw_texts(draw_text_debug, 64, 0)
 	}
 	draw_text("dc:" + debug.camx + "," + debug.camy, 0, 24);
+
+	if (menu.visible) {
+		{
+			let draw_text_debug = [
+				"itmsel:" + menu.item_select,
+				"scroll:" + menu.scroll
+			]
+			draw_texts(draw_text_debug, 64 + 64, 0);
+		}
+		if (menu.tab === 3 && menu.item_select[0] == 0) {
+			draw_text("timer:" + menu.config_num.timer, 128, 64 + 64);
+			draw_text("mode:" + menu.config_num.mode, 128, 64 + 64 + 8);
+		}
+	}
 
 
 	{//jsonUIselect
@@ -4690,29 +4097,23 @@ function debug_proc() {
 
 
 	//キー表示
-	for (let i = 0, j = 0; i < keyList.length; i++) {
-		const key = keyList[i]
-		if (keyList[i].press) {
+	for (let i = 0, j = 0; i < keys.length; i++) {
+		if (keys[i].press) {
 			drawTextFont(String.fromCharCode(i), 78 * 4, j * 8, {});
 			drawTextFont(`${i}`, 74 * 4, j * 8, {});
 			j++;
 		}
 	}
 	{
-		let x = 0, flag = 0;
-		for (const [name, KeyGroup] of Object.entries(keyGroups)) {
-			flag = false;
-			if (KeyGroup.press) {
-				drawTextFont(name.slice(0, 2), 68 * 4, x * 8, {});
-				flag ||= true;
+		let px = 0, dx = 0;
+		for (const key in key_groups) {
+			if (key_groups[key]) {
+				drawTextFont(key.slice(0, 2), 68 * 4, px * 8, {});
+				px++;
 			}
-			if (KeyGroup.down) {
-				drawTextFont(name.slice(0, 2), 64 * 4, x * 8, {});
-				flag ||= true;
-			}
-			if (KeyGroup.hold) {
-				drawTextFont(name.slice(0, 2), 60 * 4, x * 8, {});
-				flag ||= true;
+			if (key_groups_down[key]) {
+				drawTextFont(key.slice(0, 2), 64 * 4, dx * 8, {});
+				dx++;
 			}
 		}
 	}
@@ -4903,8 +4304,7 @@ function drawTextFont(text, textX, textY, { color = Game.colorPallet.black, alig
 	const fontOffsetFix = fontIsloaded(Font) ? 8 : 8;
 	//										dotFont:defaultFont
 
-	text = text.toString();
-	//text = replaceUnsupportedCharacters(String(text), Font);
+	text = replaceUnsupportedCharacters(String(text), Font);
 
 	ctx.font = `${fontSize * fontSIzeExpand}px ${Font}`; // sans-serif
 	ctx.fillStyle = color;
@@ -5037,10 +4437,6 @@ function getDrawPosY(pos) {
 	return pos - Cam.y;
 }
 
-function getDrawPos(pos, offset) {
-	return new Vec2(pos.x + offset.x - Cam.x, pos.y + offset.y - Cam.y);
-}
-
 function game_draw() {
 
 	draw_tiles("layer1");
@@ -5083,8 +4479,8 @@ function DrawSprite(i, x, y, ox = 0, oy = 0, ow = 0, oh = 0) {
  * 
  */
 function drawImg(...img) {
-	let get = i => img[i] === undefined ? undefined : Math.floor(img[i]);
-	ctx.drawImage(img[0], get(1), get(2), get(3), get(4), get(5), get(6), get(7) ?? get(3), get(8) ?? get(4))
+	let get = i => Math.floor(img[i])
+	ctx.drawImage(img[0], get(1), get(2), get(3), get(4), get(5), get(6), get(3), get(4))
 }
 
 function draw_tiles(maplayer) {
@@ -5094,15 +4490,14 @@ function draw_tiles(maplayer) {
 
 	for (let y = 0; y < 13; y++) {
 		for (let x = 0; x < 21; x++) {
-			let tileID = level.getTile(new tpos(x + plx, y + ply))?.[maplayer];
+			let tileID = level.getTile(new pos(x + plx, y + ply))?.[maplayer];
 
-			//const drawOffsetFix = value => Math.sign(value) < 0 ? 16 + (1 + value) % 16 - 1 : value % 16 - 1;
-			const drawOffsetFix = value => ((value < 0 && value % 16 === 0 ? 1 : 0) + value) % 16 + (value < 0 ? 16 : 0);
+			const drawOffsetFix = value => Math.sign(value) < 0 ? 16 + (1 + value) % 16 : value % 16;
 			const drawOffset = new Vec2(x * 16 - drawOffsetFix(Cam.x), y * 16 - drawOffsetFix(Cam.y));
 			const drawSize = new Vec2(16, 16);
 
 			//軽量化
-			if (!Game.DontDrawTile.includes(tileID))
+			if (!Game.DontDrawTIle.includes(tileID))
 				ctx.drawImage(img.tiles, getTileAtlasXY(tileID, 0), getTileAtlasXY(tileID, 1), ...drawSize, ...drawOffset, ...drawSize);
 
 		}
@@ -5175,13 +4570,13 @@ function particle_death_offset(i) {
 function title_gui_proc() {
 	//if (IsLoading) return false;
 
-	if (keyGroups.up.down && title_gui.item_select > 0) title_gui.item_select--;
-	if (keyGroups.down.down && title_gui.item_select < Game.title_items.length - 1) title_gui.item_select++;
+	if (key_groups_down.up && title_gui.item_select > 0) title_gui.item_select--;
+	if (key_groups_down.down && title_gui.item_select < Game.title_items.length - 1) title_gui.item_select++;
 
-	if (keyGroups.confirm.down || keyGroups.right.down) {
-		Game.NewGame();
-		return
-		Game.LoadGame();
+	if (key_groups_down.confirm || key_groups_down.right) {
+		if (title_gui.item_select == 0) Game.NewGame();
+
+		if (title_gui.item_select == 1) Game.LoadGame();
 	}
 }
 
@@ -5315,7 +4710,6 @@ function PlaySound(src = "select", group = "other", DoNotStop = false) {
 
 //AIマジ感謝
 function isCharacterSupportedByFont(character, fontFamily) {
-	if (!Game.characterCheck) return true;
 	// canvas要素を動的に作成
 	//var canvas = document.createElement('canvas');
 	//var context = canvas.getContext('2d');
@@ -5357,21 +4751,8 @@ function replaceUnsupportedCharacters(text, fontFamily) {
 }
 
 function fontIsloaded(fontFamily) {
-	if (!Game.characterCheck) return true;
 	// これでフォントが読み込みされているかを判定しています //
 	// 読み込みされていない場合はfalseを返します           //
 	// なんか動くのでヨシ!                               //ずれんな
 	return isCharacterSupportedByFont("a", fontFamily);
 }
-
-function getInstanceOf(array, instance) {
-	console.warn("")
-	return array.filter(value => allElemDefined(instance) ? true : value instanceof instance);
-}
-
-Number.prototype.between = function (min, max) {
-	return this >= min && this <= max;
-};
-Number.prototype.limit = function (min, max) {
-	return Math.min(Math.max(min, this), max);
-};

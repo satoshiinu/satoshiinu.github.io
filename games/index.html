@@ -16,9 +16,12 @@
     <input id="msg2" type="button" value="custmsg" onclick="gui.message.view(prompt('input text'));" />
     <input id="debug" type="button" value="debug" onclick="debug.visible = !debug.visible;" />
     <input id="reload" type="button" value="reload" onclick="loadingassets();" />
+    <input id="newGame" type="button" value="newGame" onclick="Game.NewGame();" />
 
     <div>
-        jsonui<br>
+        jsonui
+    </div>
+    <div>
 
         <input type="button" value="close"
             onclick="JsonUIOpen[String(document.getElementById('DebugJsonUITestNum').value)].close();" />
@@ -26,14 +29,24 @@
 
         <input type="button" value="open"
             onclick="jsonui_open(String(document.getElementById('DebugJsonUIOpenID').value));" />
-        <input type="text" value="menu" size="10" id="DebugJsonUIOpenID"><br>//DebugUIOpener
+        <input type="text" value="menu" size="10" id="DebugJsonUIOpenID"><br>
     </div>
     <div>
-        loadcount<br>
+        loadcount
+    </div>
+    <div>
 
         img<span id="imgLoadCount"></span>
         json<span id="jsonLoadCount"></span>
         sound<span id="soundLoadCount"></span>
+    </div>
+    <div>
+        eval
+        <input id="evalInput" type="text">
+        <input type="button" value="execute" onclick="evalOutput.innerText=eval(evalInput.value)">
+    </div>
+    <div>
+        <span id="evalOutput"></span>
     </div>
 
     <h1 style="font-family: 'Proj23Fon';">abc</h1>
