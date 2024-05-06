@@ -8,6 +8,12 @@
     box-shadow: 0 2px 4px gray;
 }
 
+.ButtonPanel {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+}
+
 .input {
     width: 10%;
     font-size: 2em;
@@ -71,12 +77,13 @@ button.input:active {
     }
 }
 
-.changelogPanel{
+.changelogPanel {
     position: absolute;
     bottom: 100px;
     visibility: hidden;
 }
-.copyrightPanel{
+
+.copyrightPanel {
     position: absolute;
     bottom: 0px;
 }
