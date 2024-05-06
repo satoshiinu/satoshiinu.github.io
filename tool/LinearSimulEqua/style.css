@@ -6,12 +6,25 @@
     position: absolute;
     left: 120px;
     box-shadow: 0 2px 4px gray;
+    padding: 0.5em;
 }
+
 
 .ButtonPanel {
     width: 100px;
     height: 100px;
     position: absolute;
+}
+
+.DescriptionPanel {
+    background-color: white;
+    border-radius: 10px;
+    left: 120px;
+    width: 40em;
+    box-shadow: 0 2px 4px gray;
+    border-spacing: 1em;
+    margin: 1em 0em;
+    padding: 0.5em;
 }
 
 .input {
@@ -79,12 +92,29 @@ button.input:active {
         position: absolute;
         left: 0px;
     }
+
+    @media screen and (max-height: 600px) {
+        .changelogPanel {
+            visibility: hidden;
+        }
+    }
+
+    .DescriptionPanel {
+        width: 100%;
+        white-space: normal;
+    }
 }
 
 .changelogPanel {
     position: absolute;
-    bottom: 100px;
-    visibility: hidden;
+    bottom: 2em;
+    /* visibility: hidden; */
+}
+
+@media screen and (max-height: 500px) {
+    .changelogPanel {
+        visibility: hidden;
+    }
 }
 
 .copyrightPanel {
