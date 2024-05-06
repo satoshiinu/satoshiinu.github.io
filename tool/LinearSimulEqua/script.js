@@ -1,3 +1,5 @@
+const fixDigits = 5;
+
 class NumXY {
     constructor(x, y) {
         this.x = x;
@@ -57,7 +59,7 @@ function linearFuncCalc(one, two) {
     result_b = -(result_a * one.x - one.y);
     //resultToInt(result_a, result_b);
 
-    return new Result(result_a, result_b);
+    return new Result(+result_a.toFixed(fixDigits), +result_b.toFixed(fixDigits));
 }
 
 function getNumByElem(xID, yID) {
