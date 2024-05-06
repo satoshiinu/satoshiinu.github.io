@@ -6,6 +6,7 @@ class NumXY {
     multi(e) {
         this.x *= e;
         this.y *= e;
+        return this;
     }
     toMultied(e) {
         return this.clone().multi(e);
@@ -31,14 +32,18 @@ class Result {
         this.b = b;
     }
     [Symbol.iterator] = function* () {
-        yield this.x;
-        yield this.y;
+        yield this.a;
+        yield this.b;
     }
 }
 
 function linearFuncCalc(one, two) {
     if (!testNumVaild(one, two)) {
-        alert("入力された値が不正です");
+        alert("値を入力してください");
+        return;
+    }
+    if (!testNumVaild(one, two)) {
+        alert("入力された値が不正です");// たぶん。。。
         return;
     }
 
@@ -84,4 +89,21 @@ function resultToInt(result_a, result_b) {
 function testNumVaild(one, two) {
     if (one.x === two.x) return false;
     return true;
+}
+function testNumInputed(one, two) {
+    if (one.x === "" || one.y === "" || two.x === "" || two.y === "") return false;
+    return true;
+}
+
+// autoInputSizeInit()
+function autoInputSizeInit() {
+    for (const elem of document.querySelectorAll("input.input")) {
+        elem.addEventListener("keyup", autoInputSizeChange);
+        elem.addEventListener("compositionend", autoInputSizeChange);
+    }
+}
+function autoInputSizeChange(event) {
+    const elem = event.srcElement;
+    const size = document.createElement("canvas").getContext('2d').measureText(elem.value).width;
+    elem.style.width = Math.max(1, size * 3) + "px";
 }
