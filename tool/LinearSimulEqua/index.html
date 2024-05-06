@@ -5,13 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="script.js" defer></script>
+    <link href="style.css" rel="stylesheet">
 </head>
 
 <body>
-    <div class=description>
+    <div class=DescriptionPanel>
         <div>𝒚が𝒙の1次関数で、そのグラフが次のような直線になるとき、𝒚を𝒙の式で表しなさい</div>
         <div>みたいな問題を解くのにつかいます</div>
         <div>暇だったので作りました悪用はしないでください</div>
+    </div>
+    <div class=DescriptionPanel>
+        <div>このページは実験的な機能(field-sizing)を使用しています Firefox Safariは非対応です</div>
+        <div>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/field-sizing#browser_compatibility">詳しくは</a>
+        </div>
     </div>
     <div class="ButtonPanel">
         <div><button class="input calcButton"
@@ -21,7 +29,6 @@
     </div>
     <div class="InputPanel">
         <div class="InputPanel1">
-            <span class="space">&nbsp;</span>
             <input type="number" id="input_y1" class="input numInput" placeholder="𝒚">
             <span class="input">=</span>
             <input type="number" id="input_x1" class="input numInput" placeholder="𝒙">
@@ -29,7 +36,6 @@
 
         </div>
         <div class="InputPanel2">
-            <span class="space">&nbsp;</span>
             <input type="number" id="input_y2" class="input numInput" placeholder="𝒚">
             <span class="input">=</span>
             <input type="number" id="input_x2" class="input numInput" placeholder="𝒙">
@@ -37,7 +43,6 @@
 
         </div>
         <div class="ResultPanel">
-            <span class="space">&nbsp;</span>
             <span class="input">(𝒂,𝒃)=</span>
             <span class="input">(</span>
             <input type="number" id="result_a" class="input numInput" placeholder="𝒂" readonly>
@@ -47,23 +52,18 @@
 
         </div>
         <div class="ResultPanel">
-            <span class="space">&nbsp;</span>
             <span class="input" style="visibility: hidden">調整する</span>
 
         </div>
     </div>
     <div class="changelogPanel">
-        <div>2023/11/22 v1.0</div>
+        <div>2023/11/22 v1.0 完成</div>
         <div>2023/12/20 v1.1 リセットボタンの追加</div>
+        <div>2024/05/06 v1.2 概要の追加 数字入れるとこの自動調整機能</div>
     </div>
     <div class="copyrightPanel">
-        <div>©Copyright 2023 Satoshiinu</div>
+        <div>©Copyright 2023-2024 Satoshiinu</div>
     </div>
 </body>
-
-<head>
-    <script src="script.js"></script>
-    <link href="style.css" rel="stylesheet">
-</head>
 
 </html>
