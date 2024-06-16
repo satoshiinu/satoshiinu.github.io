@@ -1,5 +1,6 @@
-.visual>input {
-    display: none;
+input {
+    width: 100px;
+    height: 40px;
 }
 
 .visual {
@@ -14,7 +15,7 @@
 
 #selectTile {
     padding: 0px 16px 16px;
-    margin: 10px;
+    margin: 0px;
     color: #384878;
     background-color: #ddddff;
     border: solid 5px #ccaadd;
