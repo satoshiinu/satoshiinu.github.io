@@ -83,6 +83,7 @@ class QuestUtil {
     }
     static questionWrite(quest) {
         questNameStr.innerText = quest.elem.jpName;
+        questFormulaStr.innerText = quest.elem.formula;
     }
     static answer(quest, ionType, skipped) {
         const result = quest.answer(ionType);
@@ -136,9 +137,9 @@ class Player {
     static incorrCount = 0;
     static getCorrectPerct() {
         if (this.answeredCount() === 0) return 0;
-        return this.corrCount / this.answeredCount() * 100;
+        return this.corrCount / this.getAnsweredCount() * 100;
     }
-    static answeredCount() {
+    static getAnsweredCount() {
         return this.incorrCount + this.corrCount;
     }
     static oddsUpdate() {
