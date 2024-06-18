@@ -136,7 +136,7 @@ class Player {
     static corrCount = 0;
     static incorrCount = 0;
     static getCorrectPerct() {
-        if (this.answeredCount() === 0) return 0;
+        if (this.getAnsweredCount() === 0) return 0;
         return this.corrCount / this.getAnsweredCount() * 100;
     }
     static getAnsweredCount() {
