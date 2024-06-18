@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="descPanel">
+        <span id="desc0" style="opacity:0.5;">
+            さすがに元素記号はおぼえてるよな
+        </span>
+        <span id="desc1" style="display:none;">
+            イオンドリル
+        </span>
+    </div>
+    <div id="questPanel">
+        <span id="questNameStr"></span>
+        <span id="questAfterStr">は何イオン？</span>
+    </div>
+    <div id="answerPanel">
+        <span id="answerResult"></span>
+        <span id="answerBeforeStr">正解は、</span>
+        <span id="answerElemStr"></span>
+        <sup id="answerIonStr"></sup>
+    </div>
+    <div id="userAnswerPanel">
+        <button id="oneCatAnsBtn">1価の陽イオン</button>
+        <button id="twoCatAnsBtn">2価の陽イオン</button>
+        <button id="oneAniAnsBtn">1価の陰イオン</button>
+        <button id="twoAniAnsBtn">2価の陰イオン</button>
+        </span>
+    </div>
+    <div id="nextOrSkipPanel">
+        <button id="nextOrSkipBtn">スキップ</button>
+    </div>
+    <div id="oddsPanel">
+        <span id="oddsDesc">勝算</span>
+        <span id="oddsCorr"></span>
+        <span id="oddsslashStr">/</span>
+        <span id="oddsIncorr"></span>
+        <span id="oddsBracketLStr">[</span>
+        <span id="oddsPerct"></span>
+        <span id="oddsPerctStr">%</span>
+        <span id="oddsBracketRStr">]</span>
+    </div>
+</body>
+
+</html>
