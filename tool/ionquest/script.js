@@ -1,10 +1,10 @@
-class Ion {
+class IonType {
     constructor(str, name) {
         this.str = str;
         this.name = name;
     }
 }
-class Elem {
+class Ion {
     jpName = null;
     formula = null;
     ionType = null;
@@ -18,10 +18,10 @@ class Elem {
         return this;
     }
     static type = new Array;
-    static oneCation = new Ion("+");
-    static twoCation = new Ion("2+");
-    static oneAnion = new Ion("-");
-    static twoAnion = new Ion("2-");
+    static oneCation = new IonType("+");
+    static twoCation = new IonType("2+");
+    static oneAnion = new IonType("-");
+    static twoAnion = new IonType("2-");
     static {
         new this("H", this.oneCation, "水素イオン").register();
         new this("Li", this.oneCation, "リチウムイオン").register();
@@ -48,15 +48,14 @@ class Elem {
 }
 
 class Question {
-    elem = null;
+    ion = null;
     isAnswered = false;
     constructor() {// random
-        const quests = Elem.type;
-        const quest = quests[this.randInt(0, quests.length - 1)];
-        this.elem = quest;
+        const tonType = Ion.type;
+        this.ion = tonType[this.randInt(0, tonType.length - 1)];
     }
     answer(ionType) {
-        return this.elem.ionType === ionType;
+        return this.ion.ionType === ionType;
     }
     rand(min, max) {
         return Math.random() * (max - min) + min;
@@ -74,16 +73,16 @@ class QuestUtil {
         this.nextOrSkipBtnUpdate(quest.isAnswered, quest);
         this.answerBtnLockUpdate(quest.isAnswered, quest);
 
-        oneCatAnsBtn.onclick = e => this.answer(quest, Elem.oneCation);
-        twoCatAnsBtn.onclick = e => this.answer(quest, Elem.twoCation);
-        oneAniAnsBtn.onclick = e => this.answer(quest, Elem.oneAnion);
-        twoAniAnsBtn.onclick = e => this.answer(quest, Elem.twoAnion);
+        oneCatAnsBtn.onclick = e => this.answer(quest, Ion.oneCation);
+        twoCatAnsBtn.onclick = e => this.answer(quest, Ion.twoCation);
+        oneAniAnsBtn.onclick = e => this.answer(quest, Ion.oneAnion);
+        twoAniAnsBtn.onclick = e => this.answer(quest, Ion.twoAnion);
 
         console.log(quest);
     }
     static questionWrite(quest) {
-        questNameStr.innerText = quest.elem.jpName;
-        questFormulaStr.innerText = quest.elem.formula;
+        questNameStr.innerText = quest.ion.jpName;
+        questFormulaStr.innerText = quest.ion.formula;
     }
     static answer(quest, ionType, skipped) {
         const result = quest.answer(ionType);
@@ -102,8 +101,8 @@ class QuestUtil {
     }
     static answerWrite(quest, result) {
         answerBeforeStr.style.visibility = "visible";
-        answerElemStr.innerText = quest.elem.formula;
-        answerIonStr.innerText = quest.elem.ionType.str;
+        answerElemStr.innerText = quest.ion.formula;
+        answerIonStr.innerText = quest.ion.ionType.str;
         {
             let text = result ? "正解！" : "不正解";
             answerResult.innerText = text;
