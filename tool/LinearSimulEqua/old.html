@@ -11,7 +11,7 @@
 
 <body>
     <div class=DescriptionPanel>
-        <div>そのグラフが次のような直線になるとき、𝒚を𝒙の式で表しなさい</div>
+        <div>𝒚が𝒙の1次関数で、そのグラフが次のような直線になるとき、𝒚を𝒙の式で表しなさい</div>
         <div>みたいな問題を解くのにつかいます</div>
         <div>暇だったので作りました悪用はしないでください</div>
     </div>
@@ -29,27 +29,26 @@
     </div>
     <div class="InputPanel">
         <div class="InputPanel1">
-            <span class="input">点A</span>
-            <span class="input">(</span>
-            <input type="number" id="input_x1" class="input numInput" placeholder="𝒙">
-            <span class="input">,</span>
             <input type="number" id="input_y1" class="input numInput" placeholder="𝒚">
-            <span class="input">)</span>
+            <span class="input">=</span>
+            <input type="number" id="input_x1" class="input numInput" placeholder="𝒙">
+            <span class="input">𝒂+𝒃</span>
+
         </div>
         <div class="InputPanel2">
-            <span class="input">点B</span>
-            <span class="input">(</span>
-            <input type="number" id="input_x2" class="input numInput" placeholder="𝒙">
-            <span class="input">,</span>
             <input type="number" id="input_y2" class="input numInput" placeholder="𝒚">
-            <span class="input">)</span>
+            <span class="input">=</span>
+            <input type="number" id="input_x2" class="input numInput" placeholder="𝒙">
+            <span class="input">𝒂+𝒃</span>
 
         </div>
         <div class="ResultPanel">
-            <span class="input">𝒚=</span>
-            <input type="number" id="result_a" class="input numInput" placeholder="" readonly>
-            <span class="input">𝒙+</span>
-            <input type="number" id="result_b" class="input numInput" placeholder="" readonly>
+            <span class="input">(𝒂,𝒃)=</span>
+            <span class="input">(</span>
+            <input type="number" id="result_a" class="input numInput" placeholder="𝒂" readonly>
+            <span class="input">,</span>
+            <input type="number" id="result_b" class="input numInput" placeholder="𝒃" readonly>
+            <span class="input">)</span>
 
         </div>
         <div class="ResultPanel">
@@ -61,7 +60,6 @@
         <div>2023/11/22 v1.0 完成</div>
         <div>2023/12/20 v1.1 リセットボタンの追加</div>
         <div>2024/05/06 v1.2 概要の追加 数字入れるとこの自動調整機能</div>
-        <div>2024/05/06 v2.0 なんかかえた使い方がわかりずらいから</div>
     </div>
     <div class="copyrightPanel">
         <div>©Copyright 2023-2024 Satoshiinu</div>
