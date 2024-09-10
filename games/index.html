@@ -12,44 +12,46 @@
 <body>
     <canvas id="canvas"></canvas><br>
 
-    <input id="msg" type="button" value="msg" onclick="gui.message.view('Z to close this prompt');" />
-    <input id="msg2" type="button" value="custmsg" onclick="gui.message.view(prompt('input text'));" />
-    <input id="debug" type="button" value="debug" onclick="debug.visible = !debug.visible;" />
-    <input id="reload" type="button" value="reload" onclick="loadingassets();" />
-    <input id="newGame" type="button" value="newGame" onclick="Game.NewGame();" />
+    <div style="display: none;">
+        <input id="msg" type="button" value="msg" onclick="gui.message.view('Z to close this prompt');" />
+        <input id="msg2" type="button" value="custmsg" onclick="gui.message.view(prompt('input text'));" />
+        <input id="debug" type="button" value="debug" onclick="debug.visible = !debug.visible;" />
+        <input id="reload" type="button" value="reload" onclick="loadingassets();" />
+        <input id="newGame" type="button" value="newGame" onclick="Game.NewGame();" />
 
-    <div>
-        jsonui
-    </div>
-    <div>
+        <div>
+            jsonui
+        </div>
+        <div>
 
-        <input type="button" value="close"
-            onclick="JsonUIOpen[String(document.getElementById('DebugJsonUITestNum').value)].close();" />
-        <input type="number" value="0" size="10" id="DebugJsonUITestNum"><br>
+            <input type="button" value="close"
+                onclick="JsonUIOpen[String(document.getElementById('DebugJsonUITestNum').value)].close();" />
+            <input type="number" value="0" size="10" id="DebugJsonUITestNum"><br>
 
-        <input type="button" value="open"
-            onclick="jsonui_open(String(document.getElementById('DebugJsonUIOpenID').value));" />
-        <input type="text" value="menu" size="10" id="DebugJsonUIOpenID"><br>
-    </div>
-    <div>
-        loadcount
-    </div>
-    <div>
+            <input type="button" value="open"
+                onclick="jsonui_open(String(document.getElementById('DebugJsonUIOpenID').value));" />
+            <input type="text" value="menu" size="10" id="DebugJsonUIOpenID"><br>
+        </div>
+        <div>
+            loadcount
+        </div>
+        <div>
 
-        img<span id="imgLoadCount"></span>
-        json<span id="jsonLoadCount"></span>
-        sound<span id="soundLoadCount"></span>
-    </div>
-    <div>
-        eval
-        <input id="evalInput" type="text">
-        <input type="button" value="execute" onclick="evalOutput.innerText=eval(evalInput.value)">
-    </div>
-    <div>
-        <span id="evalOutput"></span>
-    </div>
+            img<span id="imgLoadCount"></span>
+            json<span id="jsonLoadCount"></span>
+            sound<span id="soundLoadCount"></span>
+        </div>
+        <div>
+            eval
+            <input id="evalInput" type="text">
+            <input type="button" value="execute" onclick="evalOutput.innerText=eval(evalInput.value)">
+        </div>
+        <div>
+            <span id="evalOutput"></span>
+        </div>
 
-    <h1 style="font-family: 'Proj23Fon';">abc</h1>
+        <h1 style="font-family: 'Proj23Fon';">abc</h1>
+    </div>
 
 
 </body>
