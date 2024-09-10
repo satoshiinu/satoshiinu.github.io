@@ -53,3 +53,8 @@ html {
     src: url('Proj23Fon.ttf') format('truetype');
     /* フォントファイルへのパスと形式 */
 }
+
+canvas {
+    width: 100%;
+    image-rendering: pixelated;
+}
