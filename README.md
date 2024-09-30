@@ -28,7 +28,7 @@
         <img src="header.png" width="500" height="166">
         <p>
             <font color="white" size="6">
-                さとしいぬが適当にする場所
+                さとしいぬのいろいろおきば
             </font>
         </p>
     </div>
@@ -48,8 +48,9 @@
                 </p>
             </div>
             <div><img src="right.gif" alt="" width="15" height="15"><a href="/calc/">電卓</a></div>
-            <div><img src="right.gif" alt="" width="15" height="15"><a href="/tool/LinearSimulEqua/">一次関数の連立方程式とくやつ</a></div>
+            <div><img src="right.gif" alt="" width="15" height="15"><a href="/tool/LinearSimulEqua/">一次関数を𝒚を𝒙の式で表す</a></div>
             <div><img src="right.gif" alt="" width="15" height="15"><a href="/tool/treeDiagram/">オート樹形図</a></div>
+            <div><img src="right.gif" alt="" width="15" height="15"><a href="/tool/easysqrt/">オート樹形図</a></div>
             <div class="tab_text">
                 <img src="tab.gif" alt="">
                 <p>
